@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="256" height="256" xmlns="http://www.w3.org/2000/svg">
+<g style="fill:black;fill-opacity:1;stroke:none;stroke-width:1;stroke-opacity:0;fill-rule:nonzero;fill:none;">
+<g style="fill:#2563EB;">
+  <rect x="0" y="0" width="128" height="128" rx="16" ry="16"/>
+</g>
+<g style="stroke:white;stroke-width:4;stroke-linejoin:round;">
+  <path d="M90 45L64 30L38 45V83L64 98L90 83V45Z"/>
+</g>
+<g style="stroke:white;stroke-width:4;">
+  <path d="M64 30V98"/>
+</g>
+<g style="stroke:white;stroke-width:4;">
+  <path d="M38 45L90 83"/>
+</g>
+<g style="stroke:white;stroke-width:4;">
+  <path d="M90 45L38 83"/>
+</g>
+<g style="fill:white;">
+  <circle cx="64" cy="64" r="8"/>
+</g>
+</g>
+</svg>

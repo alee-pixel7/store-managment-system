@@ -1,0 +1,9 @@
+{
+  "enabled": true,
+  "cronTime": "0 18 * * *",
+  "recipientEmail": "rajputalee63@gmail.com",
+  "senderEmail": "rajputalee63@gmail.com",
+  "lastRun": "2026-09-15T13:00:00.023Z",
+  "lastStatus": "success",
+  "lastError": null
+}

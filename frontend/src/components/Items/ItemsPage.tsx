@@ -1,0 +1,248 @@
+// ItemsPage Component
+// Main page for managing items - list, search, filter, CRUD
+
+import { useState, useEffect, useCallback } from 'react';
+import type { Item, Category } from '../../types';
+import { listItems, searchItems, createItem, updateItem, softDeleteItem, listCategories } from '../../api/items';
+import { downloadExport } from '../../api/export';
+import { useDebounce } from '../../hooks/useDebounce';
+import { useAuth } from '../../contexts/AuthContext';
+import { ItemsTable } from './ItemsTable';
+import { ItemModal } from './ItemModal';
+import { Pagination } from './Pagination';
+
+interface ItemsPageProps {
+  onViewItem?: (itemId: number) => void;
+}
+
+export function ItemsPage({ onViewItem }: ItemsPageProps) {
+  const { canDoStockOps } = useAuth();
+  // State
+  const [items, setItems] = useState<Item[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [pagination, setPagination] = useState({ page: 1, limit: 50, total: 0, totalPages: 0 });
+  const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState<'excel' | 'pdf' | null>(null);
+
+  // Filters
+  const [searchTerm, setSearchTerm] = useState('');
+  const [categoryId, setCategoryId] = useState<number | undefined>(undefined);
+  const [lowStockOnly, setLowStockOnly] = useState(false);
+
+  // Debounced search
+  const debouncedSearch = useDebounce(searchTerm, 300);
+
+  // Modal state
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<Item | null>(null);
+
+  // Load categories
+  useEffect(() => {
+    listCategories().then(setCategories).catch(console.error);
+  }, []);
+
+  // Fetch items
+  const fetchItems = useCallback(async () => {
+    setLoading(true);
+    try {
+      // If search term exists, use search API
+      if (debouncedSearch.trim()) {
+        const searchResults = await searchItems(debouncedSearch);
+        // Convert search results to items format
+        const items: Item[] = searchResults.map((r) => ({
+          ...r,
+          category_id: null,
+          category: null,
+          brand: null,
+          last_rate: null,
+          barcode: null,
+          image_path: null,
+          is_active: true,
+          notes: null,
+          created_at: '',
+          updated_at: '',
+          item_aliases: [],
+        }));
+        setItems(items);
+        setPagination({ page: 1, limit: 20, total: searchResults.length, totalPages: 1 });
+      } else {
+        // Use list API with filters
+        const result = await listItems({
+          page: pagination.page,
+          limit: 50,
+          category_id: categoryId,
+          low_stock: lowStockOnly,
+        });
+        setItems(result.items);
+        setPagination(result.pagination);
+      }
+    } catch (error) {
+      console.error('Failed to fetch items:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [debouncedSearch, pagination.page, categoryId, lowStockOnly]);
+
+  useEffect(() => {
+    fetchItems();
+  }, [fetchItems]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setPagination((prev) => ({ ...prev, page: 1 }));
+  }, [debouncedSearch, categoryId, lowStockOnly]);
+
+  // Handlers
+  const handlePageChange = (page: number) => {
+    setPagination((prev) => ({ ...prev, page }));
+  };
+
+  const handleEdit = (item: Item) => {
+    setEditingItem(item);
+    setIsModalOpen(true);
+  };
+
+  const handleAdd = () => {
+    setEditingItem(null);
+    setIsModalOpen(true);
+  };
+
+  const handleSave = async (data: any) => {
+    if (editingItem) {
+      await updateItem(editingItem.id, data);
+    } else {
+      await createItem(data);
+    }
+    fetchItems();
+  };
+
+  const handleDeactivate = async (item: Item) => {
+    if (window.confirm(`Deactivate "${item.item_code} - ${item.item_name}"?`)) {
+      await softDeleteItem(item.id);
+      fetchItems();
+    }
+  };
+
+  const handleExport = async (format: 'excel' | 'pdf') => {
+    setExporting(format);
+    try {
+      await downloadExport('items', {}, format);
+    } catch (err) {
+      console.error('Export failed:', err);
+    } finally {
+      setExporting(null);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-base">
+      {/* Header */}
+      <div className="bg-surface border-b border-border px-4 py-3">
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-semibold text-text">Items</h1>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => handleExport('excel')}
+              disabled={exporting === 'excel'}
+              className="px-3 py-1.5 text-sm font-medium text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50 flex items-center gap-2"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <span className="hidden sm:inline">{exporting === 'excel' ? 'Exporting...' : 'Excel'}</span>
+            </button>
+            <button
+              onClick={() => handleExport('pdf')}
+              disabled={exporting === 'pdf'}
+              className="px-3 py-1.5 text-sm font-medium text-white bg-red-600 rounded hover:bg-red-700 disabled:opacity-50 flex items-center gap-2"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+              <span className="hidden sm:inline">{exporting === 'pdf' ? 'Exporting...' : 'PDF'}</span>
+            </button>
+            {canDoStockOps && (
+              <button
+                onClick={handleAdd}
+                className="px-4 py-1.5 text-sm font-medium text-white bg-accent rounded hover:bg-accent-hover min-h-[44px]"
+              >
+                + Add
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Filters */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mt-3">
+          {/* Search */}
+          <div className="flex-1 sm:max-w-md">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search items..."
+              className="w-full px-3 py-2.5 sm:py-1.5 text-sm border border-border rounded focus:ring-1 focus:ring-accent focus:border-accent min-h-[44px]"
+            />
+          </div>
+
+          <div className="flex items-center gap-3">
+            {/* Category filter */}
+            <select
+              value={categoryId || ''}
+              onChange={(e) => setCategoryId(e.target.value ? Number(e.target.value) : undefined)}
+              className="px-3 py-2.5 sm:py-1.5 text-sm border border-border rounded focus:ring-1 focus:ring-accent focus:border-accent min-h-[44px] flex-1 sm:flex-initial"
+            >
+              <option value="">All Categories</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
+
+            {/* Low stock toggle */}
+            <label className="flex items-center gap-2 text-sm text-text cursor-pointer whitespace-nowrap">
+              <input
+                type="checkbox"
+                checked={lowStockOnly}
+                onChange={(e) => setLowStockOnly(e.target.checked)}
+                className="w-4 h-4 rounded border-border text-accent focus:ring-accent"
+              />
+              <span className="hidden sm:inline">Low Stock Only</span>
+              <span className="sm:hidden">Low</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      {/* Table */}
+      <div className="mx-2 sm:mx-4 my-4 bg-surface rounded-lg shadow">
+        <ItemsTable
+          items={items}
+          onEdit={handleEdit}
+          onDeactivate={handleDeactivate}
+          onViewItem={onViewItem}
+          loading={loading}
+        />
+        <Pagination
+          page={pagination.page}
+          totalPages={pagination.totalPages}
+          total={pagination.total}
+          onPageChange={handlePageChange}
+        />
+      </div>
+
+      {/* Modal */}
+      <ItemModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingItem(null);
+        }}
+        onSave={handleSave}
+        item={editingItem}
+        categories={categories}
+      />
+    </div>
+  );
+}

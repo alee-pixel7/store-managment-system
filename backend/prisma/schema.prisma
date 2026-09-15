@@ -1,0 +1,243 @@
+// Store Management System - Database Schema
+// SQLite database with Prisma ORM
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// USERS TABLE
+// Stores login credentials and role-based access control
+// ============================================================
+model users {
+  id            Int       @id @default(autoincrement())
+  username      String    @unique
+  password_hash String
+  full_name     String
+  role          String    // ADMIN, STORE_INCHARGE, ASSISTANT, VIEWER
+  is_active     Boolean   @default(true)
+  created_at    DateTime  @default(now())
+
+  // Relationships
+  transactions  transactions[]
+  audits        stock_audits[]
+}
+
+// ============================================================
+// CATEGORIES TABLE
+// Groups items by type (Bearings, Seals, Tools, etc.)
+// ============================================================
+model categories {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+
+  // Relationships
+  items items[]
+}
+
+// ============================================================
+// ITEMS TABLE
+// Main inventory record for each unique part
+// current_stock is maintained by system but recalculable from transactions
+// ============================================================
+model items {
+  id             Int      @id @default(autoincrement())
+  item_code      String   @unique  // e.g., BRG-6205
+  item_name      String
+  category_id    Int?
+  brand          String?
+  unit           String   // PCS, KG, MTR, LTR, SET
+  min_stock      Float    @default(0)
+  rack_location  String?  // e.g., "Rack A-03 / Bin 7"
+  current_stock  Float    @default(0)  // System-maintained
+  last_rate      Float?   // Rate from last purchase
+  barcode        String?  // Future QR feature
+  image_path     String?  // Future photo feature
+  is_active      Boolean  @default(true)
+  notes          String?
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  // Relationships
+  category         categories?         @relation(fields: [category_id], references: [id])
+  item_aliases     item_aliases[]
+  transaction_items transaction_items[]
+  audit_lines      stock_audit_lines[]
+
+  // Indexes for search and filtering performance
+  @@index([is_active])
+  @@index([category_id])
+  @@index([item_name])
+  @@index([brand])
+}
+
+// ============================================================
+// ITEM ALIASES TABLE
+// Alternative names for items - solves the search problem
+// Example: BRG-6205 can be searched as "6205", "6205ZZ", "SKF 6205"
+// ============================================================
+model item_aliases {
+  id        Int    @id @default(autoincrement())
+  item_id   Int
+  alias_name String
+
+  // Relationships
+  item items @relation(fields: [item_id], references: [id], onDelete: Cascade)
+
+  @@unique([item_id, alias_name])
+  @@index([alias_name])
+  @@index([item_id])
+}
+
+// ============================================================
+// SUPPLIERS TABLE
+// Vendors who supply items
+// ============================================================
+model suppliers {
+  id              Int     @id @default(autoincrement())
+  name            String
+  phone           String?
+  address         String?
+  lead_time_days  Int     @default(30)  // Supplier lead time for reorder calculation
+  notes           String?
+
+  // Relationships
+  transactions transactions[]
+}
+
+// ============================================================
+// DEPARTMENTS TABLE
+// Organizational units (Production, Maintenance, etc.)
+// ============================================================
+model departments {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+
+  // Relationships
+  machines   machines[]
+  persons    persons[]
+  transactions transactions[]
+}
+
+// ============================================================
+// MACHINES TABLE
+// Equipment that uses parts
+// ============================================================
+model machines {
+  id            Int      @id @default(autoincrement())
+  name          String
+  code          String?
+  department_id Int?
+
+  // Relationships
+  department   departments? @relation(fields: [department_id], references: [id])
+  transactions transactions[]
+}
+
+// ============================================================
+// PERSONS TABLE
+// People who receive material
+// ============================================================
+model persons {
+  id            Int      @id @default(autoincrement())
+  name          String
+  department_id Int?
+  phone         String?
+
+  // Relationships
+  department   departments? @relation(fields: [department_id], references: [id])
+  transactions transactions[]
+}
+
+// ============================================================
+// TRANSACTIONS TABLE
+// Header for each stock movement (one slip can contain many items)
+// Never edit or delete - use REVERSAL for corrections
+// ============================================================
+model transactions {
+  id               Int       @id @default(autoincrement())
+  txn_no           String    @unique  // e.g., IN-2026-0001, OUT-2026-0143
+  txn_type         String    // IN, OUT, RETURN, ADJUST, REVERSAL
+  txn_date         DateTime  @default(now())
+  supplier_id      Int?
+  invoice_no       String?   // Used for IN transactions
+  department_id    Int?
+  machine_id       Int?
+  person_id        Int?
+  purpose          String?
+  remarks          String?
+  reverses_txn_id  Int?      // Set when this is a reversal
+  is_reversed      Boolean   @default(false)
+  created_by       Int
+  created_at       DateTime  @default(now())
+
+  // Relationships
+  supplier          suppliers?     @relation(fields: [supplier_id], references: [id])
+  department        departments?   @relation(fields: [department_id], references: [id])
+  machine           machines?      @relation(fields: [machine_id], references: [id])
+  person            persons?       @relation(fields: [person_id], references: [id])
+  reversed_by       transactions?  @relation("ReversalLink", fields: [reverses_txn_id], references: [id])
+  reversing         transactions[] @relation("ReversalLink")
+  creator           users          @relation(fields: [created_by], references: [id])
+  transaction_items transaction_items[]
+}
+
+// ============================================================
+// TRANSACTION ITEMS TABLE
+// Line items for each transaction (which items, how many)
+// ============================================================
+model transaction_items {
+  id              Int          @id @default(autoincrement())
+  transaction_id  Int
+  item_id         Int
+  quantity        Float
+  rate            Float?
+  line_remarks    String?
+
+  // Relationships
+  transaction transactions @relation(fields: [transaction_id], references: [id], onDelete: Cascade)
+  item        items        @relation(fields: [item_id], references: [id])
+}
+
+// ============================================================
+// STOCK AUDITS TABLE
+// Tracks physical stock count sessions
+// ============================================================
+model stock_audits {
+  id          Int      @id @default(autoincrement())
+  audit_date  DateTime @default(now())
+  status      String   @default("DRAFT") // DRAFT, IN_PROGRESS, FINALISED
+  created_by  Int
+  notes       String?
+  created_at  DateTime @default(now())
+
+  // Relationships
+  creator users              @relation(fields: [created_by], references: [id])
+  lines   stock_audit_lines[]
+}
+
+// ============================================================
+// STOCK AUDIT LINES TABLE
+// Individual item counts within an audit
+// ============================================================
+model stock_audit_lines {
+  id           Int      @id @default(autoincrement())
+  audit_id     Int
+  item_id      Int
+  system_qty   Float
+  counted_qty  Float?
+  variance     Float?
+  counted_at   DateTime?
+  counted_by   String?
+
+  // Relationships
+  audit stock_audits @relation(fields: [audit_id], references: [id], onDelete: Cascade)
+  item  items        @relation(fields: [item_id], references: [id])
+
+  @@unique([audit_id, item_id])
+}

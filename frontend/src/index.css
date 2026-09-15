@@ -1,0 +1,293 @@
+@import "tailwindcss";
+
+/* ============================================================
+   DARK INDUSTRIAL THEME — "Control Panel of Good Machinery"
+   ============================================================
+   Base: deep charcoal (not pure black — reduces eye strain)
+   Accent: warm amber-orange #FFA940 — actions, active states, links
+   Status: green = stock ok, desaturated amber = low stock, red = out
+   Depth: 4-layer system with edge highlights for 3D feel
+   ============================================================ */
+
+@theme {
+  /* ── Base backgrounds (4-layer depth) ── */
+  --color-base: #0D0F14;
+  --color-surface: #161A21;
+  --color-elevated: #1F242D;
+  --color-raised: #272D38;
+
+  /* ── Hover ── */
+  --color-hover: #2e3138;
+
+  /* ── Borders ── */
+  --color-border: #363a42;
+  --color-border-light: #2a2d35;
+
+  /* ── Depth lines ── */
+  --color-line-subtle: #232830;
+  --color-line-strong: #333B47;
+
+  /* ── Text ── */
+  --color-text: #e4e6ea;
+  --color-text-secondary: #8b9099;
+  --color-text-muted: #5c6069;
+
+  /* ── Accent — warm amber-orange (separate from status) ── */
+  --color-accent: #FFA940;
+  --color-accent-hover: #FFBA63;
+  --color-accent-press: #D98622;
+  --color-accent-dim: rgba(255, 169, 64, 0.12);
+  --color-accent-text: #FFBA63;
+
+  /* ── Status (distinct from accent) ── */
+  --color-ok: #3FB950;
+  --color-ok-dim: rgba(63, 185, 80, 0.12);
+  --color-low: #D9A017;
+  --color-low-dim: rgba(217, 160, 23, 0.12);
+  --color-danger: #E5484D;
+  --color-danger-dim: rgba(229, 72, 77, 0.12);
+  --color-destructive: #A83A3E;
+  --color-destructive-dim: rgba(168, 58, 62, 0.12);
+
+  /* ── Edge highlights (3D feel) ── */
+  --color-edge-light: rgba(255, 255, 255, 0.06);
+  --color-edge-dark: rgba(0, 0, 0, 0.40);
+  --color-accent-glow: rgba(255, 169, 64, 0.20);
+
+  /* ── Semantic overrides for Tailwind utilities ── */
+  --color-blue-50: rgba(255, 169, 64, 0.08);
+  --color-blue-100: rgba(255, 169, 64, 0.15);
+  --color-blue-300: rgba(255, 169, 64, 0.4);
+  --color-blue-600: #FFA940;
+  --color-blue-700: #D98622;
+  --color-blue-800: #B45309;
+
+  /* ── Orange (low stock warnings) ── */
+  --color-orange-50: rgba(217, 160, 23, 0.10);
+  --color-orange-600: #D9A017;
+  --color-orange-700: #B8860B;
+
+  /* ── Green (stock ok) ── */
+  --color-green-50: rgba(63, 185, 80, 0.10);
+  --color-green-600: #3FB950;
+  --color-green-700: #2EA043;
+
+  /* ── Red (out of stock, danger) ── */
+  --color-red-50: rgba(229, 72, 77, 0.10);
+  --color-red-100: rgba(229, 72, 77, 0.15);
+  --color-red-600: #E5484D;
+  --color-red-700: #CE2C31;
+
+  /* ── Purple (audit in-progress) ── */
+  --color-purple-50: rgba(139, 92, 246, 0.1);
+  --color-purple-600: #8b5cf6;
+  --color-purple-700: #7c3aed;
+
+  /* ── Gray scale — map to dark theme ── */
+  --color-gray-50: #1F242D;
+  --color-gray-100: #161A21;
+  --color-gray-200: #363a42;
+  --color-gray-300: #4a4e57;
+  --color-gray-500: #5c6069;
+  --color-gray-600: #8b9099;
+  --color-gray-700: #b0b4bc;
+  --color-gray-800: #e4e6ea;
+  --color-gray-900: #f3f4f6;
+
+  /* ── Shadows — layered depth ── */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.6);
+}
+
+/* ============================================================
+   GLOBAL DEFAULTS
+   ============================================================ */
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--color-base);
+  color: var(--color-text);
+}
+
+/* Focus ring — accent glow */
+*:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px var(--color-accent-glow);
+}
+
+/* Inputs — darker background for contrast */
+input[type="text"],
+input[type="number"],
+input[type="date"],
+input[type="email"],
+input[type="password"],
+select,
+textarea {
+  background-color: var(--color-base);
+  color: var(--color-text);
+  border-color: var(--color-line-strong);
+}
+
+/* Select dropdown arrow — dark theme */
+select {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%238b9099' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: 2.5rem;
+}
+
+/* Scrollbar — dark */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-base);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-gray-300);
+}
+
+/* ============================================================
+   PWA & MOBILE
+   ============================================================ */
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+@media (max-width: 767px) {
+  html {
+    overflow: hidden;
+    height: 100%;
+  }
+  body {
+    overflow: auto;
+    height: 100%;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (max-width: 767px) {
+  input[type="text"],
+  input[type="number"],
+  input[type="date"],
+  select,
+  textarea {
+    min-height: 44px;
+    font-size: 16px;
+  }
+}
+
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ============================================================
+   PRINT — light theme for paper
+   ============================================================ */
+
+@media print {
+  nav,
+  .print\:hidden,
+  button,
+  [type="submit"],
+  [type="button"] {
+    display: none !important;
+  }
+
+  @page {
+    size: A4;
+    margin: 15mm;
+  }
+
+  body {
+    background: white !important;
+    color: #111 !important;
+    font-size: 10pt;
+    line-height: 1.4;
+  }
+
+  .shadow,
+  .rounded-lg,
+  .rounded {
+    box-shadow: none !important;
+  }
+
+  table {
+    page-break-inside: auto;
+    width: 100% !important;
+  }
+
+  tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  th, td {
+    padding: 4px 8px !important;
+    font-size: 9pt;
+    color: #111 !important;
+    border-color: #d1d5db !important;
+  }
+
+  .print\:break-before { break-before: page; }
+  .print\:break-after { break-after: page; }
+  .print\:break-inside-avoid { break-inside: avoid; }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  a { text-decoration: none !important; }
+
+  /* Force light backgrounds for print */
+  .bg-base,
+  .bg-surface,
+  .bg-elevated,
+  .bg-gray-50,
+  .bg-gray-100,
+  .bg-blue-50,
+  .bg-orange-50,
+  .bg-green-50,
+  .bg-purple-50,
+  .bg-red-50 {
+    background-color: #f9fafb !important;
+  }
+
+  .text-blue-600, .text-blue-700 { color: #2563eb !important; }
+  .text-orange-600, .text-orange-700 { color: #ea580c !important; }
+  .text-green-600, .text-green-700 { color: #16a34a !important; }
+  .text-purple-600, .text-purple-700 { color: #9333ea !important; }
+  .text-red-600, .text-red-700 { color: #dc2626 !important; }
+
+  .border-b, .border-t, .border {
+    border-color: #e5e7eb !important;
+  }
+}
