@@ -131,7 +131,7 @@ function AppContent() {
 
               {/* Nav Items */}
               <LayoutGroup>
-                <div className="flex items-center gap-0.5">
+                <div className="flex items-center gap-1.5">
                   {navButtons.filter(b => b.show).map((btn) => {
                     if (btn.isDropdown) {
                       const isActive = currentPage === 'daily-report' || currentPage === 'monthly-report';
@@ -139,7 +139,7 @@ function AppContent() {
                         <div key={btn.id} className="relative" ref={reportsRef}>
                           <button
                             onClick={() => setShowReports(!showReports)}
-                            className={`relative flex flex-col items-center gap-0.5 px-2.5 py-2 rounded-xl transition-all duration-150 group ${
+                            className={`relative flex flex-col items-center gap-1.5 px-4 py-3 rounded-xl transition-all duration-150 group ${
                               isActive ? 'text-accent' : 'text-text-secondary hover:text-text'
                             }`}
                           >
@@ -150,10 +150,10 @@ function AppContent() {
                                 transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                               />
                             )}
-                            <svg className={`w-4 h-4 transition-transform duration-150 ${isActive ? 'scale-110' : 'group-hover:scale-105'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
+                            <svg className={`w-6 h-6 transition-transform duration-150 ${isActive ? 'scale-110' : 'group-hover:scale-105'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
                               <path strokeLinecap="round" strokeLinejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
-                            <span className="text-[10px] font-medium leading-tight flex items-center gap-0.5">
+                            <span className="text-xs font-medium leading-tight flex items-center gap-1">
                               Reports
                               <motion.svg
                                 animate={{ rotate: showReports ? 180 : 0 }}
@@ -222,7 +222,7 @@ function AppContent() {
                       <button
                         key={btn.id}
                         onClick={() => handleNavigate(btn.id)}
-                        className={`relative flex flex-col items-center gap-0.5 px-2.5 py-2 rounded-xl transition-all duration-150 group ${
+                        className={`relative flex flex-col items-center gap-1.5 px-4 py-3 rounded-xl transition-all duration-150 group ${
                           isActive ? 'text-accent' : 'text-text-secondary hover:text-text'
                         }`}
                       >
@@ -233,10 +233,10 @@ function AppContent() {
                             transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                           />
                         )}
-                        <svg className={`w-4 h-4 transition-transform duration-150 ${isActive ? 'scale-110' : 'group-hover:scale-105'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
+                        <svg className={`w-6 h-6 transition-transform duration-150 ${isActive ? 'scale-110' : 'group-hover:scale-105'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
                           {icon}
                         </svg>
-                        <span className="text-[10px] font-medium leading-tight">{btn.label}</span>
+                        <span className="text-xs font-medium leading-tight">{btn.label}</span>
                       </button>
                     );
                   })}
