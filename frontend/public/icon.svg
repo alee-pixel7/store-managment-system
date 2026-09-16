@@ -1,9 +1,17 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
-  <rect width="192" height="192" rx="32" fill="#2563eb"/>
-  <g fill="none" stroke="white" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
-    <rect x="40" y="56" width="112" height="96" rx="4"/>
-    <path d="M40 80h112"/>
-    <path d="M72 56V40a24 24 0 0148 0v16"/>
-    <circle cx="96" cy="112" r="8" fill="white"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192">
+  <rect width="192" height="192" rx="40" fill="#0B0D11"/>
+  <g transform="translate(96,96)">
+    <circle r="55" fill="#E8A035"/>
+    <circle r="32" fill="#0B0D11"/>
+    <rect x="-9" y="-75" width="18" height="30" rx="4" fill="#E8A035"/>
+    <rect x="-9" y="45" width="18" height="30" rx="4" fill="#E8A035"/>
+    <rect x="-75" y="-9" width="30" height="18" rx="4" fill="#E8A035"/>
+    <rect x="45" y="-9" width="30" height="18" rx="4" fill="#E8A035"/>
+    <rect x="-9" y="-75" width="18" height="30" rx="4" fill="#E8A035" transform="rotate(45)"/>
+    <rect x="-9" y="-75" width="18" height="30" rx="4" fill="#E8A035" transform="rotate(90)"/>
+    <rect x="-9" y="-75" width="18" height="30" rx="4" fill="#E8A035" transform="rotate(135)"/>
+    <rect x="-9" y="-75" width="18" height="30" rx="4" fill="#E8A035" transform="rotate(225)"/>
+    <circle r="22" fill="none" stroke="#0B0D11" stroke-width="4"/>
+    <circle r="6" fill="#E8A035"/>
   </g>
 </svg>
