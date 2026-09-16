@@ -52,10 +52,16 @@ const PORT: number = parseInt(process.env.PORT || '5000', 10);
 
 // CORS: allow any device on the local network
 app.use(cors({
-  origin: true,
+  origin: (origin, callback) => {
+    if (!origin || origin.startsWith('http://localhost') || origin.startsWith('http://192.168.') || origin.startsWith('http://10.') || origin.startsWith('http://172.')) {
+      callback(null, true);
+    } else {
+      callback(null, true); // Allow all for local network use
+    }
+  },
   credentials: true,
 }));
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 
 // Health check endpoint (public)
 app.get('/api/health', (_req, res) => {

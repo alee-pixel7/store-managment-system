@@ -1,9 +1,14 @@
 // Prisma Client Instance
-// This file exports a singleton instance of the Prisma client
+// Singleton with hot-reload protection for development
 
 import { PrismaClient } from '@prisma/client';
 
-// Create a single instance of PrismaClient
-const prisma = new PrismaClient();
+const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
+
+const prisma = globalForPrisma.prisma || new PrismaClient();
+
+if (process.env.NODE_ENV !== 'production') {
+  globalForPrisma.prisma = prisma;
+}
 
 export default prisma;

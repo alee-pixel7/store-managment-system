@@ -3,8 +3,7 @@
 const API_BASE = '/api';
 
 export function getExportUrl(type: string, params: Record<string, string>, format: 'excel' | 'pdf'): string {
-  const token = localStorage.getItem('store_auth_token');
-  const queryString = new URLSearchParams({ format, token: token || '' }).toString();
+  const queryString = new URLSearchParams({ format }).toString();
   
   switch (type) {
     case 'daily':

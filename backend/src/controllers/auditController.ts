@@ -39,7 +39,9 @@ export async function listAudits(req: Request, res: Response) {
 export async function getAudit(req: Request, res: Response) {
   try {
     const { id } = req.params;
-    const audit = await auditService.getAuditDetail(parseInt(id));
+    const auditId = parseInt(id);
+    if (isNaN(auditId)) return res.status(400).json({ error: 'Invalid audit ID' });
+    const audit = await auditService.getAuditDetail(auditId);
     res.json(audit);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to get audit';
@@ -55,11 +57,14 @@ export async function countItem(req: Request, res: Response) {
     const { id } = req.params;
     const { itemId, countedQty, countedBy } = req.body;
 
+    const auditId = parseInt(id);
+    if (isNaN(auditId)) return res.status(400).json({ error: 'Invalid audit ID' });
+
     if (itemId === undefined || countedQty === undefined || !countedBy) {
       return res.status(400).json({ error: 'itemId, countedQty, and countedBy are required' });
     }
 
-    await auditService.countItem(parseInt(id), itemId, countedQty, countedBy);
+    await auditService.countItem(auditId, itemId, countedQty, countedBy);
     res.json({ message: 'Item counted successfully' });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to count item';
@@ -75,11 +80,14 @@ export async function searchItems(req: Request, res: Response) {
     const { id } = req.params;
     const { q } = req.query;
 
+    const auditId = parseInt(id);
+    if (isNaN(auditId)) return res.status(400).json({ error: 'Invalid audit ID' });
+
     if (!q || typeof q !== 'string') {
       return res.status(400).json({ error: 'Search query is required' });
     }
 
-    const items = await auditService.searchAuditItems(parseInt(id), q);
+    const items = await auditService.searchAuditItems(auditId, q);
     res.json({ items });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to search items';
@@ -93,7 +101,9 @@ export async function searchItems(req: Request, res: Response) {
 export async function getVarianceReport(req: Request, res: Response) {
   try {
     const { id } = req.params;
-    const report = await auditService.getVarianceReport(parseInt(id));
+    const auditId = parseInt(id);
+    if (isNaN(auditId)) return res.status(400).json({ error: 'Invalid audit ID' });
+    const report = await auditService.getVarianceReport(auditId);
     res.json(report);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to get variance report';
@@ -108,8 +118,10 @@ export async function finaliseAudit(req: Request, res: Response) {
   try {
     const { id } = req.params;
     const userId = (req as any).userId;
+    const auditId = parseInt(id);
+    if (isNaN(auditId)) return res.status(400).json({ error: 'Invalid audit ID' });
 
-    await auditService.finaliseAudit(parseInt(id), userId);
+    await auditService.finaliseAudit(auditId, userId);
     res.json({ message: 'Audit finalised successfully. ADJUST transactions created.' });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to finalise audit';

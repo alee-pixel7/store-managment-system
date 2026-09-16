@@ -3,6 +3,7 @@
 
 import { Request, Response } from 'express';
 import * as importService from '../services/importService';
+import prisma from '../lib/prisma';
 
 // ============================================================
 // POST /api/import/parse - Parse Excel file and return all sheets
@@ -37,7 +38,6 @@ export async function validateItems(req: Request, res: Response) {
     }
 
     // Get existing item codes
-    const prisma = (await import('../lib/prisma')).default;
     const existingItems = await prisma.items.findMany({
       select: { item_code: true },
     });
@@ -83,7 +83,6 @@ export async function validateStock(req: Request, res: Response) {
     }
 
     // Get existing items
-    const prisma = (await import('../lib/prisma')).default;
     const existingItems = await prisma.items.findMany({
       select: { item_code: true, id: true },
     });
@@ -152,7 +151,8 @@ export async function importStock(req: Request, res: Response) {
       return res.status(400).json({ error: 'Rows and mapping are required' });
     }
 
-    const userId = (req as any).userId || 1;
+    const userId = (req as any).userId;
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
     const result = await importService.importOpeningStock(rows, mapping, userId);
 
@@ -178,7 +178,8 @@ export async function importDailyReport(req: Request, res: Response) {
       return res.status(400).json({ error: 'mapping is required' });
     }
 
-    const userId = (req as any).userId || 1;
+    const userId = (req as any).userId;
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
     const result = await importService.importDailyReportTransactions(rows, mapping, userId);
     res.json(result);
@@ -199,11 +200,15 @@ export async function downloadErrors(req: Request, res: Response) {
       return res.status(400).json({ error: 'Errors array is required' });
     }
 
-    // Create CSV content
+    // Create CSV content — sanitize cells to prevent CSV injection
+    const sanitize = (val: string) => {
+      const safe = String(val).replace(/"/g, '""');
+      return /^[=+\-@\t\r]/.test(safe) ? `'${safe}` : safe;
+    };
     const headers = 'Row,Column,Value,Message\n';
     const rows = errors
       .map((e: importService.ValidationError) => {
-        return `${e.row},"${e.column}","${String(e.value).replace(/"/g, '""')}","${e.message.replace(/"/g, '""')}"`;
+        return `${e.row},"${sanitize(e.column)}","${sanitize(String(e.value))}","${sanitize(e.message)}"`;
       })
       .join('\n');
 

@@ -11,7 +11,8 @@ import { validateStockInInput, validateStockOutInput, validateReturnInput } from
 export async function createStockIn(req: Request, res: Response) {
   try {
     const data = validateStockInInput(req.body);
-    const userId = (req as any).userId || 1;
+    const userId = (req as any).userId;
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
     const transaction = await transactionService.createStockIn(data, userId);
     res.status(201).json(transaction);
   } catch (error) {
@@ -114,7 +115,8 @@ export async function createSupplier(req: Request, res: Response) {
 export async function createStockOut(req: Request, res: Response) {
   try {
     const data = validateStockOutInput(req.body);
-    const userId = (req as any).userId || 1;
+    const userId = (req as any).userId;
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
     const result = await transactionService.createStockOut(data, userId);
     res.status(201).json(result);
   } catch (error) {
@@ -239,7 +241,8 @@ export async function createMachine(req: Request, res: Response) {
 export async function createReturn(req: Request, res: Response) {
   try {
     const data = validateReturnInput(req.body);
-    const userId = (req as any).userId || 1;
+    const userId = (req as any).userId;
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
     const transaction = await transactionService.createReturn(data, userId);
     res.status(201).json(transaction);
   } catch (error) {
@@ -266,7 +269,8 @@ export async function reverseTransaction(req: Request, res: Response) {
     }
 
     // Get user ID from request (set by auth middleware)
-    const userId = (req as any).userId || 1;
+    const userId = (req as any).userId;
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
     const reversal = await transactionService.reverseTransaction(id, reason.trim(), userId);
 
@@ -298,7 +302,8 @@ export async function reverseByTxnNo(req: Request, res: Response) {
       return res.status(400).json({ error: 'Reason is required for reversal' });
     }
 
-    const userId = (req as any).userId || 1;
+    const userId = (req as any).userId;
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
     const reversal = await transactionService.reverseByTxnNo(txn_no.trim(), reason.trim(), userId, force === true);
 

@@ -124,15 +124,17 @@ Phone access: `http://<your-PC-IP>:3000`
 - Color-coded variance (green = match, red = mismatch)
 - Finalise → auto-generates ADJUST transactions
 
-### 11. Analytics (6 Views)
+### 11. Analytics (Premium — 5 Views)
+
+**Premium dark glass design** with animated tab bar, gradient charts, stagger-animated tables:
 
 | View | What it shows |
 |------|---------------|
-| Consumption Trends | Per-item line chart over 12 months |
-| Machine-wise Consumption | Bar chart comparing machines |
-| Unusual Consumption | Machines >50% above 6-month average |
-| Dead Stock | Items with no movement (90/180/365 days) |
-| Stock Value Trend | 12-month stock value line chart |
+| Stock Value Trend | 12-month stock value line chart with gold/green/red gradient lines |
+| Item Consumption Trend | Per-item line chart over 12 months (searchable) |
+| Machine-wise Consumption | Bar chart comparing machines (gold + green gradients) |
+| Unusual Consumption | Machines >50% above 6-month average (danger-highlighted) |
+| Dead Stock | Items with no movement — 90/180/365 day filters, tied-up value |
 | Smart Reorder Points | Suggested min_stock based on consumption + lead time |
 
 ### 12. Backup System
@@ -141,7 +143,9 @@ Phone access: `http://<your-PC-IP>:3000`
 - Max 3 backups per day, 30-day retention
 - Manual backup via Settings
 - Download backup files
+- **Restore from backup** with safety backup + confirmation ("RESTORE" to confirm)
 - **Path traversal protection** on download endpoint
+- **Prisma reconnect** after restore (no stale state)
 
 ### 13. Authentication & Roles
 
@@ -369,6 +373,7 @@ store management system/
 | POST | `/api/backup/now` | Create manual backup |
 | GET | `/api/backup/list` | List backups |
 | GET | `/api/backup/download/:filename` | Download backup (path traversal protected) |
+| POST | `/api/backup/restore/:filename` | Restore from backup (ADMIN only, safety backup + mutex) |
 
 ### Import
 | Method | Endpoint | Description |
@@ -438,11 +443,18 @@ store management system/
 
 - **JWT persisted to disk** — survives server restarts without invalidating tokens
 - **Path traversal protection** on backup download endpoint
+- **CSV injection prevention** — sanitizes formula characters in error exports
+- **Filename header injection prevention** — sanitizes Content-Disposition values
+- **CORS restricted** — whitelist-based origin validation
+- **JSON body size limit** — 10MB max to prevent OOM
 - **Role-based access control** on all routes
+- **Auth required on all mutations** — no silent userId fallback
+- **TOCTOU-safe reversals** — original fetched inside transaction block
 - **Service worker disabled in dev mode** — prevents stale CSS on hard refresh
-- **Prisma singleton** — single connection pool, no leaks
+- **Prisma singleton with hot-reload protection** — no connection leaks
 - **Graceful shutdown** — Prisma disconnects cleanly on SIGINT/SIGTERM
 - **Atomic stock operations** — all stock changes inside Prisma `$transaction`
+- **Input validation** — NaN checks on all parseInt params, min_stock 0 handled
 
 ---
 

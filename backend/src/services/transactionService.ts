@@ -457,23 +457,23 @@ export async function reverseTransaction(
   reason: string,
   userId: number
 ) {
-  // Fetch the original transaction
-  const original = await prisma.transactions.findUnique({
-    where: { id: txnId },
-    include: { transaction_items: true },
-  });
-
-  if (!original) {
-    throw new Error('Transaction not found');
-  }
-
-  if (original.is_reversed) {
-    throw new Error('Transaction is already reversed');
-  }
-
   const year = new Date().getFullYear();
 
   return prisma.$transaction(async (tx) => {
+    // Fetch inside transaction to prevent TOCTOU race
+    const original = await tx.transactions.findUnique({
+      where: { id: txnId },
+      include: { transaction_items: true },
+    });
+
+    if (!original) {
+      throw new Error('Transaction not found');
+    }
+
+    if (original.is_reversed) {
+      throw new Error('Transaction is already reversed');
+    }
+
     // Generate transaction number for reversal
     const txn_no = await generateTxnNo('REVERSAL', year, tx);
 
@@ -550,22 +550,23 @@ export async function reverseByTxnNo(
   userId: number,
   force: boolean = false
 ) {
-  const original = await prisma.transactions.findFirst({
-    where: { txn_no: txnNo },
-    include: { transaction_items: true },
-  });
-
-  if (!original) {
-    throw new Error('Transaction not found');
-  }
-
-  if (original.is_reversed) {
-    throw new Error('Transaction is already reversed');
-  }
-
   const year = new Date().getFullYear();
 
   return prisma.$transaction(async (tx) => {
+    // Fetch inside transaction to prevent TOCTOU race
+    const original = await tx.transactions.findFirst({
+      where: { txn_no: txnNo },
+      include: { transaction_items: true },
+    });
+
+    if (!original) {
+      throw new Error('Transaction not found');
+    }
+
+    if (original.is_reversed) {
+      throw new Error('Transaction is already reversed');
+    }
+
     const txn_no = await generateTxnNo('REVERSAL', year, tx);
 
     const reversalTxn = await tx.transactions.create({

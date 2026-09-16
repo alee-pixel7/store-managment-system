@@ -120,7 +120,7 @@ export function validateCreateItem(data: unknown): CreateItemInput {
     category_id: input.category_id ? Number(input.category_id) : undefined,
     brand: input.brand ? String(input.brand).trim() : undefined,
     unit: (input.unit as string).toUpperCase(),
-    min_stock: input.min_stock ? Number(input.min_stock) : undefined,
+    min_stock: input.min_stock !== undefined ? Number(input.min_stock) : undefined,
     rack_location: input.rack_location ? String(input.rack_location).trim() : undefined,
     notes: input.notes ? String(input.notes).trim() : undefined,
     aliases: input.aliases ? (input.aliases as string[]).map(a => a.trim()) : [],

@@ -8,6 +8,10 @@ import * as itemService from '../services/itemService';
 import * as excelExport from '../services/excelExportService';
 import * as pdfExport from '../services/pdfExportService';
 
+function sanitizeFilename(name: string): string {
+  return name.replace(/[^a-zA-Z0-9._-]/g, '_');
+}
+
 // ============================================================
 // GET /api/export/daily/:date?format=excel|pdf
 // ============================================================
@@ -20,17 +24,18 @@ export async function exportDailyReport(req: Request, res: Response) {
       return res.status(400).json({ error: 'Date is required' });
     }
 
+    const safeDate = sanitizeFilename(date);
     const report = await reportService.getDailyReport(date);
 
     if (format === 'pdf') {
       const pdfBuffer = await pdfExport.exportDailyReportPDF(report);
       res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', `attachment; filename="daily-report-${date}.pdf"`);
+      res.setHeader('Content-Disposition', `attachment; filename="daily-report-${safeDate}.pdf"`);
       res.send(pdfBuffer);
     } else {
       const excelBuffer = await excelExport.exportDailyReportExcel(report);
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-      res.setHeader('Content-Disposition', `attachment; filename="daily-report-${date}.xlsx"`);
+      res.setHeader('Content-Disposition', `attachment; filename="daily-report-${safeDate}.xlsx"`);
       res.send(excelBuffer);
     }
   } catch (error) {
@@ -56,17 +61,17 @@ export async function exportMonthlyReport(req: Request, res: Response) {
     }
 
     const report = await monthlyReportService.getMonthlyReport(yearNum, monthNum);
-    const monthName = report.monthName.toLowerCase();
+    const monthName = sanitizeFilename(report.monthName.toLowerCase());
 
     if (format === 'pdf') {
       const pdfBuffer = await pdfExport.exportMonthlyReportPDF(report);
       res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', `attachment; filename="monthly-report-${monthName}-${year}.pdf"`);
+      res.setHeader('Content-Disposition', `attachment; filename="monthly-report-${monthName}-${sanitizeFilename(year)}.pdf"`);
       res.send(pdfBuffer);
     } else {
       const excelBuffer = await excelExport.exportMonthlyReportExcel(report);
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-      res.setHeader('Content-Disposition', `attachment; filename="monthly-report-${monthName}-${year}.xlsx"`);
+      res.setHeader('Content-Disposition', `attachment; filename="monthly-report-${monthName}-${sanitizeFilename(year)}.xlsx"`);
       res.send(excelBuffer);
     }
   } catch (error) {

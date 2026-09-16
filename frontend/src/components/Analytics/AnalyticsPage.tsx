@@ -437,26 +437,32 @@ function DeadStockSection() {
     }
   };
 
+  const filterStyles: Record<string, { active: string; count: string }> = {
+    '90days': { active: 'border-low/40 bg-low/5', count: 'text-low' },
+    '180days': { active: 'border-[#F97316]/40 bg-[#F97316]/5', count: 'text-[#F97316]' },
+    '365days': { active: 'border-danger/40 bg-danger/5', count: 'text-danger' },
+  };
+
   return (
     <div className="space-y-4">
       <Card title="Dead Stock Report">
         {/* Summary cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
           {[
-            { key: '90days', count: counts['90days'], color: 'low', label: '90+ days' },
-            { key: '180days', count: counts['180days'], color: '[#F97316]', label: '180+ days' },
-            { key: '365days', count: counts['365days'], color: 'danger', label: '365+ days' },
+            { key: '90days', count: counts['90days'], label: '90+ days' },
+            { key: '180days', count: counts['180days'], label: '180+ days' },
+            { key: '365days', count: counts['365days'], label: '365+ days' },
           ].map((item) => (
             <button
               key={item.key}
               onClick={() => setFilter(item.key as any)}
               className={`p-3 rounded-xl text-center border transition-all ${
                 filter === item.key
-                  ? `border-${item.color}/40 bg-${item.color}/5`
+                  ? filterStyles[item.key].active
                   : 'border-border-light bg-base/50 hover:bg-hover/50'
               }`}
             >
-              <div className={`text-2xl font-bold text-${item.color}`}>{item.count}</div>
+              <div className={`text-2xl font-bold ${filterStyles[item.key].count}`}>{item.count}</div>
               <div className="text-xs text-text-muted mt-0.5">{item.label}</div>
             </button>
           ))}

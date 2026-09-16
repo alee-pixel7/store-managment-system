@@ -83,10 +83,10 @@ export function ReverseConfirmModal({
                 {new Date(transaction.txn_date).toLocaleDateString('en-IN')} •{' '}
                 {transaction.txn_type}
               </div>
-              {transaction.items && (
+              {transaction.transaction_items && (
                 <div className="mt-1 text-text-secondary">
-                  {transaction.items.length} item(s) •{' '}
-                  {transaction.items.reduce((sum, i) => sum + i.quantity, 0)} total qty
+                  {transaction.transaction_items.length} item(s) •{' '}
+                  {transaction.transaction_items.reduce((sum, i) => sum + i.quantity, 0)} total qty
                 </div>
               )}
             </div>

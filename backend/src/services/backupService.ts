@@ -3,6 +3,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import prisma from '../lib/prisma';
 import * as crypto from 'crypto';
 
 const BACKUP_DIR = process.env.BACKUP_DIR || path.join(__dirname, '../../backups');
@@ -270,6 +271,11 @@ export async function restoreBackup(filename: string): Promise<{ safetyBackup: s
     // 2. Copy backup file over live database
     fs.copyFileSync(backupPath, DB_PATH);
     console.log(`✅ Restored from backup: ${filename}`);
+
+    // 3. Reconnect Prisma to pick up the restored database
+    await prisma.$disconnect();
+    await prisma.$connect();
+    console.log('🔄 Prisma reconnected after restore');
 
     return { safetyBackup: safetyName };
   } finally {
