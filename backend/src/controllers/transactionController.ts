@@ -11,11 +11,7 @@ import { validateStockInInput, validateStockOutInput, validateReturnInput } from
 export async function createStockIn(req: Request, res: Response) {
   try {
     const data = validateStockInInput(req.body);
-
-    // Get user ID from auth middleware (for now, use admin user ID = 1)
-    // TODO: Implement proper authentication middleware
-    const userId = 1;
-
+    const userId = (req as any).userId || 1;
     const transaction = await transactionService.createStockIn(data, userId);
     res.status(201).json(transaction);
   } catch (error) {
@@ -118,11 +114,7 @@ export async function createSupplier(req: Request, res: Response) {
 export async function createStockOut(req: Request, res: Response) {
   try {
     const data = validateStockOutInput(req.body);
-
-    // Get user ID from auth middleware (for now, use admin user ID = 1)
-    // TODO: Implement proper authentication middleware
-    const userId = 1;
-
+    const userId = (req as any).userId || 1;
     const result = await transactionService.createStockOut(data, userId);
     res.status(201).json(result);
   } catch (error) {
@@ -285,6 +277,41 @@ export async function reverseTransaction(req: Request, res: Response) {
       return res.status(404).json({ error: message });
     }
     if (message.includes('already reversed')) {
+      return res.status(400).json({ error: message });
+    }
+    res.status(500).json({ error: message });
+  }
+}
+
+// ============================================================
+// POST /api/transactions/by-no/reverse - Reverse by txn_no
+// ============================================================
+export async function reverseByTxnNo(req: Request, res: Response) {
+  try {
+    const { txn_no, reason, force } = req.body;
+
+    if (!txn_no || typeof txn_no !== 'string') {
+      return res.status(400).json({ error: 'Transaction number is required' });
+    }
+
+    if (!reason || typeof reason !== 'string' || reason.trim().length === 0) {
+      return res.status(400).json({ error: 'Reason is required for reversal' });
+    }
+
+    const userId = (req as any).userId || 1;
+
+    const reversal = await transactionService.reverseByTxnNo(txn_no.trim(), reason.trim(), userId, force === true);
+
+    res.status(201).json(reversal);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Internal server error';
+    if (message.includes('not found')) {
+      return res.status(404).json({ error: message });
+    }
+    if (message.includes('already reversed')) {
+      return res.status(400).json({ error: message });
+    }
+    if (message.includes('negative stock')) {
       return res.status(400).json({ error: message });
     }
     res.status(500).json({ error: message });

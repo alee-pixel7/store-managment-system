@@ -215,18 +215,29 @@ export function listBackups(): BackupInfo[] {
 // GET BACKUP PATH
 // ============================================================
 export function getBackupPath(filename: string): string | null {
-  const filePath = path.join(BACKUP_DIR, filename);
-
-  // Security: only allow backup files in the backup directory
+  // Security: only allow backup files matching pattern
   if (!filename.startsWith(BACKUP_PREFIX) || !filename.endsWith('.db')) {
     return null;
   }
 
-  if (!fs.existsSync(filePath)) {
+  // Security: prevent path traversal — basename must equal filename
+  if (path.basename(filename) !== filename) {
     return null;
   }
 
-  return filePath;
+  const filePath = path.join(BACKUP_DIR, filename);
+
+  // Security: resolved path must be inside BACKUP_DIR
+  const resolved = path.resolve(filePath);
+  if (!resolved.startsWith(path.resolve(BACKUP_DIR))) {
+    return null;
+  }
+
+  if (!fs.existsSync(resolved)) {
+    return null;
+  }
+
+  return resolved;
 }
 
 // ============================================================

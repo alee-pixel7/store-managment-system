@@ -215,20 +215,33 @@ async function findItemsBelowMinimum(
 }
 
 async function calculateStockAtTime(itemId: number, beforeTime: Date): Promise<number> {
-  const result = await prisma.transaction_items.aggregate({
+  const items = await prisma.transaction_items.findMany({
     where: {
       item_id: itemId,
       transaction: {
-        txn_date: {
-          lt: beforeTime,
-        },
+        txn_date: { lt: beforeTime },
         is_reversed: false,
       },
     },
-    _sum: {
+    select: {
       quantity: true,
+      transaction: { select: { txn_type: true } },
     },
   });
 
-  return result._sum.quantity || 0;
+  let stock = 0;
+  for (const ti of items) {
+    switch (ti.transaction.txn_type) {
+      case 'IN':
+      case 'RETURN':
+      case 'ADJUST':
+      case 'REVERSAL':
+        stock += ti.quantity;
+        break;
+      case 'OUT':
+        stock -= ti.quantity;
+        break;
+    }
+  }
+  return stock;
 }

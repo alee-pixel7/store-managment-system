@@ -1,5 +1,5 @@
-const CACHE_NAME = 'store-mgmt-v1';
-const API_CACHE = 'store-mgmt-api-v1';
+const CACHE_NAME = 'store-mgmt-v2';
+const API_CACHE = 'store-mgmt-api-v2';
 
 // App shell files to cache for offline
 const APP_SHELL = [
@@ -9,8 +9,16 @@ const APP_SHELL = [
   '/manifest.json',
 ];
 
-// Install: cache app shell
+function isDevMode() {
+  return self.location.hostname === 'localhost' || self.location.hostname === '127.0.0.1';
+}
+
+// Install: cache app shell (only in production)
 self.addEventListener('install', (event) => {
+  if (isDevMode()) {
+    self.skipWaiting();
+    return;
+  }
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL))
   );
@@ -29,7 +37,7 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch: network-first for API, cache-first for app shell
+// Fetch: skip caching entirely in dev mode
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
@@ -38,12 +46,14 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET') return;
   if (url.pathname.startsWith('/api/auth')) return;
 
+  // In dev mode: always go to network, never cache
+  if (isDevMode()) return;
+
   // API requests: network-first with short timeout
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          // Cache successful API responses (except auth)
           if (response.ok) {
             const clone = response.clone();
             caches.open(API_CACHE).then((cache) => cache.put(request, clone));
@@ -53,7 +63,6 @@ self.addEventListener('fetch', (event) => {
         .catch(() => {
           return caches.match(request).then((cached) => {
             if (cached) return cached;
-            // Return a simple offline message for API calls
             return new Response(
               JSON.stringify({ error: 'Offline — data may be stale' }),
               { status: 503, headers: { 'Content-Type': 'application/json' } }
@@ -64,25 +73,24 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // App shell: cache-first
+  // App shell: network-first in production
   event.respondWith(
-    caches.match(request).then((cached) => {
-      if (cached) return cached;
-      return fetch(request)
-        .then((response) => {
-          if (response.ok) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-          }
-          return response;
-        })
-        .catch(() => {
-          // Return offline page for navigation requests
+    fetch(request)
+      .then((response) => {
+        if (response.ok) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+        }
+        return response;
+      })
+      .catch(() => {
+        return caches.match(request).then((cached) => {
+          if (cached) return cached;
           if (request.mode === 'navigate') {
             return caches.match('/offline.html');
           }
           return new Response('Offline', { status: 503 });
         });
-    })
+      })
   );
 });

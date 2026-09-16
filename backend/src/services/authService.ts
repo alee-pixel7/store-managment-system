@@ -5,8 +5,26 @@ import prisma from '../lib/prisma';
 import * as bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
+import fs from 'fs';
+import path from 'path';
 
-const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(32).toString('hex');
+const JWT_SECRET_FILE = path.join(__dirname, '../../.jwt-secret');
+
+function getOrCreateJwtSecret(): string {
+  if (process.env.JWT_SECRET) return process.env.JWT_SECRET;
+  try {
+    if (fs.existsSync(JWT_SECRET_FILE)) {
+      return fs.readFileSync(JWT_SECRET_FILE, 'utf-8').trim();
+    }
+  } catch { /* ignore */ }
+  const secret = crypto.randomBytes(32).toString('hex');
+  try {
+    fs.writeFileSync(JWT_SECRET_FILE, secret, { mode: 0o600 });
+  } catch { /* ignore — will regenerate next time */ }
+  return secret;
+}
+
+const JWT_SECRET = getOrCreateJwtSecret();
 const JWT_EXPIRES_IN = '12h';
 
 // ============================================================

@@ -540,3 +540,85 @@ export async function reverseTransaction(
     return reversalTxn;
   });
 }
+
+// ============================================================
+// REVERSE TRANSACTION BY TXN_NO
+// ============================================================
+export async function reverseByTxnNo(
+  txnNo: string,
+  reason: string,
+  userId: number,
+  force: boolean = false
+) {
+  const original = await prisma.transactions.findFirst({
+    where: { txn_no: txnNo },
+    include: { transaction_items: true },
+  });
+
+  if (!original) {
+    throw new Error('Transaction not found');
+  }
+
+  if (original.is_reversed) {
+    throw new Error('Transaction is already reversed');
+  }
+
+  const year = new Date().getFullYear();
+
+  return prisma.$transaction(async (tx) => {
+    const txn_no = await generateTxnNo('REVERSAL', year, tx);
+
+    const reversalTxn = await tx.transactions.create({
+      data: {
+        txn_no,
+        txn_type: 'REVERSAL',
+        txn_date: new Date(),
+        supplier_id: original.supplier_id,
+        person_id: original.person_id,
+        department_id: original.department_id,
+        machine_id: original.machine_id,
+        purpose: original.purpose,
+        remarks: reason,
+        reverses_txn_id: original.id,
+        created_by: userId,
+      },
+    });
+
+    const affectedItemIds = new Set<number>();
+    for (const item of original.transaction_items) {
+      const reversalQty = (original.txn_type === 'IN' || original.txn_type === 'RETURN' || original.txn_type === 'ADJUST')
+        ? -item.quantity
+        : item.quantity;
+
+      await tx.transaction_items.create({
+        data: {
+          transaction_id: reversalTxn.id,
+          item_id: item.item_id,
+          quantity: reversalQty,
+          rate: item.rate,
+          line_remarks: `Reversal of ${original.txn_no}: ${reason}`,
+        },
+      });
+
+      affectedItemIds.add(item.item_id);
+    }
+
+    await tx.transactions.update({
+      where: { id: original.id },
+      data: { is_reversed: true },
+    });
+
+    for (const itemId of affectedItemIds) {
+      const newStock = await recalculateStock(itemId, tx);
+      if (newStock < 0 && !force) {
+        throw new Error(`Reversal blocked: item ${itemId} would have negative stock (${newStock})`);
+      }
+      await tx.items.update({
+        where: { id: itemId },
+        data: { current_stock: newStock },
+      });
+    }
+
+    return reversalTxn;
+  });
+}

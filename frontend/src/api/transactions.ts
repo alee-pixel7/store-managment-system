@@ -146,6 +146,13 @@ export async function reverseTransaction(txnId: number, reason: string): Promise
   });
 }
 
+export async function reverseTransactionByNo(txnNo: string, reason: string, force: boolean = false): Promise<Transaction> {
+  return authFetch<Transaction>('/transactions/by-no/reverse', {
+    method: 'POST',
+    body: JSON.stringify({ txn_no: txnNo, reason, force }),
+  });
+}
+
 // ============================================================
 // RETURN TRANSACTION API
 // ============================================================

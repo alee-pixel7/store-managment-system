@@ -2,15 +2,13 @@
 // Handles HTTP requests and responses for item operations
 
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import prisma from '../lib/prisma';
 import * as itemService from '../services/itemService';
 import {
   validateCreateItem,
   validateUpdateItem,
   validatePagination,
 } from '../validations/itemValidation';
-
-const prisma = new PrismaClient();
 
 // ============================================================
 // GET /api/items - List items with pagination and filters

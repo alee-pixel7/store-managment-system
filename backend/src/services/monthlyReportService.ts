@@ -255,23 +255,7 @@ async function calculateStockValueAtTime(beforeTime: Date): Promise<number> {
   let totalValue = 0;
 
   for (const item of items) {
-    // Get stock at this time
-    const result = await prisma.transaction_items.aggregate({
-      where: {
-        item_id: item.id,
-        transaction: {
-          txn_date: {
-            lt: beforeTime,
-          },
-          is_reversed: false,
-        },
-      },
-      _sum: {
-        quantity: true,
-      },
-    });
-
-    const stock = result._sum.quantity || 0;
+    const stock = await calculateStockAtTime(item.id, beforeTime);
     const rate = item.last_rate || 0;
     totalValue += stock * rate;
   }
@@ -323,20 +307,33 @@ async function findOutOfStockItems(
 }
 
 async function calculateStockAtTime(itemId: number, beforeTime: Date): Promise<number> {
-  const result = await prisma.transaction_items.aggregate({
+  const items = await prisma.transaction_items.findMany({
     where: {
       item_id: itemId,
       transaction: {
-        txn_date: {
-          lt: beforeTime,
-        },
+        txn_date: { lt: beforeTime },
         is_reversed: false,
       },
     },
-    _sum: {
+    select: {
       quantity: true,
+      transaction: { select: { txn_type: true } },
     },
   });
 
-  return result._sum.quantity || 0;
+  let stock = 0;
+  for (const ti of items) {
+    switch (ti.transaction.txn_type) {
+      case 'IN':
+      case 'RETURN':
+      case 'ADJUST':
+      case 'REVERSAL':
+        stock += ti.quantity;
+        break;
+      case 'OUT':
+        stock -= ti.quantity;
+        break;
+    }
+  }
+  return stock;
 }

@@ -112,18 +112,18 @@ function AppContent() {
         <nav className="bg-surface/70 backdrop-blur-xl border-b border-border-light print:hidden sticky top-0 z-40">
           {/* Gradient accent line at top */}
           <div className="h-[2px] bg-gradient-to-r from-transparent via-accent/40 to-transparent" />
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="flex items-center justify-between h-16">
+          <div className="max-w-7xl mx-auto pl-2 pr-6">
+            <div className="flex items-center justify-between h-20">
               {/* Logo */}
-              <div className="flex items-center gap-3 flex-shrink-0">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-accent to-accent-press flex items-center justify-center shadow-lg shadow-accent/20">
-                  <svg className="w-5 h-5 text-base" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+              <div className="flex items-center gap-3.5 flex-shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent to-accent-press flex items-center justify-center shadow-lg shadow-accent/20">
+                  <svg className="w-5.5 h-5.5 text-base" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
                     <path d="M12 2L2 7l10 5 10-5-10-5z" />
                     <path d="M2 17l10 5 10-5" />
                     <path d="M2 12l10 5 10-5" />
                   </svg>
                 </div>
-                <div className="hidden xl:block">
+                <div className="hidden lg:block">
                   <div className="text-sm font-bold text-text tracking-wide leading-tight">STORE MANAGEMENT</div>
                   <div className="text-[9px] text-text-muted tracking-[0.2em] uppercase">Inventory Control</div>
                 </div>
@@ -131,7 +131,7 @@ function AppContent() {
 
               {/* Nav Items */}
               <LayoutGroup>
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-2">
                   {navButtons.filter(b => b.show).map((btn) => {
                     if (btn.isDropdown) {
                       const isActive = currentPage === 'daily-report' || currentPage === 'monthly-report';
@@ -139,21 +139,21 @@ function AppContent() {
                         <div key={btn.id} className="relative" ref={reportsRef}>
                           <button
                             onClick={() => setShowReports(!showReports)}
-                            className={`relative flex flex-col items-center gap-1.5 px-4 py-3 rounded-xl transition-all duration-150 group ${
-                              isActive ? 'text-accent' : 'text-text-secondary hover:text-text'
+                            className={`relative flex flex-col items-center gap-2 px-5 py-3.5 rounded-xl transition-all duration-150 group ${
+                              isActive ? 'text-accent bg-accent/8' : 'text-text-secondary hover:text-text hover:bg-hover'
                             }`}
                           >
                             {isActive && (
                               <motion.div
                                 layoutId="active-underline"
-                                className="absolute bottom-0 left-2 right-2 h-0.5 bg-gradient-to-r from-accent to-accent-press rounded-full shadow-[0_0_8px_rgba(232,160,53,0.4)]"
+                                className="absolute bottom-0 left-3 right-3 h-[3px] bg-gradient-to-r from-accent to-accent-press rounded-full shadow-[0_0_10px_rgba(232,160,53,0.4)]"
                                 transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                               />
                             )}
                             <svg className={`w-6 h-6 transition-transform duration-150 ${isActive ? 'scale-110' : 'group-hover:scale-105'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
                               <path strokeLinecap="round" strokeLinejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
-                            <span className="text-xs font-medium leading-tight flex items-center gap-1">
+                            <span className="text-[11px] font-medium leading-tight flex items-center gap-1">
                               Reports
                               <motion.svg
                                 animate={{ rotate: showReports ? 180 : 0 }}
@@ -222,21 +222,21 @@ function AppContent() {
                       <button
                         key={btn.id}
                         onClick={() => handleNavigate(btn.id)}
-                        className={`relative flex flex-col items-center gap-1.5 px-4 py-3 rounded-xl transition-all duration-150 group ${
-                          isActive ? 'text-accent' : 'text-text-secondary hover:text-text'
+                        className={`relative flex flex-col items-center gap-2 px-5 py-3.5 rounded-xl transition-all duration-150 group ${
+                          isActive ? 'text-accent bg-accent/8' : 'text-text-secondary hover:text-text hover:bg-hover'
                         }`}
                       >
                         {isActive && (
                           <motion.div
                             layoutId="active-underline"
-                            className="absolute bottom-0 left-2 right-2 h-0.5 bg-gradient-to-r from-accent to-accent-press rounded-full shadow-[0_0_8px_rgba(232,160,53,0.4)]"
+                            className="absolute bottom-0 left-3 right-3 h-[3px] bg-gradient-to-r from-accent to-accent-press rounded-full shadow-[0_0_10px_rgba(232,160,53,0.4)]"
                             transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                           />
                         )}
                         <svg className={`w-6 h-6 transition-transform duration-150 ${isActive ? 'scale-110' : 'group-hover:scale-105'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
                           {icon}
                         </svg>
-                        <span className="text-xs font-medium leading-tight">{btn.label}</span>
+                        <span className="text-[11px] font-medium leading-tight">{btn.label}</span>
                       </button>
                     );
                   })}
@@ -244,20 +244,20 @@ function AppContent() {
               </LayoutGroup>
 
               {/* User Section */}
-              <div className="flex items-center gap-3 flex-shrink-0">
+              <div className="flex items-center gap-3.5 flex-shrink-0">
                 <div className="hidden md:block text-right">
                   <div className="text-sm font-medium text-text leading-tight">{user?.full_name}</div>
                   <span className="text-[9px] font-bold text-accent bg-accent-dim px-2 py-0.5 rounded-full border border-accent/15 uppercase tracking-wider">{user?.role}</span>
                 </div>
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-accent to-accent-press flex items-center justify-center text-base font-bold text-base shadow-lg shadow-accent/15">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent to-accent-press flex items-center justify-center text-base font-bold text-base shadow-lg shadow-accent/15">
                   {user?.full_name?.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
                 </div>
                 <button
                   onClick={logout}
-                  className="p-2 text-text-secondary hover:text-danger hover:bg-danger-dim rounded-xl transition-all duration-150"
+                  className="p-2.5 text-text-secondary hover:text-danger hover:bg-danger-dim rounded-xl transition-all duration-150"
                   title="Logout"
                 >
-                  <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
                   </svg>
                 </button>

@@ -1,12 +1,11 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getDailyReport } from '../../api/reports';
-import { reverseTransaction } from '../../api/transactions';
+import { reverseTransactionByNo } from '../../api/transactions';
 import { downloadExport } from '../../api/export';
 import type { DailyReport } from '../../api/reports';
 
 interface ReverseTarget {
-  txnId: number;
   txnNo: string;
   type: 'receipt' | 'issue';
 }
@@ -24,6 +23,7 @@ export function DailyReportPage() {
   const [reverseReason, setReverseReason] = useState('');
   const [reversing, setReversing] = useState(false);
   const [reverseSuccess, setReverseSuccess] = useState<string | null>(null);
+  const [negativeStockWarning, setNegativeStockWarning] = useState<string | null>(null);
 
   const handleGenerateReport = async () => {
     setLoading(true);
@@ -53,20 +53,27 @@ export function DailyReportPage() {
     }
   };
 
-  const handleReverse = async () => {
+  const handleReverse = async (force: boolean = false) => {
     if (!reverseTarget || !reverseReason.trim()) return;
     const target = reverseTarget;
     setReversing(true);
     try {
-      await reverseTransaction(target.txnId, reverseReason.trim());
+      await reverseTransactionByNo(target.txnNo, reverseReason.trim(), force);
       setReverseTarget(null);
+      setNegativeStockWarning(null);
       setReverseReason('');
       setReverseSuccess(`Transaction ${target.txnNo} reversed successfully`);
       await handleGenerateReport();
     } catch (err) {
-      setReverseTarget(null);
-      setReverseReason('');
-      setError(err instanceof Error ? err.message : 'Failed to reverse transaction');
+      const msg = err instanceof Error ? err.message : 'Failed to reverse transaction';
+      if (msg.includes('negative stock') && !force) {
+        setNegativeStockWarning(msg);
+      } else {
+        setReverseTarget(null);
+        setNegativeStockWarning(null);
+        setReverseReason('');
+        setError(msg);
+      }
     } finally {
       setReversing(false);
     }
@@ -385,7 +392,7 @@ export function DailyReportPage() {
                           <td className="px-4 py-3 text-text-secondary text-sm font-mono">{receipt.invoiceNo}</td>
                           <td className="px-4 py-3 text-center print:hidden">
                             <button
-                              onClick={() => setReverseTarget({ txnId: receipt.txnId, txnNo: receipt.txnNo, type: 'receipt' })}
+                              onClick={() => setReverseTarget({ txnNo: receipt.txnNo, type: 'receipt' })}
                               className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-semibold text-low bg-low/10 border border-low/20 rounded-lg hover:bg-low/20 transition-all"
                               title="Reverse this transaction"
                             >
@@ -444,7 +451,7 @@ export function DailyReportPage() {
                           <td className="px-4 py-3 text-text-secondary text-sm max-w-[200px] truncate">{issue.purpose}</td>
                           <td className="px-4 py-3 text-center print:hidden">
                             <button
-                              onClick={() => setReverseTarget({ txnId: issue.txnId, txnNo: issue.txnNo, type: 'issue' })}
+                              onClick={() => setReverseTarget({ txnNo: issue.txnNo, type: 'issue' })}
                               className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-semibold text-low bg-low/10 border border-low/20 rounded-lg hover:bg-low/20 transition-all"
                               title="Reverse this transaction"
                             >
@@ -625,6 +632,70 @@ export function DailyReportPage() {
                       </svg>
                     )}
                     {reversing ? 'Reversing...' : 'Yes, Reverse'}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {negativeStockWarning && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[65] flex items-center justify-center p-4"
+          >
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => { setNegativeStockWarning(null); setReverseTarget(null); setReverseReason(''); }} />
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+              className="relative glass rounded-2xl border border-danger/20 shadow-2xl w-full max-w-md overflow-hidden"
+            >
+              <div className="p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 rounded-xl bg-danger/10 flex items-center justify-center shadow-lg shadow-danger/10">
+                    <svg className="w-6 h-6 text-danger" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-danger">Negative Stock Warning</h3>
+                    <p className="text-sm text-text-secondary">{reverseTarget?.txnNo}</p>
+                  </div>
+                </div>
+
+                <p className="text-sm text-text-secondary mb-4">
+                  {negativeStockWarning}. This will allow stock to go negative. Are you sure you want to continue?
+                </p>
+
+                <div className="flex gap-3 justify-end">
+                  <button
+                    onClick={() => { setNegativeStockWarning(null); setReverseTarget(null); setReverseReason(''); }}
+                    className="px-5 py-2.5 text-sm font-medium text-text-secondary border border-border rounded-xl hover:bg-hover min-h-[44px] transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => handleReverse(true)}
+                    disabled={reversing}
+                    className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-danger to-danger/80 rounded-xl hover:shadow-lg hover:shadow-danger/20 disabled:opacity-50 min-h-[44px] transition-all"
+                  >
+                    {reversing ? (
+                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                    ) : (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                      </svg>
+                    )}
+                    {reversing ? 'Force Reversing...' : 'Force Reverse'}
                   </button>
                 </div>
               </div>

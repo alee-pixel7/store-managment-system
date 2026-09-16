@@ -18,7 +18,7 @@ import auditRoutes from './routes/auditRoutes';
 import analyticsRoutes from './routes/analyticsRoutes';
 import reorderRoutes from './routes/reorderRoutes';
 import { authenticate } from './middleware/auth';
-import { startPeriodicBackup } from './services/backupService';
+import { startPeriodicBackup, stopPeriodicBackup } from './services/backupService';
 
 // Parse --data-dir argument
 const dataDirArg = process.argv.find(arg => arg.startsWith('--data-dir='));
@@ -86,10 +86,21 @@ async function startServer() {
     // Start periodic backup
     startPeriodicBackup();
 
-    app.listen(PORT, '0.0.0.0', () => {
+    const server = app.listen(PORT, '0.0.0.0', () => {
       console.log(`🚀 Server running on http://0.0.0.0:${PORT}`);
       console.log(`📊 API available at http://localhost:${PORT}/api`);
     });
+
+    // Graceful shutdown
+    const shutdown = async () => {
+      console.log('\n🛑 Shutting down...');
+      stopPeriodicBackup();
+      server.close();
+      await prisma.$disconnect();
+      process.exit(0);
+    };
+    process.on('SIGINT', shutdown);
+    process.on('SIGTERM', shutdown);
   } catch (error) {
     console.error('❌ Failed to start server:', error);
     process.exit(1);

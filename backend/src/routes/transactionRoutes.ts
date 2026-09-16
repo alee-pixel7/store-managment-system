@@ -32,6 +32,9 @@ router.post('/departments', requireRole('ASSISTANT'), transactionController.crea
 router.get('/machines', transactionController.listMachines);
 router.post('/machines', requireRole('ASSISTANT'), transactionController.createMachine);
 
+// Reverse by txn_no (requires ADMIN or STORE_INCHARGE role) - MUST be before /:id routes
+router.post('/by-no/reverse', requireRole('STORE_INCHARGE'), transactionController.reverseByTxnNo);
+
 // Reverse transaction (requires ADMIN or STORE_INCHARGE role)
 router.post('/:id/reverse', requireRole('STORE_INCHARGE'), transactionController.reverseTransaction);
 

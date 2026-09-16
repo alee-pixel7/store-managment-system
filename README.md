@@ -6,11 +6,11 @@ Complete inventory management system for machine-parts stores. Replaces Excel-ba
 
 | Layer | Technology |
 |-------|------------|
-| Frontend | React 19, TypeScript, Vite 8, Tailwind CSS 4, Recharts |
+| Frontend | React 19, TypeScript, Vite 8, Tailwind CSS 4, framer-motion, Recharts |
 | Backend | Node.js, Express, Prisma ORM |
 | Database | SQLite |
-| Auth | JWT (12hr expiry), bcryptjs |
-| PDF | PDFKit |
+| Auth | JWT (12hr expiry, persisted secret), bcryptjs |
+| PDF | PDFKit (premium gold-themed exports) |
 | Excel | ExcelJS |
 | Desktop | Tauri 2 (optional — Windows installer) |
 
@@ -28,341 +28,156 @@ Phone access: `http://<your-PC-IP>:3000`
 
 ## Features — Complete List
 
-### 1. Dashboard
+### 1. Dashboard (Premium)
 
-**What it shows:**
-- Total active items count
-- Low stock items count (items where `current_stock <= min_stock`)
-- Out of stock items count (`current_stock = 0`)
-- Total stock value (sum of all items' stock)
-- Today's Stock In transactions count + total quantity
-- Today's Issue transactions count + total quantity
-- Recent 10 transactions (clickable — navigates to relevant page)
-- Low stock alert list (clickable — opens item detail)
-
-**What's clickable:**
-- All 6 stat cards navigate to relevant pages
-- "Stock In" / "Issue" buttons in header
-- Recent Activity transactions → Stock In/Out/Return pages
-- Low Stock Alert items → Item Detail page
-
----
+- **Greeting header** with user name + live date/time
+- **Quick summary banner** — total items, stock in today, issued today, alerts
+- **4 big stat cards** — total items (📦), stock in (📥), issued out (📤), low stock (⚠️)
+- **2 wide activity cards** — Stock In Today, Issued Out Today (clickable → Stock In / Issue pages)
+- **Recent Activity** — timeline design with colored dots + vertical line + emoji type badges
+- **Low Stock Alert** — premium empty state with animated shield + glow; stock level progress bars (green/yellow/red)
+- All stat cards clickable → navigate to relevant pages
 
 ### 2. Items Management
 
-**What it does:**
-- View all 1,019 items in a searchable, filterable table
-- Add new items with code, name, category, brand, unit, min stock, rack location
-- Edit existing items
-- Soft delete (deactivate) items
+- View all items in a searchable, filterable table
+- Add/edit/soft-delete items
 - View item detail with full transaction history (ledger)
+- Smart fuzzy search — matches code, name, brand, aliases (ignores spaces, dashes, case)
+- 31 categories with item counts
 - Export items list as Excel or PDF
-
-**Search:**
-- Smart fuzzy search — matches item code, name, brand, aliases
-- Ignores spaces, dashes, case
-- Example: typing "Siemens relay" finds "SIEMEN RELAY"
-
-**Filters:**
-- Category dropdown (31 categories)
-- Low Stock Only checkbox
-- Out of Stock checkbox
-
-**Item Detail page shows:**
-- Item info (code, name, brand, unit, stock, min stock, rack location)
-- Aliases (alternative names)
-- Transaction ledger with running balance
-- Date range and type filters on ledger
-
-**Categories (31):**
-
-| Category | Items | Category | Items |
-|----------|-------|----------|-------|
-| 3 Layer Extruder | 107 | PPRC & GI Fittings | 91 |
-| Bag Making | 90 | General Store | 43 |
-| Shanxi Barren | 70 | Cloth & Wrapping | 27 |
-| Contactors & Relays | 65 | Bearings | 27 |
-| Breakers & Fuses | 61 | Pneumatic & Valves | 26 |
-| Comexi Lamination | 59 | Electrical - Power | 21 |
-| Slitting | 50 | Mono Layer Extruder | 21 |
-| UV Reborn | 46 | Diapper Cutting | 21 |
-| Sinomech | 45 | Electrical - Wiring | 17 |
-| Worldly Gravoure | 42 | Belts & Chains | 16 |
-| Lubricants & Chemicals | 14 | Cutting & Grinding | 13 |
-| Tape & Adhesives | 13 | Metalizer | 12 |
-| PLCs & Controllers | 10 | Packaging & Storage | 5 |
-| Printing & Copying | 4 | Sensors & Proximity | 1 |
-| Oil Seals & O-Rings | 2 | | |
-
----
 
 ### 3. Stock IN (Receipts)
 
-**What it does:**
 - Record incoming stock from suppliers
 - Fields: Date, Supplier, Invoice Number, Remarks
-- Add multiple line items per transaction
-- Each line: Item (search), Quantity, Rate, Line Remarks
-- Auto-generates transaction number (format: `IN-2026-0001`)
-- Updates `current_stock` automatically
-- Records `last_rate` on item for future reference
-
-**Recent Stock In sidebar:**
-- Shows last 10 stock-in transactions
-- Click any to see details
-
----
+- Multiple line items per transaction (Item search, Quantity, Rate, Remarks)
+- Auto-generates `IN-2026-0001` format
+- **Premium form:** glass card, icon-prefix inputs, gradient table header, animated toasts
+- Recent 10 transactions in premium sidebar
 
 ### 4. Stock OUT (Issue)
 
-**What it does:**
 - Issue stock to people/departments
-- Fields: Date, Issued To (Person), Department, Machine, Purpose, Remarks
-- Add multiple line items per transaction
-- Each line: Item (search), Quantity, Line Remarks
-- **Negative stock allowed** with confirmation dialog
-- Auto-generates transaction number (format: `OUT-2026-0001`)
-- Updates `current_stock` automatically
-
-**Negative Stock Warning:**
-- When issuing more than available stock, an amber confirmation dialog appears
-- Shows item name, current stock, and requested quantity
-- Must confirm to proceed
-
-**Recent Issues sidebar:**
-- Shows last 10 issue transactions
-
----
+- Fields: Date, Issued To, Department, Machine, Purpose, Remarks
+- **Negative stock allowed** with glass confirmation dialog (spring animation)
+- Auto-generates `OUT-2026-0001` format
+- **Premium form:** same design as Stock In with danger-themed accents
 
 ### 5. Stock Return
 
-**What it does:**
 - Record items returned by people/departments back into stock
 - Fields: Date, Supplier (optional), Remarks
-- Add multiple line items per transaction
-- Each line: Item (search), Quantity
-- Auto-generates transaction number (format: `RET-2026-0001`)
-- Updates `current_stock` automatically
-
-**Recent Returns sidebar:**
-- Shows last 10 return transactions
-
----
+- Multiple line items per transaction
+- Auto-generates `RETURN-2026-0001` format
+- **Premium form:** amber-themed, glass cards, gradient save button
 
 ### 6. Stock Reversal
 
-**What it does:**
 - Correct mistakes without deleting original transactions
 - Creates a REVERSAL transaction that offsets the original
-- Original transaction is marked as `is_reversed = true`
-- Stock is recalculated correctly
+- Original marked as `is_reversed = true`
+- **Reverse by transaction number** (POST `/api/transactions/by-no/reverse`)
+- Negative stock block with **force override** option (red warning dialog)
 
-**How to reverse:**
-- Go to Items → click item code → Item Detail → Ledger
-- Click "Reverse" on any transaction
-- Confirm in the dialog
-- System creates a REVERSAL entry
+### 7. Reports
 
-**Important:** Stock is NEVER allowed to go negative during reversal. If reversal would cause negative stock, it's blocked.
+**Daily Report:**
+- Date picker → generates receipts, issues, items below minimum
+- Summary cards with icons
+- **Reverse button** per receipt/issue row with confirmation dialog
+- Export: Excel / PDF / Print
 
----
+**Monthly Report:**
+- Month/year picker → department consumption, machine consumption, top 20 items, out-of-stock
+- Summary cards with icons
+- Export: Excel / PDF / Print
 
-### 7. Item Ledger
+### 8. Export (Premium PDFs)
 
-**What it shows:**
-- Complete transaction history for any item
-- Running balance after each transaction
-- Columns: Date, Txn No, Type, In Qty, Out Qty, Running Balance, Rate, Party, Purpose, Remarks
-- Filtered by date range and transaction type
+**Gold-themed PDF design:**
+- Gold gradient header bar with store name + subtitle
+- Colored section headers (green for receipts, red for issues, amber for alerts)
+- Per-section table header colors
+- Warm gold-tinted alternating rows
+- 2x2 summary cards with big numbers
+- Gold accent lines + premium footer with page numbers
 
-**Access:** Items → click item code → Item Detail → Ledger tab
-
----
-
-### 8. Daily Report
-
-**What it does:**
-- Generate report for any specific date
-- Shows:
-  - **Summary:** Total receipts, issues, returns, transactions
-  - **Receipts (Stock IN):** Item, qty, rate, total, supplier, invoice
-  - **Issues (Stock OUT):** Item, qty, issued to, dept, machine, purpose
-  - **Items Below Minimum:** Items that crossed below min_stock that day
-- Export as Excel or PDF
-- Print-friendly A4 layout
-
-**Access:** Reports → Daily Report
-
----
-
-### 9. Monthly Report
-
-**What it does:**
-- Generate report for any month/year
-- Shows:
-  - **Summary:** Opening stock value, closing stock value, net change
-  - **Department Consumption:** Which department consumed what
-  - **Machine Consumption:** Which machine consumed what
-  - **Top 20 Consumed Items:** Most issued items
-  - **Out of Stock Days:** Items that hit zero stock
-- Export as Excel or PDF
-- Print-friendly A4 layout
-
-**Access:** Reports → Monthly Report
-
----
-
-### 10. Export (Excel & PDF)
-
-**Available exports:**
 | Export | Format | Access |
 |--------|--------|--------|
-| Items List | Excel / PDF | Items page → Excel/PDF button |
-| Daily Report | Excel / PDF | Daily Report page → Excel/PDF button |
-| Monthly Report | Excel / PDF | Monthly Report page → Excel/PDF button |
-| Item Ledger | Excel / PDF | Item Detail → Ledger → Excel/PDF button |
+| Items List | Excel / PDF | Items page |
+| Daily Report | Excel / PDF | Reports → Daily |
+| Monthly Report | Excel / PDF | Reports → Monthly |
+| Item Ledger | Excel / PDF | Item Detail → Ledger |
 
-**PDF features:**
-- Dynamic row heights (no text overlap)
-- Custom column widths (Name column wider for long item names)
-- Category column included in items PDF
-- Alternating row backgrounds
-- Page numbers
-- Print stylesheet (hides nav/buttons)
+### 9. Import System
 
----
-
-### 11. Import System
-
-**Multi-sheet Excel import:**
-- Upload Excel file with multiple sheets
-- Preview each sheet's data
-- Map columns to system fields
+- Multi-sheet Excel import with column mapping
+- Daily Report import with fuzzy item matching
 - Validate before importing
-- Import items with categories
+- Import items, stock transactions, and daily reports
 
-**Daily Report import:**
-- Upload DAILY REPORT.xlsx
-- Fuzzy matches item codes/names
-- Creates transactions automatically
+### 10. Physical Stock Audit
 
-**How to import:**
-1. Go to Import page
-2. Upload Excel file
-3. Select sheet (if multi-sheet)
-4. Map columns
-5. Preview and confirm
-
----
-
-### 12. Physical Stock Audit
-
-**Workflow:**
-1. Start Audit → system snapshots current stock quantities
-2. Count items physically (mobile-friendly screen)
-3. Enter counted quantity for each item
-4. System calculates variance (counted - system)
-5. Finalise → auto-generates ADJUST transactions for differences
-
-**Access:** Audit → Start New Audit
-
-**Features:**
-- Search items while counting
+- Start audit → system snapshots current stock
+- Count items physically (mobile-friendly)
 - Color-coded variance (green = match, red = mismatch)
-- Skip items (count later)
-- Final audit report
+- Finalise → auto-generates ADJUST transactions
 
----
-
-### 13. Analytics
-
-**6 analytics views:**
+### 11. Analytics (6 Views)
 
 | View | What it shows |
 |------|---------------|
-| **Consumption Trends** | Per-item line chart over 12 months |
-| **Machine-wise Consumption** | Bar chart comparing machines |
-| **Unusual Consumption** | Machines >50% above 6-month average |
-| **Dead Stock** | Items with no movement in 90/180/365 days + tied-up value |
-| **Stock Value Trend** | 12-month stock value line chart |
-| **Smart Reorder Points** | Suggested min_stock based on consumption + lead time |
+| Consumption Trends | Per-item line chart over 12 months |
+| Machine-wise Consumption | Bar chart comparing machines |
+| Unusual Consumption | Machines >50% above 6-month average |
+| Dead Stock | Items with no movement (90/180/365 days) |
+| Stock Value Trend | 12-month stock value line chart |
+| Smart Reorder Points | Suggested min_stock based on consumption + lead time |
 
-**Smart Reorder Points — How it works:**
-- Analyzes last 6 months of OUT transactions
-- Formula: `suggestedMin = (avg monthly consumption × lead time / 30) + safety buffer`
-- Safety buffer uses 1.5σ (93% service level)
-- Shows: Current Min, Suggested Min, Diff, Avg Monthly, Lead Time
-- Click "Accept" to update an item's min_stock
-- Bulk accept available for multiple items
+### 12. Backup System
 
----
+- Automatic backup on startup + every 24 hours
+- Max 3 backups per day, 30-day retention
+- Manual backup via Settings
+- Download backup files
+- **Path traversal protection** on download endpoint
 
-### 14. Backup System
-
-**What it does:**
-- Automatic backup on server startup
-- Automatic backup every 24 hours
-- Manual backup via Settings page
-- Max 3 backups per day (oldest deleted automatically)
-- 30-day retention (older backups deleted)
-- First backup of each month kept permanently
-
-**Location:** `backend/backups/`
-
-**Download:** Settings → Backup → click "Download" next to any backup
-
----
-
-### 15. Authentication & Roles
-
-**Roles:**
+### 13. Authentication & Roles
 
 | Role | Permissions |
 |------|-------------|
-| **ADMIN** | Everything + Settings + Delete items |
-| **STORE_INCHARGE** | Stock ops + Reversals + Items CRUD + Reorder accept |
-| **ASSISTANT** | Stock IN/OUT + View reports |
-| **VIEWER** | Read only |
+| ADMIN | Everything + Settings + Delete items |
+| STORE_INCHARGE | Stock ops + Reversals + Items CRUD + Reorder accept |
+| ASSISTANT | Stock IN/OUT + View reports |
+| VIEWER | Read only |
 
-**Auth flow:**
-- Login returns JWT token (12hr expiry)
-- Token stored in localStorage
-- All API requests include `Authorization: Bearer <token>`
-- 401 response → auto logout
+- JWT persisted to disk (survives server restarts)
+- 12hr token expiry
+- Role-based access control on all routes
 
----
-
-### 16. Dark Industrial Theme
+### 14. Premium Dark Industrial Theme
 
 **Design system — "control panel of good machinery":**
 
 | Element | Color | Usage |
 |---------|-------|-------|
-| Base | `#0D0F14` | Page background (deepest) |
-| Surface | `#161A21` | Cards, panels |
-| Elevated | `#1F242D` | Modals, table headers |
-| Raised | `#272D38` | Highest depth |
-| Accent | `#FFA940` | Buttons, active nav, links |
-| OK | `#3FB950` | Stock ok |
-| Low | `#D9A017` | Low stock |
-| Danger | `#E5484D` | Out of stock |
+| Base | `#0B0D11` | Page background |
+| Surface | `#14161C` | Cards, panels |
+| Elevated | `#1C1F26` | Modals, table headers |
+| Accent | `#E8A035` | Buttons, active nav, links (gold) |
+| OK | `#4ADE80` | Stock ok (green) |
+| Low | `#F59E0B` | Low stock (amber) |
+| Danger | `#EF4444` | Out of stock (red) |
 
 **Features:**
-- 4-layer depth system with edge highlights
-- CSS custom properties + Tailwind `@theme`
-- Mobile responsive with bottom navigation
+- Glass morphism (backdrop-blur) on cards, dialogs, toasts
+- framer-motion page transitions, stagger animations, spring dialogs
+- Animated number count-up on stat cards
+- LayoutGroup animated nav underline with layoutId
+- Mobile responsive with bottom navigation + animated indicator
 - Print stylesheet (clean A4, no UI elements)
-
----
-
-### 17. Mobile / PWA
-
-**Mobile features:**
-- Bottom navigation bar (Home, Issue, Return, Reports, Audit, Analytics)
-- Touch-friendly inputs (min 44px height)
-- Responsive grid layouts
-- Safe area padding for notched phones
-- Installable as PWA
+- Service worker disabled in dev mode (prevents stale CSS)
 
 ---
 
@@ -376,12 +191,10 @@ Phone access: `http://<your-PC-IP>:3000`
 
 ```bash
 # Backend
-cd backend
-npm install
+cd backend && npm install
 
 # Frontend
-cd ../frontend
-npm install
+cd ../frontend && npm install
 ```
 
 ### 2. Setup Database
@@ -405,7 +218,6 @@ node src/scripts/reimport-clean.js
 
 ```bash
 # Option A — One command
-cd ..
 npm run dev
 
 # Option B — Two terminals
@@ -441,73 +253,59 @@ store management system/
 │   ├── prisma/
 │   │   ├── schema.prisma          # Database schema (13 tables)
 │   │   ├── dev.db                 # SQLite database
-│   │   ├── seed.ts                # Admin user only
-│   │   └── migrations/
+│   │   └── seed.ts                # Admin user only
 │   ├── src/
-│   │   ├── index.ts               # Express entry point
-│   │   ├── lib/prisma.ts          # Prisma client
+│   │   ├── index.ts               # Express entry + graceful shutdown
+│   │   ├── lib/prisma.ts          # Prisma singleton client
 │   │   ├── middleware/auth.ts     # JWT auth + role checks
-│   │   ├── services/              # Business logic
-│   │   │   ├── itemService.ts         # Item CRUD + search
-│   │   │   ├── transactionService.ts  # Stock IN/OUT/Return/Reversal
-│   │   │   ├── reportService.ts       # Daily report data
-│   │   │   ├── monthlyReportService.ts # Monthly report data
-│   │   │   ├── dashboardService.ts    # Dashboard summary
-│   │   │   ├── analyticsService.ts    # Analytics calculations
-│   │   │   ├── reorderService.ts      # Smart reorder points
-│   │   │   ├── auditService.ts        # Physical audit
-│   │   │   ├── backupService.ts       # Database backup
-│   │   │   ├── importService.ts       # Excel import
-│   │   │   ├── pdfExportService.ts    # PDF generation
-│   │   │   ├── excelExportService.ts  # Excel generation
-│   │   │   ├── authService.ts         # Login, JWT
-│   │   ├── utils/                 # Utility functions
-│   │   │   └── stock.ts              # Stock calculation helpers
-│   │   ├── controllers/           # HTTP handlers
-│   │   ├── routes/                # API routes
-│   │   ├── scripts/               # Import scripts
-│   │   └── validations/           # Input validation
-│   ├── backups/                   # Automatic backups
-│   └── reports/                   # Generated report PDFs
+│   │   ├── services/
+│   │   │   ├── itemService.ts
+│   │   │   ├── transactionService.ts   # Stock IN/OUT/Return/Reversal (by ID + by txn_no)
+│   │   │   ├── reportService.ts        # Daily report (correct stock calculation)
+│   │   │   ├── monthlyReportService.ts # Monthly report (correct stock calculation)
+│   │   │   ├── dashboardService.ts
+│   │   │   ├── analyticsService.ts
+│   │   │   ├── reorderService.ts
+│   │   │   ├── auditService.ts
+│   │   │   ├── backupService.ts        # Path traversal protected
+│   │   │   ├── importService.ts
+│   │   │   ├── pdfExportService.ts     # Premium gold-themed PDFs
+│   │   │   ├── excelExportService.ts
+│   │   │   └── authService.ts          # Persisted JWT secret
+│   │   ├── controllers/
+│   │   ├── routes/
+│   │   ├── validations/
+│   │   ├── utils/stock.ts              # recalculateStock, generateTxnNo
+│   │   └── scripts/                    # Import scripts
+│   └── backups/                        # Automatic backups
 │
 ├── frontend/
 │   ├── src/
-│   │   ├── App.tsx                # Main app with routing
-│   │   ├── index.css              # Theme (CSS vars + Tailwind @theme)
-│   │   ├── api/                   # API clients
-│   │   │   ├── fetch.ts               # Auth-aware fetch wrapper
-│   │   │   ├── items.ts               # Items API
-│   │   │   ├── transactions.ts        # Transactions API
-│   │   │   ├── reports.ts             # Reports API
-│   │   │   ├── dashboard.ts           # Dashboard API
-│   │   │   ├── analytics.ts           # Analytics API
-│   │   │   ├── reorder.ts             # Reorder API
-│   │   │   ├── backup.ts              # Backup API
-│   │   │   ├── import.ts              # Import API
-│   │   │   ├── export.ts              # Export/download API
-│   │   │   └── audit.ts               # Audit API
+│   │   ├── App.tsx                     # Nav, routing, AnimatePresence
+│   │   ├── index.css                   # @theme block + glass utilities
+│   │   ├── lib/motion.ts               # Animation presets
+│   │   ├── api/                        # API clients (authFetch wrapper)
 │   │   ├── contexts/AuthContext.tsx
-│   │   ├── hooks/                 # useDebounce, useIsMobile
+│   │   ├── hooks/                      # useDebounce, useIsMobile
 │   │   └── components/
-│   │       ├── Auth/              # LoginPage
-│   │       ├── Dashboard/         # DashboardPage, StatCards, LowStockAlert, RecentActivity
-│   │       ├── Items/             # ItemsPage, ItemsTable, ItemDetailPage, ItemModal, ItemLedger, Pagination
-│   │       ├── Transactions/      # StockInPage, StockOutPage, StockReturnPage, Forms, Selects
-│   │       ├── Reports/           # DailyReportPage, MonthlyReportPage
-│   │       ├── Import/            # ImportWizard
-│   │       ├── Settings/          # BackupSettings
-│   │       ├── Audit/             # AuditListPage, AuditCountPage
-│   │       ├── Analytics/         # AnalyticsPage
-│   │       ├── Reorder/           # ReorderPointsPage
-│   │       └── Layout/            # MobileNav, LoadingScreen
-│   └── dist/                      # Production build
+│   │       ├── Auth/LoginPage.tsx       # Premium login
+│   │       ├── Dashboard/              # Premium dashboard (4+2 layout)
+│   │       ├── Items/                  # Items page + detail + ledger
+│   │       ├── Transactions/           # Stock In/Out/Return (premium forms)
+│   │       ├── Reports/                # Daily + Monthly (with reverse)
+│   │       ├── Import/ImportWizard.tsx
+│   │       ├── Settings/BackupSettings.tsx
+│   │       ├── Audit/                  # Physical audit
+│   │       ├── Analytics/AnalyticsPage.tsx
+│   │       ├── Reorder/ReorderPointsPage.tsx
+│   │       └── Layout/                 # MobileNav, LoadingScreen
+│   └── public/
+│       ├── sw.js                       # Service worker (dev-aware)
+│       ├── manifest.json               # Dark theme PWA manifest
+│       └── offline.html                # Dark offline page
 │
-├── src-tauri/                     # Tauri desktop app (optional)
-│
-└── exel file/                     # User's Excel files (3 files)
-    ├── BREAKER,CONACTOR,RELAY.xlsx  # 14 sheets, 743 items
-    ├── New XLSX Worksheet.xlsx      # PPRC + GI fittings, 84 items
-    └── DAILY REPORT.xlsx            # 740 transaction rows
+├── src-tauri/                          # Tauri desktop (optional)
+└── exel file/                          # User's Excel files
 ```
 
 ---
@@ -523,14 +321,14 @@ store management system/
 ### Items
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/items` | List items (pagination, search, filters: `low_stock`, `out_of_stock`) |
-| GET | `/api/items/:id` | Get item detail with recent transactions |
+| GET | `/api/items` | List (pagination, search, `low_stock`, `out_of_stock` filters) |
+| GET | `/api/items/:id` | Item detail |
 | POST | `/api/items` | Create item |
 | PUT | `/api/items/:id` | Update item |
-| DELETE | `/api/items/:id` | Soft delete (deactivate) |
+| DELETE | `/api/items/:id` | Soft delete |
 | GET | `/api/items/search?q=` | Smart fuzzy search |
-| GET | `/api/items/categories` | List categories with item counts |
-| GET | `/api/items/:id/ledger` | Item ledger with running balance |
+| GET | `/api/items/categories` | Categories with counts |
+| GET | `/api/items/:id/ledger` | Ledger with running balance |
 
 ### Transactions
 | Method | Endpoint | Description |
@@ -539,15 +337,12 @@ store management system/
 | POST | `/api/transactions/in` | Stock IN |
 | POST | `/api/transactions/out` | Stock OUT (allows negative stock) |
 | POST | `/api/transactions/return` | Stock Return |
-| POST | `/api/transactions/:id/reverse` | Reverse a transaction |
-| GET | `/api/transactions/suppliers` | List suppliers |
-| POST | `/api/transactions/suppliers` | Create supplier |
-| GET | `/api/transactions/persons` | List persons |
-| POST | `/api/transactions/persons` | Create person |
-| GET | `/api/transactions/departments` | List departments |
-| POST | `/api/transactions/departments` | Create department |
-| GET | `/api/transactions/machines` | List machines |
-| POST | `/api/transactions/machines` | Create machine |
+| POST | `/api/transactions/:id/reverse` | Reverse by ID |
+| POST | `/api/transactions/by-no/reverse` | Reverse by txn_no (with `force` option) |
+| GET/POST | `/api/transactions/suppliers` | List/Create suppliers |
+| GET/POST | `/api/transactions/persons` | List/Create persons |
+| GET/POST | `/api/transactions/departments` | List/Create departments |
+| GET/POST | `/api/transactions/machines` | List/Create machines |
 
 ### Reports
 | Method | Endpoint | Description |
@@ -566,81 +361,88 @@ store management system/
 ### Dashboard
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/dashboard/summary` | Dashboard stats + recent transactions |
+| GET | `/api/dashboard/summary` | Stats + recent transactions |
 
 ### Backup
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | POST | `/api/backup/now` | Create manual backup |
 | GET | `/api/backup/list` | List backups |
-| GET | `/api/backup/download/:filename` | Download backup file |
+| GET | `/api/backup/download/:filename` | Download backup (path traversal protected) |
 
 ### Import
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/api/import/parse` | Parse Excel file (multi-sheet) |
+| POST | `/api/import/parse` | Parse Excel file |
 | POST | `/api/import/validate-items` | Validate item data |
 | POST | `/api/import/items` | Import items |
 | POST | `/api/import/stock` | Import stock transactions |
-| POST | `/api/import/daily-report` | Import daily report with fuzzy matching |
-| POST | `/api/import/validate-stock` | Validate stock data |
-| POST | `/api/import/errors` | Download error list |
+| POST | `/api/import/daily-report` | Import daily report |
 
 ### Audit
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/api/audits` | List audits |
 | POST | `/api/audits` | Start new audit |
-| GET | `/api/audits/:id` | Audit summary |
+| GET | `/api/audits/:id` | Audit detail |
 | POST | `/api/audits/:id/count` | Count an item |
-| GET | `/api/audits/:id/search` | Search items for counting |
-| GET | `/api/audits/:id/variance` | Variance report |
-| POST | `/api/audits/:id/finalise` | Finalise audit (creates ADJUST transactions) |
+| POST | `/api/audits/:id/finalise` | Finalise (creates ADJUST transactions) |
 
 ### Analytics
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/analytics/consumption-trend` | Per-item consumption over time |
-| GET | `/api/analytics/machine-consumption` | Machine-wise comparison |
-| GET | `/api/analytics/unusual-consumption` | Flag unusual consumption (>50% above avg) |
-| GET | `/api/analytics/reorder-interval` | Average days between reorders |
-| GET | `/api/analytics/dead-stock` | Items with no movement (90/180/365 days) |
-| GET | `/api/analytics/stock-value-trend` | 12-month stock value trend |
+| GET | `/api/analytics/consumption-trend` | Per-item consumption |
+| GET | `/api/analytics/machine-consumption` | Machine comparison |
+| GET | `/api/analytics/unusual-consumption` | Flag anomalies |
+| GET | `/api/analytics/dead-stock` | Items with no movement |
+| GET | `/api/analytics/stock-value-trend` | 12-month trend |
 
 ### Reorder
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/reorder/suggestions` | Suggested min_stock per item |
-| POST | `/api/reorder/accept/:itemId` | Accept one suggestion |
-| POST | `/api/reorder/accept-bulk` | Accept multiple suggestions |
+| GET | `/api/reorder/suggestions` | Suggested min_stock |
+| POST | `/api/reorder/accept/:itemId` | Accept suggestion |
+| POST | `/api/reorder/accept-bulk` | Bulk accept |
 
 ### Health
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/health` | Health check (public, no auth) |
+| GET | `/api/health` | Health check (public) |
 
 ---
 
 ## Database Schema
 
-12 tables:
+13 tables:
 
 | Table | Purpose |
 |-------|---------|
-| `users` | Login credentials, roles (ADMIN, STORE_INCHARGE, ASSISTANT, VIEWER) |
+| `users` | Login credentials, roles |
 | `categories` | Item categories (31) |
-| `items` | Main inventory — item_code, name, brand, unit, stock, min_stock, rack_location |
-| `item_aliases` | Alternative names for fuzzy search |
+| `items` | Main inventory (1,019 items) |
+| `item_aliases` | Alternative names for search |
 | `suppliers` | Vendors with lead_time_days |
 | `departments` | Organization units |
 | `machines` | Equipment linked to departments |
 | `persons` | People receiving material (92) |
-| `transactions` | Header — type (IN/OUT/RETURN/ADJUST/REVERSAL), date, creator |
-| `transaction_items` | Line items — item, quantity, rate per transaction |
+| `transactions` | Header — type, date, creator |
+| `transaction_items` | Line items — item, quantity, rate |
 | `stock_audits` | Audit sessions |
-| `stock_audit_lines` | Individual item counts within audits |
+| `stock_audit_lines` | Item counts within audits |
 
-**Stock calculation:** `current_stock` on items is maintained by `recalculateStock()` which sums all transaction_items (IN/RETURN add, OUT subtract, ADJUST/REVERSAL signed).
+**Stock calculation:** `current_stock` maintained by `recalculateStock()` — IN/RETURN add, OUT subtract, ADJUST/REVERSAL signed. Correct type-aware calculation (not raw sum).
+
+---
+
+## Security Features
+
+- **JWT persisted to disk** — survives server restarts without invalidating tokens
+- **Path traversal protection** on backup download endpoint
+- **Role-based access control** on all routes
+- **Service worker disabled in dev mode** — prevents stale CSS on hard refresh
+- **Prisma singleton** — single connection pool, no leaks
+- **Graceful shutdown** — Prisma disconnects cleanly on SIGINT/SIGTERM
+- **Atomic stock operations** — all stock changes inside Prisma `$transaction`
 
 ---
 
@@ -649,16 +451,14 @@ store management system/
 ```bash
 # TypeScript check
 cd backend && npx tsc --noEmit
+cd frontend && npx tsc --noEmit
 
 # Build frontend
 cd frontend && npx vite build
 
-# Reset database and reimport
+# Reset database
 cd backend && npx prisma migrate reset
 node src/scripts/reimport-clean.js
-
-# Run both servers
-npm run dev
 ```
 
 ## Desktop App (Tauri)
@@ -669,8 +469,6 @@ Requires Windows + Rust toolchain.
 npm install
 npm run tauri:build
 ```
-
-Output: `src-tauri/target/release/bundle/nsis/Store Management System_1.0.0_x64-setup.exe`
 
 ---
 
