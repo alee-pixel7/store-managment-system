@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { useIsMobile } from './hooks/useIsMobile'
@@ -32,6 +32,7 @@ function AppContent() {
   const [selectedAuditId, setSelectedAuditId] = useState<number | null>(null);
   const [navFilter, setNavFilter] = useState<string | null>(null);
   const [showReports, setShowReports] = useState(false);
+  const reportsRef = useRef<HTMLDivElement>(null);
 
   const handleBackendReady = useCallback(() => {
     setBackendReady(true);
@@ -39,7 +40,11 @@ function AppContent() {
 
   useEffect(() => {
     if (!showReports) return;
-    const handleClick = () => setShowReports(false);
+    const handleClick = (e: MouseEvent) => {
+      if (reportsRef.current && !reportsRef.current.contains(e.target as Node)) {
+        setShowReports(false);
+      }
+    };
     document.addEventListener('click', handleClick);
     return () => document.removeEventListener('click', handleClick);
   }, [showReports]);
@@ -115,7 +120,7 @@ function AppContent() {
                       if (btn.isDropdown) {
                         const isActive = currentPage === 'daily-report' || currentPage === 'monthly-report';
                         return (
-                          <div key={btn.id} className="relative">
+                          <div key={btn.id} className="relative" ref={reportsRef}>
                             <button
                               onClick={() => setShowReports(!showReports)}
                               className={`relative px-3 py-1.5 text-sm font-medium rounded-lg transition-colors duration-150 ${
