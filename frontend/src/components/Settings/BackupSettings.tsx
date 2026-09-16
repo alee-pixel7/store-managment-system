@@ -1,8 +1,8 @@
 // BackupSettings Component
-// Shows backup section with "Backup Now" button and list of available backups
+// Shows backup section with "Backup Now" button, restore, and list of available backups
 
 import { useState, useEffect } from 'react';
-import { createBackup, listBackups, getDownloadUrl } from '../../api/backup';
+import { createBackup, listBackups, getDownloadUrl, restoreBackup } from '../../api/backup';
 import type { BackupInfo } from '../../api/backup';
 
 export function BackupSettings() {
@@ -11,6 +11,11 @@ export function BackupSettings() {
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  // Restore state
+  const [restoreTarget, setRestoreTarget] = useState<string | null>(null);
+  const [confirmText, setConfirmText] = useState('');
+  const [restoring, setRestoring] = useState(false);
 
   useEffect(() => {
     loadBackups();
@@ -36,11 +41,32 @@ export function BackupSettings() {
     try {
       const result = await createBackup();
       setSuccess(result.message);
-      await loadBackups(); // Refresh list
+      await loadBackups();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Backup failed');
     } finally {
       setCreating(false);
+    }
+  };
+
+  const handleRestore = async () => {
+    if (!restoreTarget || confirmText !== 'RESTORE') return;
+    setRestoring(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const result = await restoreBackup(restoreTarget);
+      setSuccess(result.message);
+      setRestoreTarget(null);
+      setConfirmText('');
+      // Reload page after short delay to reflect new data
+      setTimeout(() => window.location.reload(), 1500);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Restore failed');
+      setRestoreTarget(null);
+      setConfirmText('');
+    } finally {
+      setRestoring(false);
     }
   };
 
@@ -126,7 +152,7 @@ export function BackupSettings() {
                   <th className="pb-2 font-medium">Date</th>
                   <th className="pb-2 font-medium">Size</th>
                   <th className="pb-2 font-medium">Type</th>
-                  <th className="pb-2 font-medium"></th>
+                  <th className="pb-2 font-medium text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
@@ -153,13 +179,21 @@ export function BackupSettings() {
                       )}
                     </td>
                     <td className="py-2 text-right">
-                      <a
-                        href={getDownloadUrl(backup.filename)}
-                        className="text-accent hover:text-accent-text text-xs font-medium"
-                        download
-                      >
-                        Download
-                      </a>
+                      <div className="flex items-center justify-end gap-3">
+                        <button
+                          onClick={() => { setRestoreTarget(backup.filename); setConfirmText(''); }}
+                          className="text-low hover:text-orange-700 text-xs font-medium"
+                        >
+                          Restore
+                        </button>
+                        <a
+                          href={getDownloadUrl(backup.filename)}
+                          className="text-accent hover:text-accent-text text-xs font-medium"
+                          download
+                        >
+                          Download
+                        </a>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -168,6 +202,83 @@ export function BackupSettings() {
           </div>
         )}
       </div>
+
+      {/* Restore Confirmation Modal */}
+      {restoreTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-elevated border border-border rounded-xl shadow-2xl w-full max-w-md mx-4 p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-lg bg-low/10 flex items-center justify-center">
+                <svg className="w-5 h-5 text-low" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-text font-semibold">Restore Backup</h3>
+                <p className="text-text-secondary text-xs">This action cannot be undone</p>
+              </div>
+            </div>
+
+            <div className="mb-4 p-3 bg-base rounded-lg border border-border">
+              <p className="text-text-secondary text-sm mb-1">Restoring from:</p>
+              <p className="text-text font-mono text-sm">{restoreTarget}</p>
+            </div>
+
+            <div className="mb-4 p-3 bg-low/5 border border-low/20 rounded-lg">
+              <p className="text-text-secondary text-xs leading-relaxed">
+                This will <span className="font-semibold text-text">replace all current data</span> with this backup.
+                A safety backup of the current data will be created automatically before restoring.
+              </p>
+            </div>
+
+            <div className="mb-5">
+              <label className="block text-text-secondary text-xs mb-1.5">
+                Type <span className="font-mono font-semibold text-text">RESTORE</span> to confirm:
+              </label>
+              <input
+                type="text"
+                value={confirmText}
+                onChange={(e) => setConfirmText(e.target.value)}
+                placeholder="RESTORE"
+                autoFocus
+                className="w-full bg-base border border-border rounded-lg px-3 py-2 text-text text-sm placeholder:text-text-muted outline-none focus:border-low focus:ring-1 focus:ring-low/30"
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setRestoreTarget(null); setConfirmText(''); }}
+                disabled={restoring}
+                className="flex-1 px-4 py-2 text-sm font-medium text-text-secondary bg-base border border-border rounded-lg hover:bg-hover transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleRestore}
+                disabled={restoring || confirmText !== 'RESTORE'}
+                className="flex-1 px-4 py-2 text-sm font-medium text-white bg-low rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors"
+              >
+                {restoring ? (
+                  <>
+                    <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    Restoring...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182" />
+                    </svg>
+                    Restore
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -20,3 +20,7 @@ export async function listBackups(): Promise<{ backups: BackupInfo[] }> {
 export function getDownloadUrl(filename: string): string {
   return `/api/backup/download/${filename}`;
 }
+
+export async function restoreBackup(filename: string): Promise<{ message: string; safetyBackup: string }> {
+  return authFetch(`/backup/restore/${filename}`, { method: 'POST' });
+}

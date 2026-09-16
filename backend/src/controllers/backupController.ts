@@ -57,3 +57,26 @@ export async function downloadBackup(req: Request, res: Response) {
     res.status(500).json({ error: message });
   }
 }
+
+// ============================================================
+// POST /api/backup/restore/:filename - Restore from backup
+// ============================================================
+export async function restoreBackup(req: Request, res: Response) {
+  try {
+    const { filename } = req.params;
+
+    if (!filename) {
+      return res.status(400).json({ error: 'Filename is required' });
+    }
+
+    const result = await backupService.restoreBackup(filename);
+    res.json({
+      message: `Successfully restored from ${filename}. Safety backup created: ${result.safetyBackup}`,
+      safetyBackup: result.safetyBackup,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Restore failed';
+    console.error('❌ Restore failed:', message);
+    res.status(500).json({ error: message });
+  }
+}

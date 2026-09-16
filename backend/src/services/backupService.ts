@@ -241,6 +241,43 @@ export function getBackupPath(filename: string): string | null {
 }
 
 // ============================================================
+// RESTORE FROM BACKUP
+// ============================================================
+let restoring = false;
+
+export async function restoreBackup(filename: string): Promise<{ safetyBackup: string }> {
+  if (restoring) {
+    throw new Error('A restore is already in progress');
+  }
+
+  // Validate filename
+  const backupPath = getBackupPath(filename);
+  if (!backupPath) {
+    throw new Error('Backup file not found or invalid');
+  }
+
+  restoring = true;
+
+  try {
+    // 1. Create safety backup of current live DB
+    ensureBackupDir();
+    const now = new Date();
+    const safetyName = `${BACKUP_PREFIX}${now.toISOString().split('T')[0]}-restore-safety.db`;
+    const safetyPath = path.join(BACKUP_DIR, safetyName);
+    fs.copyFileSync(DB_PATH, safetyPath);
+    console.log(`🛡️  Safety backup created: ${safetyName}`);
+
+    // 2. Copy backup file over live database
+    fs.copyFileSync(backupPath, DB_PATH);
+    console.log(`✅ Restored from backup: ${filename}`);
+
+    return { safetyBackup: safetyName };
+  } finally {
+    restoring = false;
+  }
+}
+
+// ============================================================
 // START PERIODIC BACKUP
 // ============================================================
 let backupInterval: NodeJS.Timeout | null = null;

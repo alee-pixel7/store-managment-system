@@ -16,4 +16,7 @@ router.get('/list', requireRole('ADMIN'), backupController.listBackups);
 // Download backup (ADMIN only)
 router.get('/download/:filename', requireRole('ADMIN'), backupController.downloadBackup);
 
+// Restore from backup (ADMIN only)
+router.post('/restore/:filename', requireRole('ADMIN'), backupController.restoreBackup);
+
 export default router;
