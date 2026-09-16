@@ -313,7 +313,29 @@ function AppContent() {
             {currentPage === 'audit-count' && selectedAuditId && (
               <AuditCountPage auditId={selectedAuditId} onBack={handleBackFromAudit} />
             )}
-            {currentPage === 'analytics' && <AnalyticsPage />}
+            {currentPage === 'analytics' && (
+              <div className="min-h-screen bg-base">
+                <div className="max-w-6xl mx-auto px-3 sm:px-6 py-4 sm:py-6">
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4 }}
+                    className="flex items-center gap-3 mb-6"
+                  >
+                    <div className="w-11 h-11 rounded-xl bg-purple-500/10 flex items-center justify-center shadow-lg shadow-purple-500/10">
+                      <svg className="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5m.75-9l3-3 2.148 2.148A12.061 12.061 0 0116.5 7.605" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h1 className="text-2xl font-bold text-text tracking-tight">Analytics</h1>
+                      <p className="text-sm text-text-secondary">Stock trends, machine consumption, and dead stock reports</p>
+                    </div>
+                  </motion.div>
+                  <AnalyticsPage />
+                </div>
+              </div>
+            )}
             {currentPage === 'reorder' && <ReorderPointsPage />}
             {currentPage === 'settings' && isAdmin && (
               <div className="min-h-screen bg-base">
