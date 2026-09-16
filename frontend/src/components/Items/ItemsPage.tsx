@@ -151,14 +151,17 @@ export function ItemsPage({ onViewItem, initialFilter }: ItemsPageProps) {
   return (
     <div className="min-h-screen bg-base">
       {/* Header */}
-      <div className="bg-surface border-b border-border px-4 py-3 sticky top-0 z-10">
+      <div className="bg-surface/80 backdrop-blur-xl border-b border-border-light px-4 py-3 sticky top-0 z-10">
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-semibold text-text">Items</h1>
+          <div>
+            <h1 className="text-xl font-bold text-text">Items</h1>
+            <p className="text-xs text-text-secondary mt-0.5">Manage inventory items and categories</p>
+          </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => handleExport('excel')}
               disabled={exporting === 'excel'}
-              className="px-3 py-1.5 text-sm font-medium text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50 flex items-center gap-2"
+              className="px-3 py-1.5 text-sm font-medium text-ok bg-ok-dim border border-ok/20 rounded-lg hover:bg-ok/20 disabled:opacity-50 flex items-center gap-2 transition-all"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -168,7 +171,7 @@ export function ItemsPage({ onViewItem, initialFilter }: ItemsPageProps) {
             <button
               onClick={() => handleExport('pdf')}
               disabled={exporting === 'pdf'}
-              className="px-3 py-1.5 text-sm font-medium text-white bg-red-600 rounded hover:bg-red-700 disabled:opacity-50 flex items-center gap-2"
+              className="px-3 py-1.5 text-sm font-medium text-danger bg-danger-dim border border-danger/20 rounded-lg hover:bg-danger/20 disabled:opacity-50 flex items-center gap-2 transition-all"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
@@ -178,7 +181,7 @@ export function ItemsPage({ onViewItem, initialFilter }: ItemsPageProps) {
             {canDoStockOps && (
               <button
                 onClick={handleAdd}
-                className="px-4 py-1.5 text-sm font-medium text-white bg-accent rounded hover:bg-accent-hover min-h-[44px]"
+                className="px-4 py-1.5 text-sm font-semibold text-base bg-gradient-to-r from-accent to-accent-press rounded-lg hover:shadow-lg hover:shadow-accent/20 min-h-[44px] transition-all"
               >
                 + Add
               </button>

@@ -1,3 +1,6 @@
+import { motion } from 'framer-motion';
+import { staggerContainer, staggerItem } from '../../lib/motion';
+
 interface LowStockItem {
   id: number;
   item_code: string;
@@ -18,9 +21,9 @@ interface LowStockAlertProps {
 export function LowStockAlert({ items, onViewItem }: LowStockAlertProps) {
   if (items.length === 0) {
     return (
-      <div className="bg-surface rounded-xl border border-border overflow-hidden h-full">
-        <div className="px-5 py-4 border-b border-border">
-          <h2 className="text-sm font-semibold text-text uppercase tracking-wider">Low Stock Alert</h2>
+      <div className="glass rounded-xl border border-border-light overflow-hidden h-full">
+        <div className="px-5 py-4 border-b border-border-light">
+          <h2 className="text-xs font-semibold text-text-secondary uppercase tracking-[0.12em]">Low Stock Alert</h2>
         </div>
         <div className="flex flex-col items-center justify-center py-16 px-6">
           <div className="w-14 h-14 rounded-full bg-ok-dim flex items-center justify-center mb-4">
@@ -36,20 +39,26 @@ export function LowStockAlert({ items, onViewItem }: LowStockAlertProps) {
   }
 
   return (
-    <div className="bg-surface rounded-xl border border-low/20 overflow-hidden h-full">
-      <div className="px-5 py-4 border-b border-low/10 bg-low-dim">
+    <div className="glass rounded-xl border border-low/20 overflow-hidden h-full">
+      <div className="px-5 py-4 border-b border-low/10 bg-low-dim/50">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-low uppercase tracking-wider">Low Stock Alert</h2>
-          <span className="text-xs font-medium text-low bg-low/15 px-2.5 py-1 rounded-full">
+          <h2 className="text-xs font-semibold text-low uppercase tracking-[0.12em]">Low Stock Alert</h2>
+          <span className="text-[10px] font-bold text-low bg-low/15 px-2.5 py-1 rounded-full">
             {items.length}
           </span>
         </div>
       </div>
 
-      <div className="divide-y divide-line-subtle max-h-[420px] overflow-y-auto">
+      <motion.div
+        variants={staggerContainer}
+        initial="hidden"
+        animate="show"
+        className="divide-y divide-line-subtle max-h-[420px] overflow-y-auto"
+      >
         {items.map((item) => (
-          <button
+          <motion.button
             key={item.id}
+            variants={staggerItem}
             onClick={() => onViewItem(item.id)}
             className="w-full px-5 py-3 text-left hover:bg-hover transition-colors group"
           >
@@ -69,12 +78,12 @@ export function LowStockAlert({ items, onViewItem }: LowStockAlertProps) {
               </div>
               <div className="text-right flex-shrink-0">
                 <div className="text-lg font-bold text-low">{item.current_stock}</div>
-                <div className="text-[10px] text-text-muted uppercase">min {item.min_stock}</div>
+                <div className="text-[10px] text-text-muted uppercase tracking-wider">min {item.min_stock}</div>
               </div>
             </div>
-          </button>
+          </motion.button>
         ))}
-      </div>
+      </motion.div>
     </div>
   );
 }

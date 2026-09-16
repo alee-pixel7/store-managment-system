@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react'
+import { motion, AnimatePresence, LayoutGroup } from 'framer-motion'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { useIsMobile } from './hooks/useIsMobile'
 import { LoginPage } from './components/Auth/LoginPage'
@@ -18,6 +19,7 @@ import { AnalyticsPage } from './components/Analytics/AnalyticsPage'
 import { ReorderPointsPage } from './components/Reorder/ReorderPointsPage'
 import { LoadingScreen } from './components/Layout/LoadingScreen'
 import { MobileNav } from './components/Layout/MobileNav'
+import { pageVariants, pageTransition } from './lib/motion'
 
 type Page = 'dashboard' | 'items' | 'stock-in' | 'stock-out' | 'stock-return' | 'item-detail' | 'import' | 'settings' | 'daily-report' | 'monthly-report' | 'audit-list' | 'audit-count' | 'analytics' | 'reorder';
 
@@ -25,7 +27,7 @@ function AppContent() {
   const { user, isAuthenticated, logout, canDoStockOps, isAdmin } = useAuth();
   const isMobile = useIsMobile();
   const [backendReady, setBackendReady] = useState(false);
-  const [currentPage, setCurrentPage] = useState<Page>('stock-out');
+  const [currentPage, setCurrentPage] = useState<Page>('dashboard');
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
   const [selectedAuditId, setSelectedAuditId] = useState<number | null>(null);
   const [navFilter, setNavFilter] = useState<string | null>(null);
@@ -35,7 +37,6 @@ function AppContent() {
     setBackendReady(true);
   }, []);
 
-  // Close reports dropdown on outside click
   useEffect(() => {
     if (!showReports) return;
     const handleClick = () => setShowReports(false);
@@ -85,220 +86,179 @@ function AppContent() {
     setSelectedItemId(null);
   };
 
+  const navButtons = [
+    { id: 'dashboard', label: 'Dashboard', show: true },
+    { id: 'items', label: 'Items', show: true },
+    { id: 'stock-in', label: 'Stock In', show: canDoStockOps },
+    { id: 'stock-out', label: 'Issue', show: canDoStockOps },
+    { id: 'stock-return', label: 'Return', show: canDoStockOps },
+    { id: 'reports', label: 'Reports', show: true, isDropdown: true },
+    { id: 'import', label: 'Import', show: true },
+    { id: 'audit-list', label: 'Audit', show: true },
+    { id: 'analytics', label: 'Analytics', show: true },
+    { id: 'reorder', label: 'Reorder', show: true },
+    { id: 'settings', label: 'Settings', show: isAdmin },
+  ];
+
   return (
     <div className="min-h-screen bg-base">
-      {/* Desktop Navigation - hidden on mobile */}
+      {/* Desktop Navigation */}
       {!isMobile && (
-      <nav className="bg-surface border-b border-border print:hidden">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-between h-12">
-            <div className="flex items-center gap-6">
-              <span className="font-semibold text-text">Store Management</span>
-              <div className="flex gap-1">
-                <button
-                  onClick={() => handleNavigate('dashboard')}
-                  className={`px-3 py-1.5 text-sm font-medium rounded ${
-                    currentPage === 'dashboard'
-                      ? 'bg-accent-dim text-accent'
-                      : 'text-text-secondary hover:bg-hover'
-                  }`}
-                >
-                  Dashboard
-                </button>
-                <button
-                  onClick={() => handleNavigate('items')}
-                  className={`px-3 py-1.5 text-sm font-medium rounded ${
-                    currentPage === 'items' || currentPage === 'item-detail'
-                      ? 'bg-accent-dim text-accent'
-                      : 'text-text-secondary hover:bg-hover'
-                  }`}
-                >
-                  Items
-                </button>
-                {canDoStockOps && (
-                  <>
-                    <button
-                      onClick={() => handleNavigate('stock-in')}
-                      className={`px-3 py-1.5 text-sm font-medium rounded ${
-                        currentPage === 'stock-in'
-                          ? 'bg-accent-dim text-accent'
-                          : 'text-text-secondary hover:bg-hover'
-                      }`}
-                    >
-                      Stock In
-                    </button>
-                    <button
-                      onClick={() => handleNavigate('stock-out')}
-                      className={`px-3 py-1.5 text-sm font-medium rounded ${
-                        currentPage === 'stock-out'
-                          ? 'bg-accent-dim text-accent'
-                          : 'text-text-secondary hover:bg-hover'
-                      }`}
-                    >
-                      Issue
-                    </button>
-                    <button
-                      onClick={() => handleNavigate('stock-return')}
-                      className={`px-3 py-1.5 text-sm font-medium rounded ${
-                        currentPage === 'stock-return'
-                          ? 'bg-accent-dim text-accent'
-                          : 'text-text-secondary hover:bg-hover'
-                      }`}
-                    >
-                      Return
-                    </button>
-                  </>
-                )}
-                <div className="relative">
-                  <button
-                    onClick={() => setShowReports(!showReports)}
-                    className={`px-3 py-1.5 text-sm font-medium rounded ${
-                      currentPage === 'daily-report' || currentPage === 'monthly-report'
-                        ? 'bg-accent-dim text-accent'
-                        : 'text-text-secondary hover:bg-hover'
-                    }`}
-                  >
-                    Reports ▾
-                  </button>
-                  {showReports && (
-                    <div className="absolute left-0 top-full mt-1 w-40 bg-surface border border-border rounded shadow-lg z-[60]">
-                      <button
-                        onClick={() => { handleNavigate('daily-report'); setShowReports(false); }}
-                        className="block w-full text-left px-4 py-2 text-sm text-text hover:bg-hover"
-                      >
-                        Daily Report
-                      </button>
-                      <button
-                        onClick={() => { handleNavigate('monthly-report'); setShowReports(false); }}
-                        className="block w-full text-left px-4 py-2 text-sm text-text hover:bg-hover"
-                      >
-                        Monthly Report
-                      </button>
-                    </div>
-                  )}
+        <nav className="bg-surface/80 backdrop-blur-xl border-b border-border-light print:hidden sticky top-0 z-40">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="flex items-center justify-between h-14">
+              <div className="flex items-center gap-8">
+                <span className="font-bold text-text text-gradient-gold tracking-wide">STORE MGMT</span>
+                <LayoutGroup>
+                  <div className="flex gap-0.5">
+                    {navButtons.filter(b => b.show).map((btn) => {
+                      if (btn.isDropdown) {
+                        const isActive = currentPage === 'daily-report' || currentPage === 'monthly-report';
+                        return (
+                          <div key={btn.id} className="relative">
+                            <button
+                              onClick={() => setShowReports(!showReports)}
+                              className={`relative px-3 py-1.5 text-sm font-medium rounded-lg transition-colors duration-150 ${
+                                isActive ? 'text-accent' : 'text-text-secondary hover:text-text hover:bg-hover'
+                              }`}
+                            >
+                              {isActive && (
+                                <motion.div
+                                  layoutId="nav-pill"
+                                  className="absolute inset-0 bg-accent-dim rounded-lg border border-accent/15"
+                                  transition={{ type: 'tween', duration: 0.2 }}
+                                />
+                              )}
+                              <span className="relative z-10">Reports ▾</span>
+                            </button>
+                            {showReports && (
+                              <motion.div
+                                initial={{ opacity: 0, y: -4, scale: 0.96 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                exit={{ opacity: 0, y: -4, scale: 0.96 }}
+                                transition={{ duration: 0.12 }}
+                                className="absolute left-0 top-full mt-1 w-44 bg-elevated border border-border rounded-xl shadow-xl z-[60] overflow-hidden"
+                              >
+                                <button
+                                  onClick={() => { handleNavigate('daily-report'); setShowReports(false); }}
+                                  className="block w-full text-left px-4 py-2.5 text-sm text-text hover:bg-hover transition-colors"
+                                >
+                                  Daily Report
+                                </button>
+                                <button
+                                  onClick={() => { handleNavigate('monthly-report'); setShowReports(false); }}
+                                  className="block w-full text-left px-4 py-2.5 text-sm text-text hover:bg-hover transition-colors"
+                                >
+                                  Monthly Report
+                                </button>
+                              </motion.div>
+                            )}
+                          </div>
+                        );
+                      }
+
+                      const isActive = currentPage === btn.id || (btn.id === 'items' && currentPage === 'item-detail');
+                      return (
+                        <button
+                          key={btn.id}
+                          onClick={() => handleNavigate(btn.id)}
+                          className={`relative px-3 py-1.5 text-sm font-medium rounded-lg transition-colors duration-150 ${
+                            isActive ? 'text-accent' : 'text-text-secondary hover:text-text hover:bg-hover'
+                          }`}
+                        >
+                          {isActive && (
+                            <motion.div
+                              layoutId="nav-pill"
+                              className="absolute inset-0 bg-accent-dim rounded-lg border border-accent/15"
+                              transition={{ type: 'tween', duration: 0.2 }}
+                            />
+                          )}
+                          <span className="relative z-10">{btn.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </LayoutGroup>
+              </div>
+
+              <div className="flex items-center gap-4">
+                <div className="text-right">
+                  <div className="text-sm font-medium text-text">{user?.full_name}</div>
+                  <div className="text-[10px] text-text-muted uppercase tracking-wider">{user?.role}</div>
                 </div>
                 <button
-                  onClick={() => handleNavigate('import')}
-                  className={`px-3 py-1.5 text-sm font-medium rounded ${
-                    currentPage === 'import'
-                      ? 'bg-accent-dim text-accent'
-                      : 'text-text-secondary hover:bg-hover'
-                  }`}
+                  onClick={logout}
+                  className="px-3 py-1.5 text-sm text-text-secondary hover:text-text hover:bg-hover rounded-lg transition-colors"
                 >
-                  Import
+                  Logout
                 </button>
-                <button
-                  onClick={() => handleNavigate('audit-list')}
-                  className={`px-3 py-1.5 text-sm font-medium rounded ${
-                    currentPage === 'audit-list' || currentPage === 'audit-count'
-                      ? 'bg-accent-dim text-accent'
-                      : 'text-text-secondary hover:bg-hover'
-                  }`}
-                >
-                  Audit
-                </button>
-                <button
-                  onClick={() => handleNavigate('analytics')}
-                  className={`px-3 py-1.5 text-sm font-medium rounded ${
-                    currentPage === 'analytics'
-                      ? 'bg-accent-dim text-accent'
-                      : 'text-text-secondary hover:bg-hover'
-                  }`}
-                >
-                  Analytics
-                </button>
-                <button
-                  onClick={() => handleNavigate('reorder')}
-                  className={`px-3 py-1.5 text-sm font-medium rounded ${
-                    currentPage === 'reorder'
-                      ? 'bg-accent-dim text-accent'
-                      : 'text-text-secondary hover:bg-hover'
-                  }`}
-                >
-                  Reorder
-                </button>
-                {isAdmin && (
-                  <button
-                    onClick={() => handleNavigate('settings')}
-                    className={`px-3 py-1.5 text-sm font-medium rounded ${
-                      currentPage === 'settings'
-                        ? 'bg-accent-dim text-accent'
-                        : 'text-text-secondary hover:bg-hover'
-                    }`}
-                  >
-                    Settings
-                  </button>
-                )}
               </div>
-            </div>
-
-            {/* User info + logout */}
-            <div className="flex items-center gap-4">
-              <div className="text-right">
-                <div className="text-sm font-medium text-text">{user?.full_name}</div>
-                <div className="text-xs text-text-secondary">{user?.role}</div>
-              </div>
-              <button
-                onClick={logout}
-                className="px-3 py-1.5 text-sm text-text-secondary hover:text-text hover:bg-hover rounded"
-              >
-                Logout
-              </button>
             </div>
           </div>
-        </div>
-      </nav>
+        </nav>
       )}
 
-      {/* Mobile Header - visible only on mobile */}
+      {/* Mobile Header */}
       {isMobile && (
-      <nav className="bg-surface border-b border-border px-4 py-2 flex items-center justify-between print:hidden">
-        <span className="font-semibold text-text">Store Management</span>
-        <div className="flex items-center gap-3">
-          <span className="text-xs text-text-secondary">{user?.full_name}</span>
-          <button
-            onClick={logout}
-            className="px-3 py-1.5 text-sm text-text-secondary hover:text-text hover:bg-hover rounded min-h-[44px]"
-          >
-            Logout
-          </button>
-        </div>
-      </nav>
+        <nav className="bg-surface/80 backdrop-blur-xl border-b border-border-light px-4 py-2.5 flex items-center justify-between print:hidden">
+          <span className="font-bold text-text text-sm tracking-wide">STORE MGMT</span>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-text-secondary">{user?.full_name}</span>
+            <button
+              onClick={logout}
+              className="px-3 py-1.5 text-sm text-text-secondary hover:text-text hover:bg-hover rounded-lg min-h-[44px] transition-colors"
+            >
+              Logout
+            </button>
+          </div>
+        </nav>
       )}
 
       {/* Page Content */}
       <div className={isMobile ? 'pb-20 safe-area-bottom' : ''}>
-        {currentPage === 'dashboard' && (
-          <DashboardPage onNavigate={handleNavigate} onViewItem={handleViewItem} />
-        )}
-        {currentPage === 'items' && (
-          <ItemsPage onViewItem={handleViewItem} initialFilter={navFilter} />
-        )}
-        {currentPage === 'item-detail' && selectedItemId && (
-          <ItemDetailPage itemId={selectedItemId} onBack={handleBackFromItem} />
-        )}
-        {currentPage === 'stock-in' && canDoStockOps && <StockInPage />}
-        {currentPage === 'stock-out' && canDoStockOps && <StockOutPage />}
-        {currentPage === 'stock-return' && canDoStockOps && <StockReturnPage />}
-        {currentPage === 'daily-report' && <DailyReportPage />}
-        {currentPage === 'monthly-report' && <MonthlyReportPage />}
-        {currentPage === 'import' && <ImportWizard />}
-        {currentPage === 'audit-list' && <AuditListPage onOpenAudit={handleOpenAudit} />}
-        {currentPage === 'audit-count' && selectedAuditId && (
-          <AuditCountPage auditId={selectedAuditId} onBack={handleBackFromAudit} />
-        )}
-        {currentPage === 'analytics' && <AnalyticsPage />}
-        {currentPage === 'reorder' && <ReorderPointsPage />}
-        {currentPage === 'settings' && isAdmin && (
-          <div className="min-h-screen bg-base">
-            <div className="bg-surface border-b border-border px-4 py-3">
-              <h1 className="text-xl font-semibold text-text">Settings</h1>
-            </div>
-            <div className="p-4 max-w-3xl mx-auto space-y-6">
-              <BackupSettings />
-            </div>
-          </div>
-        )}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentPage}
+            variants={pageVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            transition={pageTransition}
+          >
+            {currentPage === 'dashboard' && (
+              <DashboardPage onNavigate={handleNavigate} onViewItem={handleViewItem} />
+            )}
+            {currentPage === 'items' && (
+              <ItemsPage onViewItem={handleViewItem} initialFilter={navFilter} />
+            )}
+            {currentPage === 'item-detail' && selectedItemId && (
+              <ItemDetailPage itemId={selectedItemId} onBack={handleBackFromItem} />
+            )}
+            {currentPage === 'stock-in' && canDoStockOps && <StockInPage />}
+            {currentPage === 'stock-out' && canDoStockOps && <StockOutPage />}
+            {currentPage === 'stock-return' && canDoStockOps && <StockReturnPage />}
+            {currentPage === 'daily-report' && <DailyReportPage />}
+            {currentPage === 'monthly-report' && <MonthlyReportPage />}
+            {currentPage === 'import' && <ImportWizard />}
+            {currentPage === 'audit-list' && <AuditListPage onOpenAudit={handleOpenAudit} />}
+            {currentPage === 'audit-count' && selectedAuditId && (
+              <AuditCountPage auditId={selectedAuditId} onBack={handleBackFromAudit} />
+            )}
+            {currentPage === 'analytics' && <AnalyticsPage />}
+            {currentPage === 'reorder' && <ReorderPointsPage />}
+            {currentPage === 'settings' && isAdmin && (
+              <div className="min-h-screen bg-base">
+                <div className="bg-surface border-b border-border px-4 py-4">
+                  <h1 className="text-xl font-bold text-text">Settings</h1>
+                  <p className="text-sm text-text-secondary mt-0.5">System configuration and backup</p>
+                </div>
+                <div className="p-4 max-w-3xl mx-auto space-y-6">
+                  <BackupSettings />
+                </div>
+              </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
       </div>
 
       {/* Mobile Bottom Nav */}

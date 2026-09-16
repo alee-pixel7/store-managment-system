@@ -1,3 +1,7 @@
+import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
+import { useEffect } from 'react';
+import { cardHover } from '../../lib/motion';
+
 interface StatCardsProps {
   totalActiveItems: number;
   lowStockCount: number;
@@ -8,6 +12,19 @@ interface StatCardsProps {
   todayOutCount: number;
   todayOutTotalQty: number;
   onNavigate: (page: string) => void;
+}
+
+function AnimatedNumber({ value, prefix = '' }: { value: number; prefix?: string }) {
+  const motionVal = useMotionValue(0);
+  const displayed = useTransform(motionVal, (v) => {
+    if (prefix === '₹') return `₹${Math.round(v).toLocaleString('en-IN')}`;
+    return `${prefix}${Math.round(v).toLocaleString()}`;
+  });
+  useEffect(() => {
+    const controls = animate(motionVal, value, { duration: 0.8, ease: 'easeOut' });
+    return controls.stop;
+  }, [value, motionVal]);
+  return <motion.span>{displayed}</motion.span>;
 }
 
 export function StatCards({
@@ -24,7 +41,8 @@ export function StatCards({
   const cards = [
     {
       label: 'Total Items',
-      value: totalActiveItems.toLocaleString(),
+      value: totalActiveItems,
+      numericValue: totalActiveItems,
       sub: null,
       action: () => onNavigate('items'),
       icon: (
@@ -34,11 +52,13 @@ export function StatCards({
       ),
       accent: 'text-accent',
       bg: 'bg-accent-dim',
-      border: 'border-accent/15',
+      border: 'gradient-border-left-accent',
+      glow: 'shadow-accent/5',
     },
     {
       label: 'Low Stock',
-      value: lowStockCount.toLocaleString(),
+      value: lowStockCount,
+      numericValue: lowStockCount,
       sub: lowStockCount > 0 ? 'needs attention' : 'all good',
       action: () => onNavigate('items?filter=low_stock'),
       icon: (
@@ -48,11 +68,13 @@ export function StatCards({
       ),
       accent: 'text-low',
       bg: 'bg-low-dim',
-      border: 'border-low/15',
+      border: 'gradient-border-left-low',
+      glow: 'shadow-low/5',
     },
     {
       label: 'Out of Stock',
-      value: outOfStockCount.toLocaleString(),
+      value: outOfStockCount,
+      numericValue: outOfStockCount,
       sub: outOfStockCount > 0 ? 'needs restocking' : null,
       action: () => onNavigate('items?filter=out_of_stock'),
       icon: (
@@ -62,11 +84,14 @@ export function StatCards({
       ),
       accent: 'text-danger',
       bg: 'bg-danger-dim',
-      border: 'border-danger/15',
+      border: 'gradient-border-left-danger',
+      glow: 'shadow-danger/5',
     },
     {
       label: 'Stock Value',
-      value: `₹${totalStockValue.toLocaleString('en-IN')}`,
+      value: totalStockValue,
+      numericValue: totalStockValue,
+      isCurrency: true,
       sub: null,
       action: () => onNavigate('items'),
       icon: (
@@ -76,11 +101,13 @@ export function StatCards({
       ),
       accent: 'text-ok',
       bg: 'bg-ok-dim',
-      border: 'border-ok/15',
+      border: 'gradient-border-left-ok',
+      glow: 'shadow-ok/5',
     },
     {
       label: 'Stock In',
-      value: todayInTotalQty.toLocaleString(),
+      value: todayInTotalQty,
+      numericValue: todayInTotalQty,
       sub: `${todayInCount} txn${todayInCount !== 1 ? 's' : ''} today`,
       action: () => onNavigate('stock-in'),
       icon: (
@@ -90,11 +117,13 @@ export function StatCards({
       ),
       accent: 'text-ok',
       bg: 'bg-ok-dim',
-      border: 'border-ok/15',
+      border: 'gradient-border-left-ok',
+      glow: 'shadow-ok/5',
     },
     {
       label: 'Issued Out',
-      value: todayOutTotalQty.toLocaleString(),
+      value: todayOutTotalQty,
+      numericValue: todayOutTotalQty,
       sub: `${todayOutCount} txn${todayOutCount !== 1 ? 's' : ''} today`,
       action: () => onNavigate('stock-out'),
       icon: (
@@ -104,21 +133,28 @@ export function StatCards({
       ),
       accent: 'text-danger',
       bg: 'bg-danger-dim',
-      border: 'border-danger/15',
+      border: 'gradient-border-left-danger',
+      glow: 'shadow-danger/5',
     },
   ];
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-      {cards.map((card) => (
-        <button
+      {cards.map((card, i) => (
+        <motion.button
           key={card.label}
           onClick={card.action}
-          className={`relative bg-surface rounded-xl border ${card.border} overflow-hidden group cursor-pointer hover:brightness-110 transition-all text-left`}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: i * 0.05, duration: 0.3 }}
+          variants={cardHover}
+          whileHover="hover"
+          whileTap="tap"
+          className={`relative glass rounded-xl ${card.border} overflow-hidden text-left shadow-md ${card.glow} hover:shadow-lg transition-shadow duration-200`}
         >
           <div className="p-4">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-[11px] font-medium text-text-secondary uppercase tracking-wider">
+              <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-[0.1em]">
                 {card.label}
               </span>
               <div className={`${card.bg} ${card.accent} p-1.5 rounded-lg`}>
@@ -126,14 +162,18 @@ export function StatCards({
               </div>
             </div>
             <div className={`text-2xl font-bold ${card.accent} tracking-tight`}>
-              {card.value}
+              {card.isCurrency ? (
+                <AnimatedNumber value={card.numericValue} prefix="₹" />
+              ) : (
+                <AnimatedNumber value={card.numericValue} />
+              )}
             </div>
             {card.sub && (
-              <div className="text-xs text-text-muted mt-1">{card.sub}</div>
+              <div className="text-[11px] text-text-muted mt-1.5">{card.sub}</div>
             )}
           </div>
           <div className={`h-0.5 ${card.bg}`} />
-        </button>
+        </motion.button>
       ))}
     </div>
   );

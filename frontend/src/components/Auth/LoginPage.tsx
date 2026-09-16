@@ -1,6 +1,7 @@
-// LoginPage - Industrial design login screen
+// LoginPage — Premium dark industrial design
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
 
 export function LoginPage() {
@@ -8,17 +9,23 @@ export function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
   const { login } = useAuth();
+
+  useEffect(() => {
+    if (error) {
+      const t = setTimeout(() => setError(null), 4000);
+      return () => clearTimeout(t);
+    }
+  }, [error]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-
     if (!username.trim() || !password) {
       setError('Please enter both username and password');
       return;
     }
-
     setLoading(true);
     try {
       await login(username.trim(), password);
@@ -30,146 +37,183 @@ export function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#1a1d23] flex">
-      {/* Left panel - industrial aesthetic */}
+    <div className="min-h-screen bg-base flex">
+      {/* Left panel — animated industrial aesthetic */}
       <div className="hidden lg:flex lg:w-[45%] xl:w-[50%] relative overflow-hidden">
-        {/* Dark steel background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#2a2d35] via-[#1e2028] to-[#15171c]">
-          {/* Subtle grid pattern */}
+        <div className="absolute inset-0 bg-gradient-to-br from-elevated via-surface to-base">
+          {/* Grid pattern */}
           <div className="absolute inset-0" style={{
-            backgroundImage: `
-              linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)
-            `,
-            backgroundSize: '40px 40px'
+            backgroundImage: 'linear-gradient(rgba(232,160,53,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(232,160,53,0.03) 1px, transparent 1px)',
+            backgroundSize: '48px 48px',
           }} />
 
-          {/* Decorative elements */}
-          <div className="absolute top-1/4 left-1/4 w-32 h-32 border border-[#3a3d45] rounded-full opacity-30" />
-          <div className="absolute top-1/3 left-1/3 w-24 h-24 border border-[#3a3d45] rounded-full opacity-20" />
-          <div className="absolute bottom-1/3 right-1/4 w-40 h-40 border border-[#3a3d45] rounded-full opacity-25" />
+          {/* Animated gear SVG */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.07]">
+            <svg width="500" height="500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="0.5" className="text-accent" style={{ animation: 'spin 30s linear infinite' }}>
+              <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" />
+              <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
+            </svg>
+          </div>
+
+          {/* Floating rings */}
+          <motion.div
+            className="absolute top-[20%] left-[15%] w-40 h-40 border border-accent/10 rounded-full"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 40, repeat: Infinity, ease: 'linear' }}
+          />
+          <motion.div
+            className="absolute bottom-[25%] right-[20%] w-56 h-56 border border-accent/5 rounded-full"
+            animate={{ rotate: -360 }}
+            transition={{ duration: 60, repeat: Infinity, ease: 'linear' }}
+          />
+          <motion.div
+            className="absolute top-[60%] left-[60%] w-24 h-24 border border-accent/8 rounded-full"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 25, repeat: Infinity, ease: 'linear' }}
+          />
         </div>
 
         {/* Content */}
         <div className="relative z-10 flex flex-col justify-center px-12 xl:px-16">
-          {/* Brand mark */}
-          <div className="mb-8">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 bg-[#c9a84c] rounded flex items-center justify-center">
-                <svg className="w-7 h-7 text-[#1a1d23]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <div className="mb-10">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent to-accent-press flex items-center justify-center shadow-lg shadow-accent/20">
+                <svg className="w-7 h-7 text-base" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M12 2L2 7l10 5 10-5-10-5z" />
                   <path d="M2 17l10 5 10-5" />
                   <path d="M2 12l10 5 10-5" />
                 </svg>
               </div>
               <div>
-                <div className="text-white font-semibold text-lg tracking-wide">STORE MANAGEMENT</div>
-                <div className="text-[#6a6d75] text-xs tracking-widest uppercase">Inventory Control System</div>
+                <div className="text-text font-semibold text-lg tracking-wide">STORE MANAGEMENT</div>
+                <div className="text-text-muted text-[11px] tracking-[0.2em] uppercase">Inventory Control System</div>
               </div>
             </div>
           </div>
 
-          {/* Description */}
           <div className="space-y-4">
-            <h1 className="text-3xl xl:text-4xl text-white font-light leading-tight">
-              Industrial Parts<br />
-              <span className="text-[#c9a84c] font-medium">Inventory Control</span>
+            <h1 className="text-3xl xl:text-4xl text-text font-light leading-tight">
+              Industrial Parts
+              <br />
+              <span className="text-gradient-gold font-semibold">Inventory Control</span>
             </h1>
-            <p className="text-[#8a8d95] text-sm leading-relaxed max-w-md">
+            <p className="text-text-secondary text-sm leading-relaxed max-w-md">
               Manage bearings, seals, fasteners, and consumables across your facility.
               Track stock movements, monitor levels, and maintain complete audit trails.
             </p>
           </div>
 
-          {/* Stats */}
-          <div className="mt-12 grid grid-cols-3 gap-6">
+          <div className="mt-14 grid grid-cols-3 gap-6">
             <div>
-              <div className="text-[#c9a84c] text-2xl font-light">—</div>
-              <div className="text-[#6a6d75] text-xs mt-1 tracking-wide">CATEGORIES</div>
+              <div className="text-gradient-gold text-2xl font-bold">31</div>
+              <div className="text-text-muted text-[10px] mt-1 tracking-[0.15em] uppercase">Categories</div>
             </div>
             <div>
-              <div className="text-[#c9a84c] text-2xl font-light">—</div>
-              <div className="text-[#6a6d75] text-xs mt-1 tracking-wide">PART TYPES</div>
+              <div className="text-gradient-gold text-2xl font-bold">1,019</div>
+              <div className="text-text-muted text-[10px] mt-1 tracking-[0.15em] uppercase">Part Types</div>
             </div>
             <div>
-              <div className="text-[#c9a84c] text-2xl font-light">12h</div>
-              <div className="text-[#6a6d75] text-xs mt-1 tracking-wide">SESSION</div>
+              <div className="text-gradient-gold text-2xl font-bold">12h</div>
+              <div className="text-text-muted text-[10px] mt-1 tracking-[0.15em] uppercase">Session</div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Right panel - login form */}
+      {/* Right panel — login form */}
       <div className="flex-1 flex items-center justify-center px-6 py-12">
-        <div className="w-full max-w-sm">
+        <motion.div
+          className="w-full max-w-sm"
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
+        >
           {/* Mobile header */}
           <div className="lg:hidden mb-10">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-[#c9a84c] rounded flex items-center justify-center">
-                <svg className="w-6 h-6 text-[#1a1d23]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-accent to-accent-press flex items-center justify-center shadow-lg shadow-accent/20">
+                <svg className="w-6 h-6 text-base" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M12 2L2 7l10 5 10-5-10-5z" />
                   <path d="M2 17l10 5 10-5" />
                   <path d="M2 12l10 5 10-5" />
                 </svg>
               </div>
               <div>
-                <div className="text-white font-semibold tracking-wide">STORE MGMT</div>
-                <div className="text-[#6a6d75] text-xs tracking-widest">INVENTORY</div>
+                <div className="text-text font-semibold tracking-wide">STORE MGMT</div>
+                <div className="text-text-muted text-[10px] tracking-[0.2em]">INVENTORY</div>
               </div>
             </div>
           </div>
 
           {/* Form header */}
           <div className="mb-8">
-            <h2 className="text-white text-xl font-medium mb-2">Sign In</h2>
-            <p className="text-[#6a6d75] text-sm">Enter your credentials to access the system</p>
+            <h2 className="text-text text-xl font-semibold mb-2">Welcome back</h2>
+            <p className="text-text-secondary text-sm">Sign in to access the inventory system</p>
           </div>
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Username */}
-            <div>
-              <label className="block text-[#8a8d95] text-xs tracking-wide uppercase mb-2">
+            {/* Username — floating label */}
+            <div className="relative">
+              <label className={`absolute left-4 transition-all duration-200 pointer-events-none ${
+                focusedField === 'username' || username
+                  ? 'top-2 text-[10px] text-accent tracking-wider uppercase'
+                  : 'top-3.5 text-sm text-text-muted'
+              }`}>
                 Username
               </label>
               <input
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="STORE ADMIN"
+                onFocus={() => setFocusedField('username')}
+                onBlur={() => setFocusedField(null)}
                 autoComplete="username"
                 autoFocus
-                className="w-full bg-[#252830] border border-[#3a3d45] rounded px-4 py-3 text-white placeholder-[#4a4d55] focus:outline-none focus:border-[#c9a84c] focus:ring-1 focus:ring-[#c9a84c] transition-colors"
+                className="w-full bg-base border border-border rounded-xl px-4 pt-7 pb-2.5 text-text text-sm placeholder-transparent focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-200"
               />
             </div>
 
-            {/* Password */}
-            <div>
-              <label className="block text-[#8a8d95] text-xs tracking-wide uppercase mb-2">
+            {/* Password — floating label */}
+            <div className="relative">
+              <label className={`absolute left-4 transition-all duration-200 pointer-events-none ${
+                focusedField === 'password' || password
+                  ? 'top-2 text-[10px] text-accent tracking-wider uppercase'
+                  : 'top-3.5 text-sm text-text-muted'
+              }`}>
                 Password
               </label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="•••••"
+                onFocus={() => setFocusedField('password')}
+                onBlur={() => setFocusedField(null)}
                 autoComplete="current-password"
-                className="w-full bg-[#252830] border border-[#3a3d45] rounded px-4 py-3 text-white placeholder-[#4a4d55] focus:outline-none focus:border-[#c9a84c] focus:ring-1 focus:ring-[#c9a84c] transition-colors"
+                className="w-full bg-base border border-border rounded-xl px-4 pt-7 pb-2.5 text-text text-sm placeholder-transparent focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-all duration-200"
               />
             </div>
 
             {/* Error */}
-            {error && (
-              <div className="bg-red-900/30 border border-red-800/50 rounded px-4 py-3 text-red-400 text-sm">
-                {error}
-              </div>
-            )}
+            <AnimatePresence>
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  className="animate-shake bg-danger-dim border border-danger/20 rounded-xl px-4 py-3 text-danger text-sm"
+                >
+                  {error}
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Submit */}
-            <button
+            <motion.button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#c9a84c] hover:bg-[#b89842] text-[#1a1d23] font-medium py-3 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-[#c9a84c] focus:ring-offset-2 focus:ring-offset-[#1a1d23]"
+              whileTap={{ scale: 0.97 }}
+              className="w-full bg-gradient-to-r from-accent to-accent-press hover:from-accent-hover hover:to-accent text-base font-semibold py-3.5 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-accent/15 hover:shadow-accent/25"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -182,18 +226,21 @@ export function LoginPage() {
               ) : (
                 'Sign In'
               )}
-            </button>
+            </motion.button>
           </form>
 
           {/* Footer */}
-          <div className="mt-8 pt-6 border-t border-[#2a2d35]">
-            <div className="flex items-center justify-between text-[#4a4d55] text-xs">
+          <div className="mt-8 pt-6 border-t border-border-light">
+            <div className="flex items-center justify-between text-text-muted text-xs">
               <span>Session: 12 hours</span>
               <span className="font-mono">v1.0.0</span>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
+
+      {/* CSS for gear spin */}
+      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }

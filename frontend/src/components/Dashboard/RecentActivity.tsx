@@ -1,3 +1,6 @@
+import { motion } from 'framer-motion';
+import { staggerContainer, staggerItem } from '../../lib/motion';
+
 interface Transaction {
   id: number;
   txn_no: string;
@@ -18,9 +21,9 @@ export function RecentActivity({ transactions, onNavigate }: RecentActivityProps
   const getTxnStyle = (type: string) => {
     switch (type) {
       case 'IN':
-        return { dot: 'bg-ok', text: 'text-ok', bg: 'bg-ok/10', border: 'border-ok/20', label: 'IN' };
+        return { dot: 'bg-ok', text: 'text-ok', bg: 'bg-ok-dim', border: 'border-ok/20', label: 'IN' };
       case 'OUT':
-        return { dot: 'bg-danger', text: 'text-danger', bg: 'bg-danger/10', border: 'border-danger/20', label: 'OUT' };
+        return { dot: 'bg-danger', text: 'text-danger', bg: 'bg-danger-dim', border: 'border-danger/20', label: 'OUT' };
       case 'RETURN':
         return { dot: 'bg-accent', text: 'text-accent', bg: 'bg-accent-dim', border: 'border-accent/20', label: 'RET' };
       case 'ADJUST':
@@ -39,7 +42,6 @@ export function RecentActivity({ transactions, onNavigate }: RecentActivityProps
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMins / 60);
     const diffDays = Math.floor(diffHours / 24);
-
     if (diffMins < 1) return 'now';
     if (diffMins < 60) return `${diffMins}m`;
     if (diffHours < 24) return `${diffHours}h`;
@@ -49,27 +51,18 @@ export function RecentActivity({ transactions, onNavigate }: RecentActivityProps
 
   const handleTxnClick = (txnType: string) => {
     switch (txnType) {
-      case 'IN':
-      case 'ADJUST':
-        onNavigate('stock-in');
-        break;
-      case 'OUT':
-        onNavigate('stock-out');
-        break;
-      case 'RETURN':
-        onNavigate('stock-return');
-        break;
-      default:
-        break;
+      case 'IN': case 'ADJUST': onNavigate('stock-in'); break;
+      case 'OUT': onNavigate('stock-out'); break;
+      case 'RETURN': onNavigate('stock-return'); break;
     }
   };
 
   return (
-    <div className="bg-surface rounded-xl border border-border overflow-hidden h-full">
-      <div className="px-5 py-4 border-b border-border flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-text uppercase tracking-wider">Recent Activity</h2>
+    <div className="glass rounded-xl border border-border-light overflow-hidden h-full">
+      <div className="px-5 py-4 border-b border-border-light flex items-center justify-between">
+        <h2 className="text-xs font-semibold text-text-secondary uppercase tracking-[0.12em]">Recent Activity</h2>
         {transactions.length > 0 && (
-          <span className="text-[11px] text-text-muted">{transactions.length} recent</span>
+          <span className="text-[10px] text-text-muted bg-elevated px-2 py-0.5 rounded-full">{transactions.length} recent</span>
         )}
       </div>
 
@@ -84,17 +77,23 @@ export function RecentActivity({ transactions, onNavigate }: RecentActivityProps
           <p className="text-text-muted text-xs mt-1">Activity will appear here</p>
         </div>
       ) : (
-        <div className="divide-y divide-line-subtle max-h-[420px] overflow-y-auto">
+        <motion.div
+          variants={staggerContainer}
+          initial="hidden"
+          animate="show"
+          className="divide-y divide-line-subtle max-h-[420px] overflow-y-auto"
+        >
           {transactions.map((txn) => {
             const style = getTxnStyle(txn.txn_type);
             return (
-              <button
+              <motion.button
                 key={txn.id}
+                variants={staggerItem}
                 onClick={() => handleTxnClick(txn.txn_type)}
                 className="w-full px-5 py-3 text-left hover:bg-hover transition-colors group cursor-pointer"
               >
                 <div className="flex items-center gap-3">
-                  <div className={`flex-shrink-0 px-2 py-0.5 text-[10px] font-bold uppercase rounded ${style.bg} ${style.text} border ${style.border}`}>
+                  <div className={`flex-shrink-0 px-2 py-0.5 text-[10px] font-bold uppercase rounded-md ${style.bg} ${style.text} border ${style.border}`}>
                     {style.label}
                   </div>
                   <span className="font-mono text-sm text-text group-hover:text-accent transition-colors truncate">
@@ -111,10 +110,10 @@ export function RecentActivity({ transactions, onNavigate }: RecentActivityProps
                   <span className="text-text-muted">·</span>
                   <span className="tabular-nums">{txn.total_qty} pcs</span>
                 </div>
-              </button>
+              </motion.button>
             );
           })}
-        </div>
+        </motion.div>
       )}
     </div>
   );
