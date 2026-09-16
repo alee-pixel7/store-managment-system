@@ -12,7 +12,7 @@ Complete inventory management system for machine-parts stores. Replaces Excel-ba
 | Auth | JWT (12hr expiry, persisted secret), bcryptjs |
 | PDF | PDFKit (premium gold-themed exports) |
 | Excel | ExcelJS |
-| Desktop | Tauri 2 (optional — Windows installer) |
+| Desktop | Tauri 2 (offline — double-click .exe/.deb, auto-start backend) |
 
 ## Login
 
@@ -308,7 +308,11 @@ store management system/
 │       ├── manifest.json               # Dark theme PWA manifest
 │       └── offline.html                # Dark offline page
 │
-├── src-tauri/                          # Tauri desktop (optional)
+├── src-tauri/                          # Tauri desktop app
+│   ├── src/lib.rs                      # Sidecar backend spawn + health polling
+│   ├── tauri.conf.json                 # Window config + NSIS installer
+│   ├── Cargo.toml                      # Rust dependencies
+│   └── icons/                          # App icons (gold gear theme)
 └── exel file/                          # User's Excel files
 ```
 
@@ -475,12 +479,66 @@ node src/scripts/reimport-clean.js
 
 ## Desktop App (Tauri)
 
-Requires Windows + Rust toolchain.
+Single app — double-click, install, use. No commands, no internet needed.
+
+### How it works
+
+```
+Double-click .exe / .deb
+  → Tauri window opens (React frontend)
+  → Backend auto-starts (Node.js sidecar process)
+  → Login page appears
+  → Use the system
+```
+
+### Target person's experience
+
+1. **Install** — `.exe` (Windows) or `.deb` (Linux) → double-click → "Yes" to grant permission
+2. **Open** — Desktop icon "Store Management System" → double-click
+3. **Login** — `STORE ADMIN` / `S123T`
+4. **Use** — Everything works offline, no internet required
+5. **Data** — Saved in app data folder (`%APPDATA%/Store Management System/` on Windows)
+
+### Build
 
 ```bash
-npm install
-npm run tauri:build
+# Install Rust (one-time)
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+# Linux build
+npx tauri build
+# Output: src-tauri/target/release/bundle/deb/*.deb
+# Output: src-tauri/target/release/bundle/appimage/*.AppImage
+
+# Windows build (requires Windows machine or GitHub Actions)
+npx tauri build
+# Output: src-tauri/target/release/bundle/nsis/*-setup.exe
 ```
+
+### Architecture
+
+| Layer | Description |
+|-------|-------------|
+| Tauri Window | Native desktop wrapper for React frontend |
+| Frontend | React + Vite (built as static files) |
+| Backend | Node.js Express (runs as sidecar — auto-started by Tauri) |
+| Database | SQLite (file in app data folder) |
+| Backup | Auto every 24hrs + manual via Settings |
+
+## Distribution
+
+| Platform | File | Install |
+|----------|------|---------|
+| Windows | `Store Management System_1.0.0_x64-setup.exe` | Double-click → Install |
+| Linux | `store-management-system_1.0.0_amd64.deb` | `sudo dpkg -i *.deb` |
+| Linux | `Store Management System_1.0.0_amd64.AppImage` | `chmod +x *.AppImage` → Double-click |
+
+**What the user gets:**
+- Desktop icon — "Store Management System"
+- Double-click → app opens → login → use
+- No internet, no commands, no Node.js install needed
+- All data saved locally in app data folder
+- Auto backup every 24 hours
 
 ---
 
