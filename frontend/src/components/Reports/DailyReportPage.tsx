@@ -109,7 +109,7 @@ export function DailyReportPage() {
                 </button>
                 <button
                   onClick={handlePrint}
-                  className="px-4 py-1.5 text-sm font-medium text-text bg-gray-200 rounded hover:bg-gray-300 flex items-center gap-2"
+                  className="px-4 py-1.5 text-sm font-medium text-text bg-elevated border border-border rounded hover:bg-hover flex items-center gap-2"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
@@ -184,7 +184,7 @@ export function DailyReportPage() {
                         <th className="px-3 py-2 text-left font-medium text-text-secondary">Invoice</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-100">
+                    <tbody className="divide-y divide-border">
                       {report.receipts.map((receipt, index) => (
                         <tr key={index} className="hover:bg-hover">
                           <td className="px-3 py-2">
@@ -223,7 +223,7 @@ export function DailyReportPage() {
                         <th className="px-3 py-2 text-left font-medium text-text-secondary">Purpose</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-100">
+                    <tbody className="divide-y divide-border">
                       {report.issues.map((issue, index) => (
                         <tr key={index} className="hover:bg-hover">
                           <td className="px-3 py-2">
@@ -262,7 +262,7 @@ export function DailyReportPage() {
                         <th className="px-3 py-2 text-right font-medium text-text-secondary">Deficit</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-100">
+                    <tbody className="divide-y divide-border">
                       {report.itemsBelowMinimum.map((item, index) => (
                         <tr key={index} className="hover:bg-red-50">
                           <td className="px-3 py-2">

@@ -372,7 +372,7 @@ function DeadStockSection() {
                   <th className="px-3 py-2 text-center font-medium text-text-secondary">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-border">
                 {filtered.map((item) => (
                   <tr key={item.itemId} className="hover:bg-hover">
                     <td className="px-3 py-2">
@@ -427,7 +427,7 @@ function ReorderIntervalSection() {
                   <th className="px-3 py-2 text-left font-medium text-text-secondary">Last Received</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-border">
                 {data.map((item) => (
                   <tr key={item.itemId} className="hover:bg-hover">
                     <td className="px-3 py-2">

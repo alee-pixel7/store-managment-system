@@ -359,7 +359,7 @@ export function StockOutForm({ onSaved }: StockOutFormProps) {
                   <th className="px-3 py-2 text-center font-medium text-text-secondary w-16">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-border">
                 {lines.map((line, index) => (
                   <tr
                     key={line.id}

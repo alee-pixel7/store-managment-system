@@ -66,7 +66,7 @@ export function ReverseConfirmModal({
             <h3 className="text-lg font-semibold text-text">Reverse Transaction</h3>
             <button
               onClick={handleClose}
-              className="text-gray-400 hover:text-text-secondary"
+              className="text-text-muted hover:text-text-secondary"
             >
               ✕
             </button>

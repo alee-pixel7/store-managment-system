@@ -190,7 +190,7 @@ export function ReorderPointsPage() {
                     <th className="px-3 py-2 text-center font-medium text-text-secondary">Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-border">
                   {filtered.map((item) => (
                     <tr key={item.itemId} className={`hover:bg-hover ${
                       selected.has(item.itemId) ? 'bg-accent-dim' : ''

@@ -113,7 +113,7 @@ export function MonthlyReportPage() {
   ];
 
   const SortIcon = ({ field, currentField, direction }: { field: SortField; currentField: SortField; direction: SortDirection }) => {
-    if (field !== currentField) return <span className="text-gray-400 ml-1">↕</span>;
+    if (field !== currentField) return <span className="text-text-muted ml-1">↕</span>;
     return <span className="text-accent ml-1">{direction === 'asc' ? '↑' : '↓'}</span>;
   };
 
@@ -179,7 +179,7 @@ export function MonthlyReportPage() {
                 </button>
                 <button
                   onClick={handlePrint}
-                  className="px-4 py-1.5 text-sm font-medium text-text bg-gray-200 rounded hover:bg-gray-300 flex items-center gap-2"
+                  className="px-4 py-1.5 text-sm font-medium text-text bg-elevated border border-border rounded hover:bg-hover flex items-center gap-2"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
@@ -284,7 +284,7 @@ export function MonthlyReportPage() {
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-100">
+                    <tbody className="divide-y divide-border">
                       {sortedDepts.map((dept) => (
                         <tr key={dept.department} className="hover:bg-hover">
                           <td className="px-3 py-2 font-medium text-text">{dept.department}</td>
@@ -339,7 +339,7 @@ export function MonthlyReportPage() {
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-100">
+                    <tbody className="divide-y divide-border">
                       {sortedMachines.map((mach) => (
                         <tr key={mach.machine} className="hover:bg-hover">
                           <td className="px-3 py-2 font-mono text-text">{mach.machine}</td>
@@ -371,7 +371,7 @@ export function MonthlyReportPage() {
                         <th className="px-3 py-2 text-right font-medium text-text-secondary">Value</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-100">
+                    <tbody className="divide-y divide-border">
                       {report.topConsumedItems.map((item, index) => (
                         <tr key={item.itemCode} className="hover:bg-hover">
                           <td className="px-3 py-2 text-text-secondary">{index + 1}</td>
@@ -409,7 +409,7 @@ export function MonthlyReportPage() {
                         <th className="px-3 py-2 text-right font-medium text-text-secondary">Days Out of Stock</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-100">
+                    <tbody className="divide-y divide-border">
                       {report.outOfStockItems.map((item) => (
                         <tr key={item.itemCode} className="hover:bg-red-50">
                           <td className="px-3 py-2">

@@ -116,7 +116,7 @@ export function AuditListPage({ onOpenAudit }: AuditListPageProps) {
                   <th className="px-4 py-3"></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-border">
                 {audits.map((audit) => (
                   <tr key={audit.id} className="hover:bg-hover">
                     <td className="px-4 py-3 font-mono text-text">#{audit.id}</td>
@@ -141,7 +141,7 @@ export function AuditListPage({ onOpenAudit }: AuditListPageProps) {
                       {audit.variances > 0 ? (
                         <span className="text-red-600 font-medium">{audit.variances}</span>
                       ) : (
-                        <span className="text-gray-400">0</span>
+                        <span className="text-text-muted">0</span>
                       )}
                     </td>
                     <td className="px-4 py-3 text-text-secondary">{audit.createdBy}</td>

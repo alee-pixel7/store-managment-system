@@ -121,7 +121,7 @@ export function ItemSearch({ onSelect, placeholder = 'Search items...', disabled
               key={item.id}
               onClick={() => handleSelect(item)}
               onMouseEnter={() => setSelectedIndex(index)}
-              className={`px-3 py-3 sm:py-2 cursor-pointer border-b border-gray-100 last:border-0 min-h-[52px] ${
+              className={`px-3 py-3 sm:py-2 cursor-pointer border-b border-border last:border-0 min-h-[52px] ${
                 index === selectedIndex ? 'bg-accent-dim' : 'hover:bg-hover'
               }`}
             >
@@ -139,7 +139,7 @@ export function ItemSearch({ onSelect, placeholder = 'Search items...', disabled
                     Stock: <span className="font-mono text-text">{item.current_stock}</span> {item.unit}
                   </span>
                   {item.rack_location && (
-                    <span className="text-gray-400 hidden lg:inline">
+                    <span className="text-text-muted hidden lg:inline">
                       {item.rack_location}
                     </span>
                   )}

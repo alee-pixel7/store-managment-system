@@ -73,7 +73,7 @@ export function ItemDetailPage({ itemId, onBack }: ItemDetailPageProps) {
           <div className="text-red-500 mb-4">{error}</div>
           <button
             onClick={onBack}
-            className="px-4 py-2 text-sm font-medium text-text bg-gray-200 rounded hover:bg-gray-300"
+            className="px-4 py-2 text-sm font-medium text-text bg-elevated border border-border rounded hover:bg-hover"
           >
             ← Back to Items
           </button>
@@ -92,7 +92,7 @@ export function ItemDetailPage({ itemId, onBack }: ItemDetailPageProps) {
           <div className="flex items-center gap-3">
             <button
               onClick={onBack}
-              className="px-3 py-2 text-sm font-medium text-text bg-gray-200 rounded hover:bg-gray-300 min-h-[44px]"
+              className="px-3 py-2 text-sm font-medium text-text bg-elevated border border-border rounded hover:bg-hover min-h-[44px]"
             >
               ← Back
             </button>

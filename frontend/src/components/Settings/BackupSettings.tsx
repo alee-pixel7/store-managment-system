@@ -62,7 +62,7 @@ export function BackupSettings() {
   return (
     <div className="bg-surface rounded-lg shadow overflow-hidden">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-gray-100">
+      <div className="px-4 py-3 border-b border-border">
         <h2 className="text-lg font-medium text-text">Backup</h2>
         <p className="text-sm text-text-secondary mt-1">
           Automatic backups run every 24 hours. Monthly backups are kept permanently.
@@ -82,7 +82,7 @@ export function BackupSettings() {
       )}
 
       {/* Backup Now Button */}
-      <div className="px-4 py-4 border-b border-gray-100">
+      <div className="px-4 py-4 border-b border-border">
         <button
           onClick={handleCreateBackup}
           disabled={creating}
@@ -121,7 +121,7 @@ export function BackupSettings() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-text-secondary border-b border-gray-100">
+                <tr className="text-left text-text-secondary border-b border-border">
                   <th className="pb-2 font-medium">Filename</th>
                   <th className="pb-2 font-medium">Date</th>
                   <th className="pb-2 font-medium">Size</th>

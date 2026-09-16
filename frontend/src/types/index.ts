@@ -35,18 +35,6 @@ export interface ItemWithTransactions extends Item {
   recentTransactions: Transaction[];
 }
 
-export interface Transaction {
-  id: number;
-  txn_no: string;
-  txn_type: string;
-  txn_date: string;
-  quantity: number;
-  rate: number | null;
-  line_remarks: string | null;
-  is_reversed: boolean;
-  created_by: string;
-}
-
 export interface PaginatedResponse<T> {
   items: T[];
   pagination: {

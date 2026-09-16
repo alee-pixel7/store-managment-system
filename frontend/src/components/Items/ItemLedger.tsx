@@ -73,11 +73,8 @@ export function ItemLedger({ ledger, loading, unit, onReversed }: ItemLedgerProp
       is_reversed: entry.is_reversed,
       created_by: 1,
       created_at: entry.date,
-      items: [],
       supplier: null,
-      person: null,
-      department: null,
-      machine: null,
+      creator: null,
     };
     setReverseModal({ isOpen: true, transaction: txn });
   };
@@ -93,7 +90,7 @@ export function ItemLedger({ ledger, loading, unit, onReversed }: ItemLedgerProp
     <>
       <div className="bg-surface rounded-lg shadow overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
+          <table className="min-w-full divide-y divide-border">
             <thead className="bg-elevated">
               <tr>
                 <th className="px-3 py-2 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">
@@ -131,13 +128,13 @@ export function ItemLedger({ ledger, loading, unit, onReversed }: ItemLedgerProp
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-surface divide-y divide-gray-200">
+            <tbody className="bg-surface divide-y divide-border">
               {ledger.map((entry) => (
                 <tr
                   key={entry.id}
                   className={`${
                     entry.is_reversed
-                      ? 'bg-elevated line-through text-gray-400'
+                      ? 'bg-elevated line-through text-text-muted'
                       : 'hover:bg-hover'
                   }`}
                 >

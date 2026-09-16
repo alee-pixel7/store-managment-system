@@ -98,7 +98,7 @@ export function PreviewTable({
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200">
+          <tbody className="divide-y divide-border">
             {preview.map((row, rowIdx) => {
               const rowErrors = getRowErrors(rowIdx);
               const hasErrors = rowErrors.length > 0;

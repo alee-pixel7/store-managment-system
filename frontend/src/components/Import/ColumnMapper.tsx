@@ -121,7 +121,7 @@ export function ColumnMapper({
             <div className="w-48 text-sm font-mono text-text truncate" title={header}>
               {header}
             </div>
-            <div className="text-gray-400">→</div>
+            <div className="text-text-muted">→</div>
             <select
               value={mapping[header] || ''}
               onChange={(e) => handleMappingChange(header, e.target.value)}

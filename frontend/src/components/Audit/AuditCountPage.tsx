@@ -152,7 +152,7 @@ export function AuditCountPage({ auditId, onBack }: AuditCountPageProps) {
       <div className="min-h-screen bg-base flex items-center justify-center">
         <div className="text-center">
           <div className="text-red-500 mb-4">{error}</div>
-          <button onClick={onBack} className="px-4 py-2 text-sm bg-gray-200 rounded hover:bg-gray-300">
+          <button onClick={onBack} className="px-4 py-2 text-sm bg-elevated border border-border rounded hover:bg-hover">
             ← Back
           </button>
         </div>
@@ -168,7 +168,7 @@ export function AuditCountPage({ auditId, onBack }: AuditCountPageProps) {
           <div className="flex items-center gap-2 sm:gap-3">
             <button
               onClick={onBack}
-              className="px-3 py-2 text-sm font-medium text-text bg-gray-200 rounded hover:bg-gray-300 min-h-[44px]"
+              className="px-3 py-2 text-sm font-medium text-text bg-elevated border border-border rounded hover:bg-hover min-h-[44px]"
             >
               ← Back
             </button>
@@ -184,7 +184,7 @@ export function AuditCountPage({ auditId, onBack }: AuditCountPageProps) {
             {!isFinalised && (
               <button
                 onClick={handleLoadVariance}
-                className="px-3 py-2 text-sm font-medium text-text bg-gray-200 rounded hover:bg-gray-300 min-h-[44px]"
+className="px-3 py-2 text-sm font-medium text-text bg-elevated border border-border rounded hover:bg-hover min-h-[44px]"
               >
                 Variance
               </button>
@@ -255,7 +255,7 @@ export function AuditCountPage({ auditId, onBack }: AuditCountPageProps) {
                       <th className="px-3 py-2 text-right text-xs font-medium text-text-secondary">Value</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100">
+                  <tbody className="divide-y divide-border">
                     {varianceReport.variances.map((v) => (
                       <tr key={v.itemCode}>
                         <td className="px-3 py-2">
@@ -326,7 +326,7 @@ export function AuditCountPage({ auditId, onBack }: AuditCountPageProps) {
               <div className="px-4 py-2 border-b border-border text-sm font-medium text-text">
                 {searchResults.length} result(s) found
               </div>
-              <div className="divide-y divide-gray-100 max-h-64 overflow-y-auto">
+              <div className="divide-y divide-border max-h-64 overflow-y-auto">
                 {searchResults.map((item) => (
                   <button
                     key={item.itemId}
@@ -425,7 +425,7 @@ export function AuditCountPage({ auditId, onBack }: AuditCountPageProps) {
             <div className="px-4 py-3 border-b border-border">
               <h2 className="text-sm font-medium text-text">All Items ({audit.lines.length})</h2>
             </div>
-            <div className="divide-y divide-gray-100 max-h-96 overflow-y-auto">
+            <div className="divide-y divide-border max-h-96 overflow-y-auto">
               {audit.lines.map((line) => (
                 <div key={line.id} className="px-3 sm:px-4 py-2.5 flex items-center justify-between text-sm min-h-[48px]">
                   <div className="flex-1 min-w-0">
@@ -440,7 +440,7 @@ export function AuditCountPage({ auditId, onBack }: AuditCountPageProps) {
                         {line.variance !== 0 && ` (${line.variance! > 0 ? '+' : ''}${line.variance})`}
                       </div>
                     ) : (
-                      <div className="text-gray-400">Not counted</div>
+                      <div className="text-text-muted">Not counted</div>
                     )}
                   </div>
                 </div>

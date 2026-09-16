@@ -7,7 +7,11 @@ import { createStockIn } from '../../api/transactions';
 import { ItemSearch } from './ItemSearch';
 import { SupplierSelect } from './SupplierSelect';
 
-export function StockInForm() {
+interface StockInFormProps {
+  onSaved?: () => void;
+}
+
+export function StockInForm({ onSaved }: StockInFormProps) {
   // Header fields
   const [txnDate, setTxnDate] = useState(new Date().toISOString().split('T')[0]);
   const [supplierId, setSupplierId] = useState<number | null>(null);
@@ -141,6 +145,7 @@ export function StockInForm() {
       });
 
       setSuccess({ txn_no: result.txn_no });
+      onSaved?.();
 
       // Reset form
       setTxnDate(new Date().toISOString().split('T')[0]);
@@ -285,7 +290,7 @@ export function StockInForm() {
                   <th className="px-3 py-2 text-center font-medium text-text-secondary w-16">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-border">
                 {lines.map((line, index) => (
                   <tr
                     key={line.id}
