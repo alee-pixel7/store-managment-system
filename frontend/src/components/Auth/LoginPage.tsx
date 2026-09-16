@@ -22,6 +22,47 @@ function CountUp({ target, duration = 2 }: { target: string; duration?: number }
   return <>{count.toLocaleString('en-IN')}</>;
 }
 
+/* ─── Mouse Trail Dot ─── */
+function MouseTrail({ containerRef }: { containerRef: React.RefObject<HTMLDivElement | null> }) {
+  const [dots, setDots] = useState<{ id: number; x: number; y: number }[]>([]);
+  const idRef = useRef(0);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const handleMove = (e: MouseEvent) => {
+      const rect = el.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const id = idRef.current++;
+      setDots(prev => [...prev.slice(-7), { id, x, y }]);
+      setTimeout(() => {
+        setDots(prev => prev.filter(d => d.id !== id));
+      }, 800);
+    };
+    el.addEventListener('mousemove', handleMove);
+    return () => el.removeEventListener('mousemove', handleMove);
+  }, [containerRef]);
+
+  return (
+    <div className="absolute inset-0 pointer-events-none z-20 overflow-hidden">
+      <AnimatePresence>
+        {dots.map(dot => (
+          <motion.div
+            key={dot.id}
+            className="absolute w-1 h-1 rounded-full bg-accent"
+            style={{ left: dot.x, top: dot.y }}
+            initial={{ opacity: 0.3, scale: 1 }}
+            animate={{ opacity: 0, scale: 0.3 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.8, ease: 'easeOut' }}
+          />
+        ))}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 /* ─── Industrial SVG shapes ─── */
 const industrialShapes = [
   (size: number) => (
@@ -73,11 +114,11 @@ const floaters = [
 ];
 
 const bgParticles = [
-  { x: '20%', y: '30%', size: 2, dur: 30, delay: 0 },
-  { x: '60%', y: '20%', size: 3, dur: 35, delay: 2 },
-  { x: '40%', y: '75%', size: 2, dur: 28, delay: 4 },
-  { x: '85%', y: '45%', size: 2, dur: 32, delay: 1 },
-  { x: '10%', y: '55%', size: 3, dur: 27, delay: 3 },
+  { x: '20%', y: '30%', size: 3, dur: 30, delay: 0 },
+  { x: '60%', y: '20%', size: 4, dur: 35, delay: 2 },
+  { x: '40%', y: '75%', size: 3, dur: 28, delay: 4 },
+  { x: '85%', y: '45%', size: 3, dur: 32, delay: 1 },
+  { x: '10%', y: '55%', size: 4, dur: 27, delay: 3 },
 ];
 
 const tickerItems = ['Bearings', 'Seals', 'Fasteners', 'Consumables', 'Tools', 'Gaskets', 'O-Rings', 'Filters', 'Belts', 'Lubricants'];
@@ -85,7 +126,7 @@ const tickerItems = ['Bearings', 'Seals', 'Fasteners', 'Consumables', 'Tools', '
 function Ticker() {
   const repeated = [...tickerItems, ...tickerItems, ...tickerItems];
   return (
-    <div className="absolute bottom-0 left-0 right-0 h-10 overflow-hidden border-t border-accent/[0.06] bg-base/40 backdrop-blur-sm">
+    <div className="absolute bottom-0 left-0 right-0 h-10 overflow-hidden border-t border-accent/[0.10] bg-base/40 backdrop-blur-sm">
       <motion.div
         className="flex items-center h-full gap-6 whitespace-nowrap"
         animate={{ x: ['0%', '-33.333%'] }}
@@ -93,7 +134,7 @@ function Ticker() {
       >
         {repeated.map((item, i) => (
           <span key={i} className="flex items-center gap-3 text-text-muted text-[11px] tracking-wider uppercase">
-            <span className="w-1.5 h-1.5 rounded-full bg-accent/30" />
+            <span className="w-1.5 h-1.5 rounded-full bg-accent/40" />
             {item}
           </span>
         ))}
@@ -121,6 +162,7 @@ export function LoginPage() {
   const disableTilt = !!prefersReducedMotion || isTouchDevice;
 
   const cardRef = useRef<HTMLDivElement>(null);
+  const leftPanelRef = useRef<HTMLDivElement>(null);
   const rawMouseX = useMotionValue(0.5);
   const rawMouseY = useMotionValue(0.5);
   const springConfig = { stiffness: 150, damping: 20, mass: 0.5 };
@@ -190,51 +232,54 @@ export function LoginPage() {
       }} />
 
       {/* ═══ LEFT PANEL ═══ */}
-      <div className="hidden lg:flex lg:w-[55%] relative">
+      <div ref={leftPanelRef} className="hidden lg:flex lg:w-[55%] relative">
         <div className="absolute inset-0 bg-gradient-to-br from-elevated via-surface to-base" />
 
-        {/* Aurora orbs */}
+        {/* Aurora orbs — visible now */}
         <motion.div
-          className="absolute w-[450px] h-[450px] rounded-full blur-[120px] bg-accent/[0.08]"
+          className="absolute w-[450px] h-[450px] rounded-full blur-[120px] bg-accent/[0.15]"
           style={{ top: '5%', left: '10%' }}
           animate={prefersReducedMotion ? {} : { x: [0, 80, -40, 60, 0], y: [0, -60, 50, -30, 0] }}
           transition={{ duration: 25, repeat: Infinity, ease: 'easeInOut' }}
         />
         <motion.div
-          className="absolute w-[350px] h-[350px] rounded-full blur-[100px] bg-[#F59E0B]/[0.06]"
+          className="absolute w-[350px] h-[350px] rounded-full blur-[100px] bg-[#F59E0B]/[0.12]"
           style={{ bottom: '10%', right: '5%' }}
           animate={prefersReducedMotion ? {} : { x: [0, -70, 50, -30, 0], y: [0, 40, -60, 20, 0] }}
           transition={{ duration: 30, repeat: Infinity, ease: 'easeInOut' }}
         />
         <motion.div
-          className="absolute w-[300px] h-[300px] rounded-full blur-[90px] bg-[#D4942A]/[0.05]"
+          className="absolute w-[300px] h-[300px] rounded-full blur-[90px] bg-[#D4942A]/[0.10]"
           style={{ top: '45%', left: '50%' }}
           animate={prefersReducedMotion ? {} : { x: [0, 50, -60, 30, 0], y: [0, -40, 30, -50, 0] }}
           transition={{ duration: 22, repeat: Infinity, ease: 'easeInOut' }}
         />
 
-        {/* Grid */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{
-          backgroundImage: 'linear-gradient(rgba(232,160,53,1) 1px, transparent 1px), linear-gradient(90deg, rgba(232,160,53,1) 1px, transparent 1px)',
-          backgroundSize: '60px 60px',
+        {/* Dot matrix pattern */}
+        <div className="absolute inset-0 opacity-[0.06]" style={{
+          backgroundImage: 'radial-gradient(circle, rgba(232,160,53,1) 1px, transparent 1px)',
+          backgroundSize: '32px 32px',
         }} />
 
-        {/* Subtle background particle drift */}
+        {/* Mouse trail */}
+        {!prefersReducedMotion && <MouseTrail containerRef={leftPanelRef} />}
+
+        {/* Subtle background particle drift — visible */}
         {!prefersReducedMotion && bgParticles.map((p, i) => (
           <motion.div
             key={`bg-${i}`}
-            className="absolute rounded-full bg-accent/[0.12]"
+            className="absolute rounded-full bg-accent/[0.20]"
             style={{ left: p.x, top: p.y, width: p.size, height: p.size }}
-            animate={{ y: [0, -20, 10, -15, 0], x: [0, 8, -5, 3, 0], opacity: [0.08, 0.18, 0.1, 0.15, 0.08] }}
+            animate={{ y: [0, -20, 10, -15, 0], x: [0, 8, -5, 3, 0], opacity: [0.15, 0.25, 0.18, 0.22, 0.15] }}
             transition={{ duration: p.dur, delay: p.delay, repeat: Infinity, ease: 'easeInOut' }}
           />
         ))}
 
-        {/* Floating industrial shapes — slower rotation */}
+        {/* Floating industrial shapes — visible */}
         {floaters.map((f, i) => (
           <motion.div
             key={i}
-            className="absolute text-accent/[0.07]"
+            className="absolute text-accent/[0.12]"
             style={{ left: f.x, top: f.y }}
             animate={prefersReducedMotion ? {} : {
               x: [0, f.driftX, -f.driftX * 0.6, f.driftX * 0.3, 0],
@@ -251,11 +296,11 @@ export function LoginPage() {
           </motion.div>
         ))}
 
-        {/* Rings */}
-        <motion.div className="absolute top-[20%] left-[15%] w-44 h-44 border border-accent/[0.05] rounded-full"
+        {/* Rings — visible */}
+        <motion.div className="absolute top-[20%] left-[15%] w-44 h-44 border border-accent/[0.08] rounded-full"
           animate={prefersReducedMotion ? {} : { rotate: 360 }} transition={{ duration: 50, repeat: Infinity, ease: 'linear' }}
         />
-        <motion.div className="absolute bottom-[25%] right-[18%] w-56 h-56 border border-accent/[0.04] rounded-full"
+        <motion.div className="absolute bottom-[25%] right-[18%] w-56 h-56 border border-accent/[0.06] rounded-full"
           animate={prefersReducedMotion ? {} : { rotate: -360 }} transition={{ duration: 65, repeat: Infinity, ease: 'linear' }}
         />
 
@@ -267,9 +312,9 @@ export function LoginPage() {
               className="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent to-accent-press flex items-center justify-center"
               animate={prefersReducedMotion ? {} : {
                 boxShadow: [
-                  '0 0 20px rgba(232,160,53,0.2), 0 0 40px rgba(232,160,53,0.1)',
-                  '0 0 30px rgba(232,160,53,0.3), 0 0 60px rgba(232,160,53,0.15)',
-                  '0 0 20px rgba(232,160,53,0.2), 0 0 40px rgba(232,160,53,0.1)',
+                  '0 0 20px rgba(232,160,53,0.25), 0 0 40px rgba(232,160,53,0.12)',
+                  '0 0 35px rgba(232,160,53,0.35), 0 0 70px rgba(232,160,53,0.18)',
+                  '0 0 20px rgba(232,160,53,0.25), 0 0 40px rgba(232,160,53,0.12)',
                 ],
               }}
               transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
@@ -289,7 +334,8 @@ export function LoginPage() {
           {/* Headline */}
           <motion.div className="mb-12" {...entrance(0.08)}>
             <h1 className="text-5xl xl:text-6xl text-text font-light leading-[1.1] mb-5">
-              Industrial Parts<br />
+              Pak Packages
+              <br />
               <span className="text-gradient-gold font-bold">Inventory Control</span>
             </h1>
             <p className="text-text-secondary text-sm leading-relaxed max-w-md">
@@ -308,7 +354,7 @@ export function LoginPage() {
                   </div>
                   <div className="text-text-muted text-[9px] tracking-[0.2em] uppercase mt-1">{stat.label}</div>
                 </div>
-                {i < stats.length - 1 && <div className="w-px h-10 bg-accent/15 mx-5" />}
+                {i < stats.length - 1 && <div className="w-px h-10 bg-accent/20 mx-5" />}
               </div>
             ))}
           </motion.div>
@@ -321,7 +367,7 @@ export function LoginPage() {
       <div className="flex-1 flex items-center justify-center px-6 py-12 relative">
         {/* Subtle orb */}
         <motion.div
-          className="absolute w-[300px] h-[300px] rounded-full blur-[100px] bg-accent/[0.03] pointer-events-none"
+          className="absolute w-[300px] h-[300px] rounded-full blur-[100px] bg-accent/[0.06] pointer-events-none"
           style={{ top: '20%', right: '10%' }}
           animate={prefersReducedMotion ? {} : { x: [0, 30, -20, 0], y: [0, -20, 30, 0] }}
           transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
@@ -331,7 +377,7 @@ export function LoginPage() {
           {/* Mobile header */}
           <div className="lg:hidden mb-8">
             <motion.div className="flex items-center gap-3" {...entrance(0)}>
-              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-accent to-accent-press flex items-center justify-center shadow-lg shadow-accent/20">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-accent to-accent-press flex items-center justify-center shadow-lg shadow-accent/25">
                 <svg className="w-6 h-6 text-base" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M12 2L2 7l10 5 10-5-10-5z" />
                   <path d="M2 17l10 5 10-5" />
@@ -353,26 +399,39 @@ export function LoginPage() {
             style={disableTilt ? {} : { rotateX, rotateY, perspective: 800 }}
             className={`relative ${shaking ? 'animate-shake' : ''}`}
           >
-            {/* Gradient sheen border — 1px with light catch along top-left */}
+            {/* Gradient sheen border — visible */}
             <div
               className="absolute -inset-px rounded-2xl pointer-events-none"
               style={{
-                background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 40%, rgba(232,160,53,0.1) 100%)',
+                background: 'linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 40%, rgba(232,160,53,0.15) 100%)',
               }}
             />
 
-            {/* Stacked shadow layers — tight dark, diffuse dark, soft accent glow */}
+            {/* Card glow pulse — breathing shadow */}
+            <motion.div
+              className="absolute -inset-1 rounded-2xl pointer-events-none"
+              animate={prefersReducedMotion ? {} : {
+                boxShadow: [
+                  '0 0 30px rgba(232,160,53,0.06), 0 0 60px rgba(232,160,53,0.03)',
+                  '0 0 40px rgba(232,160,53,0.12), 0 0 80px rgba(232,160,53,0.06)',
+                  '0 0 30px rgba(232,160,53,0.06), 0 0 60px rgba(232,160,53,0.03)',
+                ],
+              }}
+              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+            />
+
+            {/* Stacked shadow layers */}
             <div
               className="absolute inset-0 rounded-2xl pointer-events-none"
               style={{
-                boxShadow: '0 2px 4px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.5), 0 0 40px rgba(232,160,53,0.08)',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.5), 0 0 40px rgba(232,160,53,0.15)',
               }}
             />
 
             {/* Glass card body */}
             <div className="relative rounded-2xl p-8 bg-surface-glass backdrop-blur-xl border border-border-light">
-              {/* Inner top highlight — glass catching light */}
-              <div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent rounded-full" />
+              {/* Inner top highlight — visible */}
+              <div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-white/[0.10] to-transparent rounded-full" />
 
               {/* Card header with parallax depth */}
               <motion.div
@@ -380,7 +439,7 @@ export function LoginPage() {
                 style={disableTilt ? {} : { translateZ: 20 }}
               >
                 <motion.div
-                  className="w-14 h-14 rounded-2xl bg-gradient-to-br from-accent to-accent-press flex items-center justify-center mx-auto mb-4 shadow-lg shadow-accent/20"
+                  className="w-14 h-14 rounded-2xl bg-gradient-to-br from-accent to-accent-press flex items-center justify-center mx-auto mb-4 shadow-lg shadow-accent/25"
                   whileHover={{ scale: 1.05 }}
                   style={disableTilt ? {} : { translateZ: 40 }}
                 >
@@ -422,12 +481,12 @@ export function LoginPage() {
                 <motion.div
                   className={`relative rounded-xl border transition-all duration-300 ${
                     focusedField === 'username'
-                      ? 'border-accent/40 bg-accent/[0.04]'
+                      ? 'border-accent/50 bg-accent/[0.05]'
                       : 'border-border hover:border-border-light bg-base/50'
                   }`}
                   style={disableTilt ? {} : { translateZ: 10 }}
                   animate={focusedField === 'username' ? {
-                    boxShadow: '0 0 0 3px rgba(232,160,53,0.1), 0 0 20px rgba(232,160,53,0.05)',
+                    boxShadow: '0 0 0 4px rgba(232,160,53,0.12), 0 0 24px rgba(232,160,53,0.08)',
                   } : {
                     boxShadow: '0 0 0 0px rgba(232,160,53,0), 0 0 0px rgba(232,160,53,0)',
                   }}
@@ -456,12 +515,12 @@ export function LoginPage() {
                 <motion.div
                   className={`relative rounded-xl border transition-all duration-300 ${
                     focusedField === 'password'
-                      ? 'border-accent/40 bg-accent/[0.04]'
+                      ? 'border-accent/50 bg-accent/[0.05]'
                       : 'border-border hover:border-border-light bg-base/50'
                   }`}
                   style={disableTilt ? {} : { translateZ: 10 }}
                   animate={focusedField === 'password' ? {
-                    boxShadow: '0 0 0 3px rgba(232,160,53,0.1), 0 0 20px rgba(232,160,53,0.05)',
+                    boxShadow: '0 0 0 4px rgba(232,160,53,0.12), 0 0 24px rgba(232,160,53,0.08)',
                   } : {
                     boxShadow: '0 0 0 0px rgba(232,160,53,0), 0 0 0px rgba(232,160,53,0)',
                   }}
@@ -508,7 +567,7 @@ export function LoginPage() {
                     <motion.div initial={{ opacity: 0, y: -8, height: 0 }} animate={{ opacity: 1, y: 0, height: 'auto' }}
                       exit={{ opacity: 0, y: -8, height: 0 }} className="overflow-hidden"
                     >
-                      <div className="flex items-center gap-2.5 px-4 py-3 rounded-xl border border-danger/15 bg-danger-dim">
+                      <div className="flex items-center gap-2.5 px-4 py-3 rounded-xl border border-danger/20 bg-danger-dim">
                         <svg className="w-4 h-4 text-danger flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
                         </svg>
@@ -523,11 +582,11 @@ export function LoginPage() {
                   type="submit" disabled={loading || success}
                   whileTap={disableTilt ? {} : { scale: 0.96 }}
                   transition={{ type: 'spring', stiffness: 400, damping: 15 }}
-                  className="w-full relative overflow-hidden bg-gradient-to-r from-accent to-accent-press hover:from-accent-hover hover:to-accent text-base font-bold py-3.5 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-accent/15 hover:shadow-xl hover:shadow-accent/25 group"
+                  className="w-full relative overflow-hidden bg-gradient-to-r from-accent to-accent-press hover:from-accent-hover hover:to-accent text-base font-bold py-3.5 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-accent/20 hover:shadow-xl hover:shadow-accent/30 group"
                   style={disableTilt ? {} : { translateZ: 5 }}
                 >
                   {/* Shine sweep */}
-                  <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none" />
+                  <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out bg-gradient-to-r from-transparent via-white/15 to-transparent pointer-events-none" />
 
                   {success ? (
                     <span className="flex items-center justify-center gap-2 relative">
