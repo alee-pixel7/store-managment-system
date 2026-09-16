@@ -9,9 +9,10 @@ import prisma from '../lib/prisma';
  * @param itemId - The ID of the item to recalculate
  * @returns The recalculated stock quantity
  */
-export async function recalculateStock(itemId: number): Promise<number> {
+export async function recalculateStock(itemId: number, tx?: any): Promise<number> {
+  const client = tx || prisma;
   // Get all transaction items for this item
-  const transactionItems = await prisma.transaction_items.findMany({
+  const transactionItems = await client.transaction_items.findMany({
     where: { item_id: itemId },
     include: {
       transaction: {
@@ -169,7 +170,7 @@ export async function createTransaction(
       });
 
       // Update the item's current_stock
-      const newStock = await recalculateStock(item.item_id);
+      const newStock = await recalculateStock(item.item_id, tx);
       await tx.items.update({
         where: { id: item.item_id },
         data: {

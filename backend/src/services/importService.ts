@@ -549,7 +549,7 @@ export async function importOpeningStock(
         });
 
         // Recalculate stock
-        const newStock = await recalculateStock(itemId);
+        const newStock = await recalculateStock(itemId, tx);
         await tx.items.update({
           where: { id: itemId },
           data: { current_stock: newStock },
@@ -805,7 +805,7 @@ export async function importDailyReportTransactions(
                 line_remarks: item._reason || null,
               },
             });
-            const newStock = await recalculateStock(item._itemId);
+            const newStock = await recalculateStock(item._itemId, tx);
             await tx.items.update({ where: { id: item._itemId }, data: { current_stock: newStock } });
           }
         });

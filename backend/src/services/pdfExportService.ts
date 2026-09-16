@@ -18,48 +18,68 @@ function formatCurrency(value: number): string {
   }).format(value);
 }
 
-function drawTable(doc: PDFKit.PDFDocument, headers: string[], rows: (string | number)[][], startY: number, margin: number = 30): number {
+function drawTable(doc: PDFKit.PDFDocument, headers: string[], rows: (string | number)[][], startY: number, margin: number = 30, colWidths?: number[]): number {
   const pageWidth = doc.page.width - margin * 2;
-  const colWidth = pageWidth / headers.length;
+  const colWidth = colWidths || headers.map(() => pageWidth / headers.length);
   let y = startY;
 
   // Header
+  let headerHeight = 18;
   doc.font('Helvetica-Bold').fontSize(8).fillColor('#FFFFFF');
-  doc.rect(margin, y, pageWidth, 18).fill('#2563EB');
-  doc.fillColor('#FFFFFF');
   headers.forEach((header, i) => {
-    doc.text(header, margin + i * colWidth + 4, y + 4, { width: colWidth - 8, align: 'left' });
+    const h = doc.heightOfString(header, { width: colWidth[i] - 8 }) + 8;
+    if (h > headerHeight) headerHeight = h;
   });
-  y += 18;
+  doc.rect(margin, y, pageWidth, headerHeight).fill('#2563EB');
+  doc.fillColor('#FFFFFF');
+  let x = margin;
+  headers.forEach((header, i) => {
+    doc.text(header, x + 4, y + 4, { width: colWidth[i] - 8, align: 'left' });
+    x += colWidth[i];
+  });
+  y += headerHeight;
 
   // Rows
   doc.font('Helvetica').fontSize(8).fillColor('#000000');
-  for (const row of rows) {
+  for (let r = 0; r < rows.length; r++) {
+    const row = rows[r];
+
     // Check if we need a new page
     if (y > doc.page.height - 50) {
       doc.addPage();
       y = 30;
       // Re-draw header
       doc.font('Helvetica-Bold').fontSize(8).fillColor('#FFFFFF');
-      doc.rect(margin, y, pageWidth, 18).fill('#2563EB');
+      doc.rect(margin, y, pageWidth, headerHeight).fill('#2563EB');
       doc.fillColor('#FFFFFF');
+      x = margin;
       headers.forEach((header, i) => {
-        doc.text(header, margin + i * colWidth + 4, y + 4, { width: colWidth - 8, align: 'left' });
+        doc.text(header, x + 4, y + 4, { width: colWidth[i] - 8, align: 'left' });
+        x += colWidth[i];
       });
-      y += 18;
+      y += headerHeight;
       doc.font('Helvetica').fontSize(8).fillColor('#000000');
     }
 
+    // Calculate row height based on tallest cell
+    let rowHeight = 16;
+    row.forEach((cell, i) => {
+      const h = doc.heightOfString(String(cell ?? ''), { width: colWidth[i] - 8 }) + 4;
+      if (h > rowHeight) rowHeight = h;
+    });
+
     // Alternating row background
-    if (rows.indexOf(row) % 2 === 0) {
-      doc.rect(margin, y, pageWidth, 16).fill('#F3F4F6');
+    if (r % 2 === 0) {
+      doc.rect(margin, y, pageWidth, rowHeight).fill('#F3F4F6');
       doc.fillColor('#000000');
     }
 
+    x = margin;
     row.forEach((cell, i) => {
-      doc.text(String(cell ?? ''), margin + i * colWidth + 4, y + 2, { width: colWidth - 8, align: 'left' });
+      doc.text(String(cell ?? ''), x + 4, y + 2, { width: colWidth[i] - 8, align: 'left' });
+      x += colWidth[i];
     });
-    y += 16;
+    y += rowHeight;
   }
 
   return y + 10;
@@ -275,14 +295,14 @@ export async function exportItemsListPDF(items: any[]): Promise<Buffer> {
     const itemRows = items.map((i) => [
       i.item_code,
       i.item_name,
-      i.brand || '',
+      i.category?.name || '-',
+      i.brand || '-',
       i.unit,
-      String(i.min_stock),
       String(i.current_stock),
-      i.last_rate ? formatCurrency(i.last_rate) : '-',
-      i.rack_location || '',
+      String(i.min_stock),
+      i.rack_location || '-',
     ]);
-    drawTable(doc, ['Code', 'Name', 'Brand', 'Unit', 'Min', 'Stock', 'Rate', 'Location'], itemRows, doc.y);
+    drawTable(doc, ['Code', 'Name', 'Category', 'Brand', 'Unit', 'Stock', 'Min', 'Location'], itemRows, doc.y, 30, [55, 160, 70, 55, 35, 40, 35, 55]);
 
     addPageNumbers(doc);
     doc.end();

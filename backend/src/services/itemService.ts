@@ -14,9 +14,10 @@ export async function listItems(params: {
   search?: string;
   category_id?: number;
   low_stock?: boolean;
+  out_of_stock?: boolean;
   is_active?: boolean;
 }) {
-  const { page, limit, offset, search, category_id, low_stock, is_active } = params;
+  const { page, limit, offset, search, category_id, low_stock, out_of_stock, is_active } = params;
 
   // Build where clause
   const where: Record<string, unknown> = {};
@@ -30,8 +31,15 @@ export async function listItems(params: {
   }
 
   // Low stock filter: current_stock <= min_stock and min_stock > 0
-  // We'll filter this in-memory after fetching since Prisma can't do column-to-column comparison
   const shouldFilterLowStock = low_stock === true;
+
+  // Out of stock filter: current_stock <= 0
+  const shouldFilterOutOfStock = out_of_stock === true;
+
+  // Out of stock can be done in SQL
+  if (shouldFilterOutOfStock) {
+    where.current_stock = { lte: 0 };
+  }
 
   // Search filter
   if (search && search.trim()) {

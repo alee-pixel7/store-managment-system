@@ -3,7 +3,7 @@
 
 const API_BASE = '/api';
 
-let logoutCallback: (() => void) | null = [];
+let logoutCallback: (() => void) | null = null;
 
 export function setLogoutCallback(callback: () => void) {
   logoutCallback = callback;

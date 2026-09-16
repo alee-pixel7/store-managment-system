@@ -24,6 +24,7 @@ export async function listItems(req: Request, res: Response) {
       ? parseInt(req.query.category_id as string, 10)
       : undefined;
     const low_stock = req.query.low_stock === 'true';
+    const out_of_stock = req.query.out_of_stock === 'true';
     const is_active = req.query.is_active !== undefined
       ? req.query.is_active === 'true'
       : undefined;
@@ -35,6 +36,7 @@ export async function listItems(req: Request, res: Response) {
       search,
       category_id,
       low_stock,
+      out_of_stock,
       is_active,
     });
 

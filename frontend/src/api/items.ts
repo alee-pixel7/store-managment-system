@@ -23,6 +23,7 @@ export async function listItems(params: {
   search?: string;
   category_id?: number;
   low_stock?: boolean;
+  out_of_stock?: boolean;
   is_active?: boolean;
 }): Promise<PaginatedResponse<Item>> {
   const searchParams = new URLSearchParams();
@@ -32,6 +33,7 @@ export async function listItems(params: {
   if (params.search) searchParams.set('search', params.search);
   if (params.category_id) searchParams.set('category_id', String(params.category_id));
   if (params.low_stock !== undefined) searchParams.set('low_stock', String(params.low_stock));
+  if (params.out_of_stock !== undefined) searchParams.set('out_of_stock', String(params.out_of_stock));
   if (params.is_active !== undefined) searchParams.set('is_active', String(params.is_active));
 
   const query = searchParams.toString();

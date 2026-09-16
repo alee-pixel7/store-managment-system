@@ -13,9 +13,10 @@ import { Pagination } from './Pagination';
 
 interface ItemsPageProps {
   onViewItem?: (itemId: number) => void;
+  initialFilter?: string | null;
 }
 
-export function ItemsPage({ onViewItem }: ItemsPageProps) {
+export function ItemsPage({ onViewItem, initialFilter }: ItemsPageProps) {
   const { canDoStockOps } = useAuth();
   // State
   const [items, setItems] = useState<Item[]>([]);
@@ -27,7 +28,8 @@ export function ItemsPage({ onViewItem }: ItemsPageProps) {
   // Filters
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryId, setCategoryId] = useState<number | undefined>(undefined);
-  const [lowStockOnly, setLowStockOnly] = useState(false);
+  const [lowStockOnly, setLowStockOnly] = useState(initialFilter === 'low_stock');
+  const [outOfStockOnly, setOutOfStockOnly] = useState(initialFilter === 'out_of_stock');
 
   // Debounced search
   const debouncedSearch = useDebounce(searchTerm, 300);
@@ -40,6 +42,17 @@ export function ItemsPage({ onViewItem }: ItemsPageProps) {
   useEffect(() => {
     listCategories().then(setCategories).catch(console.error);
   }, []);
+
+  // React to initialFilter changes (from dashboard navigation)
+  useEffect(() => {
+    if (initialFilter === 'low_stock') {
+      setLowStockOnly(true);
+      setOutOfStockOnly(false);
+    } else if (initialFilter === 'out_of_stock') {
+      setOutOfStockOnly(true);
+      setLowStockOnly(false);
+    }
+  }, [initialFilter]);
 
   // Fetch items
   const fetchItems = useCallback(async () => {
@@ -72,6 +85,7 @@ export function ItemsPage({ onViewItem }: ItemsPageProps) {
           limit: 50,
           category_id: categoryId,
           low_stock: lowStockOnly,
+          out_of_stock: outOfStockOnly,
         });
         setItems(result.items);
         setPagination(result.pagination);
@@ -81,7 +95,7 @@ export function ItemsPage({ onViewItem }: ItemsPageProps) {
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearch, pagination.page, categoryId, lowStockOnly]);
+  }, [debouncedSearch, pagination.page, categoryId, lowStockOnly, outOfStockOnly]);
 
   useEffect(() => {
     fetchItems();
@@ -90,7 +104,7 @@ export function ItemsPage({ onViewItem }: ItemsPageProps) {
   // Reset to page 1 when filters change
   useEffect(() => {
     setPagination((prev) => ({ ...prev, page: 1 }));
-  }, [debouncedSearch, categoryId, lowStockOnly]);
+  }, [debouncedSearch, categoryId, lowStockOnly, outOfStockOnly]);
 
   // Handlers
   const handlePageChange = (page: number) => {
@@ -137,7 +151,7 @@ export function ItemsPage({ onViewItem }: ItemsPageProps) {
   return (
     <div className="min-h-screen bg-base">
       {/* Header */}
-      <div className="bg-surface border-b border-border px-4 py-3">
+      <div className="bg-surface border-b border-border px-4 py-3 sticky top-0 z-10">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-semibold text-text">Items</h1>
           <div className="flex items-center gap-2">
@@ -205,11 +219,23 @@ export function ItemsPage({ onViewItem }: ItemsPageProps) {
               <input
                 type="checkbox"
                 checked={lowStockOnly}
-                onChange={(e) => setLowStockOnly(e.target.checked)}
+                onChange={(e) => { setLowStockOnly(e.target.checked); setOutOfStockOnly(false); }}
                 className="w-4 h-4 rounded border-border text-accent focus:ring-accent"
               />
-              <span className="hidden sm:inline">Low Stock Only</span>
+              <span className="hidden sm:inline">Low Stock</span>
               <span className="sm:hidden">Low</span>
+            </label>
+
+            {/* Out of stock toggle */}
+            <label className="flex items-center gap-2 text-sm text-text cursor-pointer whitespace-nowrap">
+              <input
+                type="checkbox"
+                checked={outOfStockOnly}
+                onChange={(e) => { setOutOfStockOnly(e.target.checked); setLowStockOnly(false); }}
+                className="w-4 h-4 rounded border-border text-accent focus:ring-accent"
+              />
+              <span className="hidden sm:inline">Out of Stock</span>
+              <span className="sm:hidden">Out</span>
             </label>
           </div>
         </div>

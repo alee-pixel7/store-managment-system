@@ -490,7 +490,7 @@ export function StockOutForm({ onSaved }: StockOutFormProps) {
 
       {/* Negative Stock Confirmation Dialog */}
       {showNegativeConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center">
           <div className="absolute inset-0 bg-black bg-opacity-50" onClick={cancelNegativeConfirm} />
           <div className="relative bg-surface rounded-lg shadow-xl w-full max-w-md mx-4">
             <div className="p-6 text-center">

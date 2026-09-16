@@ -1,6 +1,8 @@
 // MobileNav Component
 // Bottom navigation bar for mobile screens
 
+import { useState, useEffect, useRef } from 'react';
+
 interface MobileNavProps {
   currentPage: string;
   onNavigate: (page: string) => void;
@@ -8,6 +10,21 @@ interface MobileNavProps {
 }
 
 export function MobileNav({ currentPage, onNavigate, canDoStockOps }: MobileNavProps) {
+  const [showReports, setShowReports] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Close on outside click
+  useEffect(() => {
+    if (!showReports) return;
+    const handleClick = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setShowReports(false);
+      }
+    };
+    document.addEventListener('click', handleClick);
+    return () => document.removeEventListener('click', handleClick);
+  }, [showReports]);
+
   const navItems = [
     {
       id: 'items',
@@ -41,6 +58,16 @@ export function MobileNav({ currentPage, onNavigate, canDoStockOps }: MobileNavP
         ]
       : []),
     {
+      id: 'reports',
+      label: 'Reports',
+      isDropdown: true,
+      icon: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      ),
+    },
+    {
       id: 'audit-list',
       label: 'Audit',
       icon: (
@@ -59,15 +86,6 @@ export function MobileNav({ currentPage, onNavigate, canDoStockOps }: MobileNavP
       ),
     },
     {
-      id: 'reorder',
-      label: 'Reorder',
-      icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-        </svg>
-      ),
-    },
-    {
       id: 'dashboard',
       label: 'Home',
       icon: (
@@ -82,8 +100,43 @@ export function MobileNav({ currentPage, onNavigate, canDoStockOps }: MobileNavP
     <nav className="fixed bottom-0 left-0 right-0 bg-surface border-t border-border z-50 safe-area-bottom print:hidden md:hidden">
       <div className="flex items-center justify-around h-16">
         {navItems.map((item) => {
-          const isActive = currentPage === item.id || 
-            (item.id === 'items' && (currentPage === 'item-detail' || currentPage === 'items'));
+          const isActive = item.isDropdown
+            ? currentPage === 'daily-report' || currentPage === 'monthly-report'
+            : currentPage === item.id ||
+              (item.id === 'items' && (currentPage === 'item-detail' || currentPage === 'items'));
+
+          if (item.isDropdown) {
+            return (
+              <div key={item.id} className="relative" ref={menuRef}>
+                <button
+                  onClick={() => setShowReports(!showReports)}
+                  className={`flex flex-col items-center justify-center gap-0.5 min-w-[64px] min-h-[44px] px-2 py-1 rounded-lg transition-colors ${
+                    isActive ? 'text-accent' : 'text-text-secondary active:text-text'
+                  }`}
+                >
+                  {item.icon}
+                  <span className="text-xs font-medium">{item.label}</span>
+                </button>
+                {showReports && (
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-40 bg-surface border border-border rounded-lg shadow-lg z-[60]">
+                    <button
+                      onClick={() => { onNavigate('daily-report'); setShowReports(false); }}
+                      className="block w-full text-left px-4 py-2.5 text-sm text-text hover:bg-hover rounded-t-lg"
+                    >
+                      Daily Report
+                    </button>
+                    <button
+                      onClick={() => { onNavigate('monthly-report'); setShowReports(false); }}
+                      className="block w-full text-left px-4 py-2.5 text-sm text-text hover:bg-hover rounded-b-lg"
+                    >
+                      Monthly Report
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          }
+
           return (
             <button
               key={item.id}

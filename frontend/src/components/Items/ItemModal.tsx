@@ -99,7 +99,7 @@ export function ItemModal({ isOpen, onClose, onSave, item, categories }: ItemMod
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50"
       onClick={handleBackdropClick}
     >
       <div className="bg-surface rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden">

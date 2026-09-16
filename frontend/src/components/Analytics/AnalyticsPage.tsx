@@ -31,7 +31,7 @@ export function AnalyticsPage() {
   return (
     <div className="min-h-screen bg-base">
       {/* Header */}
-      <div className="bg-surface border-b border-border px-4 py-3">
+      <div className="bg-surface border-b border-border px-4 py-3 sticky top-0 z-10">
         <h1 className="text-xl font-semibold text-text">Analytics</h1>
       </div>
 

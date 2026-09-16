@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { useIsMobile } from './hooks/useIsMobile'
 import { LoginPage } from './components/Auth/LoginPage'
@@ -10,7 +10,6 @@ import { StockOutPage } from './components/Transactions/StockOutPage'
 import { StockReturnPage } from './components/Transactions/StockReturnPage'
 import { ImportWizard } from './components/Import/ImportWizard'
 import { BackupSettings } from './components/Settings/BackupSettings'
-import { SchedulerSettings } from './components/Settings/SchedulerSettings'
 import { DailyReportPage } from './components/Reports/DailyReportPage'
 import { MonthlyReportPage } from './components/Reports/MonthlyReportPage'
 import { AuditListPage } from './components/Audit/AuditListPage'
@@ -29,10 +28,20 @@ function AppContent() {
   const [currentPage, setCurrentPage] = useState<Page>('stock-out');
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
   const [selectedAuditId, setSelectedAuditId] = useState<number | null>(null);
+  const [navFilter, setNavFilter] = useState<string | null>(null);
+  const [showReports, setShowReports] = useState(false);
 
   const handleBackendReady = useCallback(() => {
     setBackendReady(true);
   }, []);
+
+  // Close reports dropdown on outside click
+  useEffect(() => {
+    if (!showReports) return;
+    const handleClick = () => setShowReports(false);
+    document.addEventListener('click', handleClick);
+    return () => document.removeEventListener('click', handleClick);
+  }, [showReports]);
 
   if (!backendReady) {
     return <LoadingScreen onReady={handleBackendReady} />;
@@ -63,7 +72,16 @@ function AppContent() {
   };
 
   const handleNavigate = (page: string) => {
-    setCurrentPage(page as Page);
+    if (page.includes('?')) {
+      const [base, query] = page.split('?');
+      const params = new URLSearchParams(query);
+      const filter = params.get('filter');
+      setCurrentPage(base as Page);
+      setNavFilter(filter);
+    } else {
+      setCurrentPage(page as Page);
+      setNavFilter(null);
+    }
     setSelectedItemId(null);
   };
 
@@ -131,8 +149,9 @@ function AppContent() {
                     </button>
                   </>
                 )}
-                <div className="relative group">
+                <div className="relative">
                   <button
+                    onClick={() => setShowReports(!showReports)}
                     className={`px-3 py-1.5 text-sm font-medium rounded ${
                       currentPage === 'daily-report' || currentPage === 'monthly-report'
                         ? 'bg-accent-dim text-accent'
@@ -141,20 +160,22 @@ function AppContent() {
                   >
                     Reports ▾
                   </button>
-                  <div className="absolute left-0 top-full mt-1 w-40 bg-surface border border-border rounded shadow-lg hidden group-hover:block z-50">
-                    <button
-                      onClick={() => handleNavigate('daily-report')}
-                      className="block w-full text-left px-4 py-2 text-sm text-text hover:bg-hover"
-                    >
-                      Daily Report
-                    </button>
-                    <button
-                      onClick={() => handleNavigate('monthly-report')}
-                      className="block w-full text-left px-4 py-2 text-sm text-text hover:bg-hover"
-                    >
-                      Monthly Report
-                    </button>
-                  </div>
+                  {showReports && (
+                    <div className="absolute left-0 top-full mt-1 w-40 bg-surface border border-border rounded shadow-lg z-[60]">
+                      <button
+                        onClick={() => { handleNavigate('daily-report'); setShowReports(false); }}
+                        className="block w-full text-left px-4 py-2 text-sm text-text hover:bg-hover"
+                      >
+                        Daily Report
+                      </button>
+                      <button
+                        onClick={() => { handleNavigate('monthly-report'); setShowReports(false); }}
+                        className="block w-full text-left px-4 py-2 text-sm text-text hover:bg-hover"
+                      >
+                        Monthly Report
+                      </button>
+                    </div>
+                  )}
                 </div>
                 <button
                   onClick={() => handleNavigate('import')}
@@ -246,12 +267,12 @@ function AppContent() {
       )}
 
       {/* Page Content */}
-      <div className={isMobile ? 'pb-20' : ''}>
+      <div className={isMobile ? 'pb-20 safe-area-bottom' : ''}>
         {currentPage === 'dashboard' && (
           <DashboardPage onNavigate={handleNavigate} onViewItem={handleViewItem} />
         )}
         {currentPage === 'items' && (
-          <ItemsPage onViewItem={handleViewItem} />
+          <ItemsPage onViewItem={handleViewItem} initialFilter={navFilter} />
         )}
         {currentPage === 'item-detail' && selectedItemId && (
           <ItemDetailPage itemId={selectedItemId} onBack={handleBackFromItem} />
@@ -274,7 +295,6 @@ function AppContent() {
               <h1 className="text-xl font-semibold text-text">Settings</h1>
             </div>
             <div className="p-4 max-w-3xl mx-auto space-y-6">
-              <SchedulerSettings />
               <BackupSettings />
             </div>
           </div>

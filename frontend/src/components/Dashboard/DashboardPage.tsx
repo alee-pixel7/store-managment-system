@@ -101,12 +101,13 @@ export function DashboardPage({ onNavigate, onViewItem }: DashboardPageProps) {
           todayInTotalQty={summary.todayInTotalQty}
           todayOutCount={summary.todayOutCount}
           todayOutTotalQty={summary.todayOutTotalQty}
+          onNavigate={onNavigate}
         />
 
         {/* Two Column Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
           <div className="lg:col-span-3">
-            <RecentActivity transactions={summary.lastTransactions} />
+            <RecentActivity transactions={summary.lastTransactions} onNavigate={onNavigate} />
           </div>
           <div className="lg:col-span-2">
             <LowStockAlert items={summary.lowStockItems} onViewItem={onViewItem} />

@@ -11,9 +11,10 @@ interface Transaction {
 
 interface RecentActivityProps {
   transactions: Transaction[];
+  onNavigate: (page: string) => void;
 }
 
-export function RecentActivity({ transactions }: RecentActivityProps) {
+export function RecentActivity({ transactions, onNavigate }: RecentActivityProps) {
   const getTxnStyle = (type: string) => {
     switch (type) {
       case 'IN':
@@ -46,6 +47,23 @@ export function RecentActivity({ transactions }: RecentActivityProps) {
     return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
   };
 
+  const handleTxnClick = (txnType: string) => {
+    switch (txnType) {
+      case 'IN':
+      case 'ADJUST':
+        onNavigate('stock-in');
+        break;
+      case 'OUT':
+        onNavigate('stock-out');
+        break;
+      case 'RETURN':
+        onNavigate('stock-return');
+        break;
+      default:
+        break;
+    }
+  };
+
   return (
     <div className="bg-surface rounded-xl border border-border overflow-hidden h-full">
       <div className="px-5 py-4 border-b border-border flex items-center justify-between">
@@ -67,20 +85,21 @@ export function RecentActivity({ transactions }: RecentActivityProps) {
         </div>
       ) : (
         <div className="divide-y divide-line-subtle max-h-[420px] overflow-y-auto">
-          {transactions.map((txn, idx) => {
+          {transactions.map((txn) => {
             const style = getTxnStyle(txn.txn_type);
             return (
-              <div key={txn.id} className="px-5 py-3 hover:bg-hover transition-colors group">
+              <button
+                key={txn.id}
+                onClick={() => handleTxnClick(txn.txn_type)}
+                className="w-full px-5 py-3 text-left hover:bg-hover transition-colors group cursor-pointer"
+              >
                 <div className="flex items-center gap-3">
-                  {/* Type badge */}
                   <div className={`flex-shrink-0 px-2 py-0.5 text-[10px] font-bold uppercase rounded ${style.bg} ${style.text} border ${style.border}`}>
                     {style.label}
                   </div>
-                  {/* Txn number */}
                   <span className="font-mono text-sm text-text group-hover:text-accent transition-colors truncate">
                     {txn.txn_no}
                   </span>
-                  {/* Time */}
                   <span className="ml-auto flex-shrink-0 text-[11px] text-text-muted tabular-nums">
                     {formatTime(txn.txn_date)}
                   </span>
@@ -92,7 +111,7 @@ export function RecentActivity({ transactions }: RecentActivityProps) {
                   <span className="text-text-muted">·</span>
                   <span className="tabular-nums">{txn.total_qty} pcs</span>
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>

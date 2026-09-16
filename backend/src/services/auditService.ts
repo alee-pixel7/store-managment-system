@@ -404,7 +404,7 @@ export async function finaliseAudit(auditId: number, userId: number): Promise<vo
         });
 
         // Recalculate stock
-        const newStock = await recalculateStock(line.item_id);
+        const newStock = await recalculateStock(line.item_id, tx);
 
         // Update item stock
         await tx.items.update({

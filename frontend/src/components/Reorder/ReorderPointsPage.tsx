@@ -105,7 +105,7 @@ export function ReorderPointsPage() {
   return (
     <div className="min-h-screen bg-base">
       {/* Header */}
-      <div className="bg-surface border-b border-border px-4 py-3">
+      <div className="bg-surface border-b border-border px-4 py-3 sticky top-0 z-10">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-semibold text-text">Smart Reorder Points</h1>

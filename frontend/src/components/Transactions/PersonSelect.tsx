@@ -56,12 +56,12 @@ export function PersonSelect({ value, onChange, disabled = false }: PersonSelect
 
   return (
     <>
-      <div className="flex gap-2">
+      <div className="flex gap-2 items-stretch">
         <select
           value={value || ''}
           onChange={(e) => onChange(e.target.value ? Number(e.target.value) : null)}
           disabled={disabled || loading}
-          className="flex-1 px-3 py-1.5 text-sm border border-border rounded focus:ring-1 focus:ring-accent focus:border-accent disabled:bg-elevated"
+          className="flex-1 min-w-0 px-3 py-1.5 text-sm border border-border rounded focus:ring-1 focus:ring-accent focus:border-accent disabled:bg-elevated"
         >
           <option value="">Select Person</option>
           {persons.map((person) => (
@@ -81,7 +81,7 @@ export function PersonSelect({ value, onChange, disabled = false }: PersonSelect
       </div>
 
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-surface rounded-lg shadow-xl w-full max-w-sm">
             <div className="px-4 py-3 border-b border-border">
               <div className="flex items-center justify-between">

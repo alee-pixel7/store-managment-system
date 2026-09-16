@@ -71,7 +71,7 @@ export function AuditListPage({ onOpenAudit }: AuditListPageProps) {
   return (
     <div className="min-h-screen bg-base">
       {/* Header */}
-      <div className="bg-surface border-b border-border px-4 py-3">
+      <div className="bg-surface border-b border-border px-4 py-3 sticky top-0 z-10">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <h1 className="text-xl font-semibold text-text">Stock Audits</h1>
           {canDoStockOps && (

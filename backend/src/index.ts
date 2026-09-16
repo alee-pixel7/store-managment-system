@@ -15,12 +15,10 @@ import backupRoutes from './routes/backupRoutes';
 import reportRoutes from './routes/reportRoutes';
 import exportRoutes from './routes/exportRoutes';
 import auditRoutes from './routes/auditRoutes';
-import schedulerRoutes from './routes/schedulerRoutes';
 import analyticsRoutes from './routes/analyticsRoutes';
 import reorderRoutes from './routes/reorderRoutes';
 import { authenticate } from './middleware/auth';
 import { startPeriodicBackup } from './services/backupService';
-import { startScheduler } from './services/reportScheduler';
 
 // Parse --data-dir argument
 const dataDirArg = process.argv.find(arg => arg.startsWith('--data-dir='));
@@ -76,7 +74,6 @@ app.use('/api/backup', authenticate, backupRoutes);
 app.use('/api/reports', authenticate, reportRoutes);
 app.use('/api/export', authenticate, exportRoutes);
 app.use('/api/audits', authenticate, auditRoutes);
-app.use('/api/scheduler', authenticate, schedulerRoutes);
 app.use('/api/analytics', authenticate, analyticsRoutes);
 app.use('/api/reorder', authenticate, reorderRoutes);
 
@@ -88,9 +85,6 @@ async function startServer() {
 
     // Start periodic backup
     startPeriodicBackup();
-
-    // Start report scheduler
-    startScheduler();
 
     app.listen(PORT, '0.0.0.0', () => {
       console.log(`🚀 Server running on http://0.0.0.0:${PORT}`);

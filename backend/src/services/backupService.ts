@@ -13,6 +13,7 @@ const DB_PATH = path.isAbsolute(DB_PATH_RAW)
   ? DB_PATH_RAW
   : path.resolve(__dirname, '../../prisma', DB_PATH_RAW);
 const KEEP_DAYS = 30;
+const MAX_DAILY_BACKUPS = 3;
 const BACKUP_PREFIX = 'store-';
 
 export interface BackupInfo {
@@ -42,21 +43,20 @@ export async function createBackup(): Promise<BackupInfo> {
   const filename = `${BACKUP_PREFIX}${dateStr}.db`;
   const backupPath = path.join(BACKUP_DIR, filename);
 
-  // Check if backup already exists for today
+  // If backup for today already exists, overwrite it (don't create timestamped copies)
   if (fs.existsSync(backupPath)) {
-    // Overwrite with timestamp
-    const timestamp = now.toTimeString().split(' ')[0].replace(/:/g, '-');
-    const newFilename = `${BACKUP_PREFIX}${dateStr}-${timestamp}.db`;
-    const newPath = path.join(BACKUP_DIR, newFilename);
-    fs.copyFileSync(DB_PATH, newPath);
-
-    return getBackupInfo(newFilename);
+    fs.copyFileSync(DB_PATH, backupPath);
+    console.log(`✅ Backup updated: ${filename}`);
+    await cleanupOldBackups();
+    return getBackupInfo(filename);
   }
 
   // Copy database file
   fs.copyFileSync(DB_PATH, backupPath);
-
   console.log(`✅ Backup created: ${filename}`);
+
+  // Cap daily backups — keep only newest 3 per day
+  capDailyBackups();
 
   // Run cleanup
   await cleanupOldBackups();
@@ -97,6 +97,43 @@ function isFirstBackupOfMonth(filename: string, date: Date): boolean {
     .sort();
 
   return backups.length > 0 && backups[0] === filename;
+}
+
+// ============================================================
+// CAP DAILY BACKUPS — keep only newest MAX_DAILY_BACKUPS per day
+// ============================================================
+function capDailyBackups() {
+  const backups = fs.readdirSync(BACKUP_DIR)
+    .filter((f) => f.startsWith(BACKUP_PREFIX) && f.endsWith('.db'))
+    .sort()
+    .reverse(); // newest first
+
+  // Group by date
+  const byDate = new Map<string, string[]>();
+  for (const f of backups) {
+    const dateMatch = f.match(/(\d{4}-\d{2}-\d{2})/);
+    if (!dateMatch) continue;
+    const date = dateMatch[1];
+    if (!byDate.has(date)) byDate.set(date, []);
+    byDate.get(date)!.push(f);
+  }
+
+  // Delete excess backups per day
+  let deleted = 0;
+  for (const [, files] of byDate) {
+    if (files.length > MAX_DAILY_BACKUPS) {
+      // files is sorted newest-first, so delete from the end (oldest)
+      const toDelete = files.slice(MAX_DAILY_BACKUPS);
+      for (const f of toDelete) {
+        fs.unlinkSync(path.join(BACKUP_DIR, f));
+        console.log(`🗑️  Capped daily backup: ${f}`);
+        deleted++;
+      }
+    }
+  }
+  if (deleted > 0) {
+    console.log(`📦 Cleaned ${deleted} excess daily backups (keeping ${MAX_DAILY_BACKUPS}/day)`);
+  }
 }
 
 // ============================================================

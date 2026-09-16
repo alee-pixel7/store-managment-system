@@ -42,7 +42,7 @@ export async function createStockIn(data: CreateStockInInput, userId: number) {
       });
 
       // Recalculate stock using the helper function
-      const newStock = await recalculateStock(item.item_id);
+      const newStock = await recalculateStock(item.item_id, tx);
 
       // Update the item's current_stock and last_rate
       await tx.items.update({
@@ -254,7 +254,7 @@ export async function createStockOut(data: CreateStockOutInput, userId: number) 
       });
 
       // Recalculate stock using the helper function
-      const newStock = await recalculateStock(item.item_id);
+      const newStock = await recalculateStock(item.item_id, tx);
 
       // Update the item's current_stock
       await tx.items.update({
@@ -415,7 +415,7 @@ export async function createReturn(data: CreateReturnInput, userId: number) {
         },
       });
 
-      const newStock = await recalculateStock(item.item_id);
+      const newStock = await recalculateStock(item.item_id, tx);
       await tx.items.update({
         where: { id: item.item_id },
         data: { current_stock: newStock },
@@ -526,7 +526,7 @@ export async function reverseTransaction(
 
     // THEN recalculate stock for affected items (now original is skipped)
     for (const itemId of affectedItemIds) {
-      const newStock = await recalculateStock(itemId);
+      const newStock = await recalculateStock(itemId, tx);
       await tx.items.update({
         where: { id: itemId },
         data: { current_stock: newStock },
