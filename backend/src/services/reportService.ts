@@ -24,6 +24,7 @@ export interface DailyReport {
     supplier: string;
     invoiceNo: string;
     txnNo: string;
+    txnId: number;
   }>;
   issues: Array<{
     itemCode: string;
@@ -35,6 +36,7 @@ export interface DailyReport {
     machine: string | null;
     purpose: string;
     txnNo: string;
+    txnId: number;
   }>;
   itemsBelowMinimum: Array<{
     itemCode: string;
@@ -104,6 +106,7 @@ export async function getDailyReport(dateStr: string): Promise<DailyReport> {
           supplier: txn.supplier?.name || '-',
           invoiceNo: txn.invoice_no || '-',
           txnNo: txn.txn_no,
+          txnId: txn.id,
         });
         totalReceiptQty += qty;
       }
@@ -130,6 +133,7 @@ export async function getDailyReport(dateStr: string): Promise<DailyReport> {
           machine: txn.machine?.code || txn.machine?.name || null,
           purpose: txn.purpose || '-',
           txnNo: txn.txn_no,
+          txnId: txn.id,
         });
         totalIssueQty += qty;
       }

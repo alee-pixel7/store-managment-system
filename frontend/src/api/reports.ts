@@ -23,6 +23,7 @@ export interface DailyReport {
     supplier: string;
     invoiceNo: string;
     txnNo: string;
+    txnId: number;
   }>;
   issues: Array<{
     itemCode: string;
@@ -34,6 +35,7 @@ export interface DailyReport {
     machine: string | null;
     purpose: string;
     txnNo: string;
+    txnId: number;
   }>;
   itemsBelowMinimum: Array<{
     itemCode: string;
