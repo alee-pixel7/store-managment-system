@@ -55,14 +55,17 @@ export function DailyReportPage() {
 
   const handleReverse = async () => {
     if (!reverseTarget || !reverseReason.trim()) return;
+    const target = reverseTarget;
     setReversing(true);
     try {
-      await reverseTransaction(reverseTarget.txnId, reverseReason.trim());
-      setReverseSuccess(`Transaction ${reverseTarget.txnNo} reversed successfully`);
+      await reverseTransaction(target.txnId, reverseReason.trim());
       setReverseTarget(null);
       setReverseReason('');
+      setReverseSuccess(`Transaction ${target.txnNo} reversed successfully`);
       await handleGenerateReport();
     } catch (err) {
+      setReverseTarget(null);
+      setReverseReason('');
       setError(err instanceof Error ? err.message : 'Failed to reverse transaction');
     } finally {
       setReversing(false);
