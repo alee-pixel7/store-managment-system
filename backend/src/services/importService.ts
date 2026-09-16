@@ -476,7 +476,6 @@ export async function importOpeningStock(
   const existingStockMap = new Map(existingItems.map((i) => [i.item_code, i.current_stock]));
 
   const year = new Date().getFullYear();
-  let txnCounter = 0;
 
   for (const row of rows) {
     try {
@@ -524,9 +523,8 @@ export async function importOpeningStock(
       }
 
       // Create ADJUST transaction for opening stock
-      const txn_no = await generateTxnNo('ADJUST', year);
-
       await prisma.$transaction(async (tx) => {
+        const txn_no = await generateTxnNo('ADJUST', year, tx);
         const transaction = await tx.transactions.create({
           data: {
             txn_no,
@@ -781,7 +779,7 @@ export async function importDailyReportTransactions(
         const txnDate = parseDailyReportDate(firstItem._dateValue) || new Date();
 
         await prisma.$transaction(async (tx) => {
-          const txnNo = await generateTxnNo('OUT', year);
+          const txnNo = await generateTxnNo('OUT', year, tx);
 
           const transaction = await tx.transactions.create({
             data: {

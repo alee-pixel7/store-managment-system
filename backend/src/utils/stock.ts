@@ -56,29 +56,16 @@ export async function recalculateStock(itemId: number, tx?: any): Promise<number
 }
 
 /**
- * Updates current_stock for an item by recalculating from transactions
- * @param itemId - The ID of the item to update
- * @returns The updated item
- */
-export async function updateItemStock(itemId: number) {
-  const newStock = await recalculateStock(itemId);
-
-  return prisma.items.update({
-    where: { id: itemId },
-    data: { current_stock: newStock },
-  });
-}
-
-/**
  * Generates the next transaction number for a given type and year
  * Format: TYPE-YYYY-NNNN (e.g., IN-2026-0001)
  * @param txnType - The transaction type (IN, OUT, RETURN, ADJUST, REVERSAL)
  * @param year - The year for the transaction
  * @returns The next transaction number
  */
-export async function generateTxnNo(txnType: string, year: number): Promise<string> {
+export async function generateTxnNo(txnType: string, year: number, tx?: any): Promise<string> {
+  const client = tx || prisma;
   // Find the last transaction of this type in this year
-  const lastTxn = await prisma.transactions.findFirst({
+  const lastTxn = await client.transactions.findFirst({
     where: {
       txn_type: txnType,
       txn_date: {
@@ -137,7 +124,7 @@ export async function createTransaction(
 
   return prisma.$transaction(async (tx) => {
     // Generate transaction number
-    const txn_no = await generateTxnNo(transactionData.txn_type, year);
+    const txn_no = await generateTxnNo(transactionData.txn_type, year, tx);
 
     // Create the transaction header
     const transaction = await tx.transactions.create({

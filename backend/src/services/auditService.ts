@@ -374,10 +374,10 @@ export async function finaliseAudit(auditId: number, userId: number): Promise<vo
 
   // Create ADJUST transactions for variances
   const year = new Date().getFullYear();
-  const txnNo = await generateTxnNo('ADJUST', year);
 
   await prisma.$transaction(async (tx) => {
     // Create adjustment transaction header
+    const txnNo = await generateTxnNo('ADJUST', year, tx);
     const transaction = await tx.transactions.create({
       data: {
         txn_no: txnNo,

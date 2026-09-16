@@ -461,6 +461,7 @@ store management system/
 │   │   │   ├── pdfExportService.ts    # PDF generation
 │   │   │   ├── excelExportService.ts  # Excel generation
 │   │   │   ├── authService.ts         # Login, JWT
+│   │   ├── utils/                 # Utility functions
 │   │   │   └── stock.ts              # Stock calculation helpers
 │   │   ├── controllers/           # HTTP handlers
 │   │   ├── routes/                # API routes
@@ -539,6 +540,14 @@ store management system/
 | POST | `/api/transactions/out` | Stock OUT (allows negative stock) |
 | POST | `/api/transactions/return` | Stock Return |
 | POST | `/api/transactions/:id/reverse` | Reverse a transaction |
+| GET | `/api/transactions/suppliers` | List suppliers |
+| POST | `/api/transactions/suppliers` | Create supplier |
+| GET | `/api/transactions/persons` | List persons |
+| POST | `/api/transactions/persons` | Create person |
+| GET | `/api/transactions/departments` | List departments |
+| POST | `/api/transactions/departments` | Create department |
+| GET | `/api/transactions/machines` | List machines |
+| POST | `/api/transactions/machines` | Create machine |
 
 ### Reports
 | Method | Endpoint | Description |
@@ -574,6 +583,8 @@ store management system/
 | POST | `/api/import/items` | Import items |
 | POST | `/api/import/stock` | Import stock transactions |
 | POST | `/api/import/daily-report` | Import daily report with fuzzy matching |
+| POST | `/api/import/validate-stock` | Validate stock data |
+| POST | `/api/import/errors` | Download error list |
 
 ### Audit
 | Method | Endpoint | Description |
@@ -612,7 +623,7 @@ store management system/
 
 ## Database Schema
 
-13 tables:
+12 tables:
 
 | Table | Purpose |
 |-------|---------|

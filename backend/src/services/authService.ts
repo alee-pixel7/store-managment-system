@@ -4,8 +4,9 @@
 import prisma from '../lib/prisma';
 import * as bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'store-management-secret-key-2026';
+const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(32).toString('hex');
 const JWT_EXPIRES_IN = '12h';
 
 // ============================================================
@@ -96,10 +97,6 @@ export function canReverse(role: Role): boolean {
 }
 
 export function canDeleteItem(role: Role): boolean {
-  return role === ROLES.ADMIN;
-}
-
-export function canManageUsers(role: Role): boolean {
   return role === ROLES.ADMIN;
 }
 

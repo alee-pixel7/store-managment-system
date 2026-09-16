@@ -13,7 +13,7 @@ export async function createStockIn(data: CreateStockInInput, userId: number) {
 
   return prisma.$transaction(async (tx) => {
     // Generate transaction number
-    const txn_no = await generateTxnNo('IN', year);
+    const txn_no = await generateTxnNo('IN', year, tx);
 
     // Create the transaction header
     const transaction = await tx.transactions.create({
@@ -218,7 +218,7 @@ export async function createStockOut(data: CreateStockOutInput, userId: number) 
 
   const result = await prisma.$transaction(async (tx) => {
     // Generate transaction number
-    const txn_no = await generateTxnNo('OUT', year);
+    const txn_no = await generateTxnNo('OUT', year, tx);
 
     // Create the transaction header
     const transaction = await tx.transactions.create({
@@ -392,7 +392,7 @@ export async function createReturn(data: CreateReturnInput, userId: number) {
   const year = new Date().getFullYear();
 
   return prisma.$transaction(async (tx) => {
-    const txn_no = await generateTxnNo('RETURN', year);
+    const txn_no = await generateTxnNo('RETURN', year, tx);
 
     const transaction = await tx.transactions.create({
       data: {
@@ -471,15 +471,11 @@ export async function reverseTransaction(
     throw new Error('Transaction is already reversed');
   }
 
-  // Determine the reversal type and sign
-  // IN → reverse as OUT (negative qty), OUT → reverse as IN (positive qty)
-  const reversalType = original.txn_type === 'IN' ? 'OUT' : 'IN';
-
   const year = new Date().getFullYear();
 
   return prisma.$transaction(async (tx) => {
     // Generate transaction number for reversal
-    const txn_no = await generateTxnNo('REVERSAL', year);
+    const txn_no = await generateTxnNo('REVERSAL', year, tx);
 
     // Create the reversal transaction
     const reversalTxn = await tx.transactions.create({
@@ -501,9 +497,14 @@ export async function reverseTransaction(
     // Create reversal items (opposite quantities)
     const affectedItemIds = new Set<number>();
     for (const item of original.transaction_items) {
-      const reversalQty = original.txn_type === 'IN'
-        ? -item.quantity  // IN reversal = negative (removes stock)
-        : item.quantity;  // OUT reversal = positive (adds stock back)
+      // Correct sign logic:
+      // IN reversal → negative (removes stock that was added)
+      // RETURN reversal → negative (removes stock that was returned)
+      // OUT reversal → positive (adds stock back)
+      // ADJUST reversal → negate the original signed quantity
+      const reversalQty = (original.txn_type === 'IN' || original.txn_type === 'RETURN' || original.txn_type === 'ADJUST')
+        ? -item.quantity
+        : item.quantity; // OUT reversal
 
       await tx.transaction_items.create({
         data: {
@@ -527,6 +528,9 @@ export async function reverseTransaction(
     // THEN recalculate stock for affected items (now original is skipped)
     for (const itemId of affectedItemIds) {
       const newStock = await recalculateStock(itemId, tx);
+      if (newStock < 0) {
+        throw new Error(`Reversal blocked: item ${itemId} would have negative stock (${newStock})`);
+      }
       await tx.items.update({
         where: { id: itemId },
         data: { current_stock: newStock },
