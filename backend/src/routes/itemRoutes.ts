@@ -12,6 +12,9 @@ router.get('/search', itemController.searchItems);
 
 // Categories - must be before /:id to avoid route conflict
 router.get('/categories', itemController.listCategories);
+router.post('/categories', requireRole('ADMIN'), itemController.createCategory);
+router.put('/categories/:id', requireRole('ADMIN'), itemController.updateCategory);
+router.delete('/categories/:id', requireRole('ADMIN'), itemController.deleteCategory);
 
 // CRUD routes
 router.get('/', itemController.listItems);

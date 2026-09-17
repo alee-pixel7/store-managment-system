@@ -18,8 +18,11 @@ export async function listItems(req: Request, res: Response) {
     const { page, limit, offset } = validatePagination(req.query);
 
     const search = req.query.search as string | undefined;
-    const category_id = req.query.category_id
+    const categoryIdRaw = req.query.category_id
       ? parseInt(req.query.category_id as string, 10)
+      : undefined;
+    const category_id = (categoryIdRaw !== undefined && !isNaN(categoryIdRaw) && categoryIdRaw >= 1)
+      ? categoryIdRaw
       : undefined;
     const low_stock = req.query.low_stock === 'true';
     const out_of_stock = req.query.out_of_stock === 'true';
@@ -196,6 +199,102 @@ export async function listCategories(req: Request, res: Response) {
       orderBy: { name: 'asc' },
     });
     res.json(categories);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Internal server error';
+    res.status(500).json({ error: message });
+  }
+}
+
+// ============================================================
+// POST /api/items/categories - Create new category
+// ============================================================
+export async function createCategory(req: Request, res: Response) {
+  try {
+    const { name } = req.body;
+    if (!name || typeof name !== 'string' || name.trim().length === 0) {
+      return res.status(400).json({ error: 'Category name is required' });
+    }
+    if (name.trim().length > 100) {
+      return res.status(400).json({ error: 'Category name must be 100 characters or less' });
+    }
+
+    const existing = await prisma.categories.findFirst({ where: { name: name.trim() } });
+    if (existing) {
+      return res.status(409).json({ error: 'Category with this name already exists' });
+    }
+
+    const category = await prisma.categories.create({
+      data: { name: name.trim() },
+    });
+    res.status(201).json({ ...category, _count: { items: 0 } });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Internal server error';
+    res.status(500).json({ error: message });
+  }
+}
+
+// ============================================================
+// PUT /api/items/categories/:id - Rename category
+// ============================================================
+export async function updateCategory(req: Request, res: Response) {
+  try {
+    const id = parseInt(req.params.id, 10);
+    if (isNaN(id) || id < 1) {
+      return res.status(400).json({ error: 'Invalid category ID' });
+    }
+
+    const { name } = req.body;
+    if (!name || typeof name !== 'string' || name.trim().length === 0) {
+      return res.status(400).json({ error: 'Category name is required' });
+    }
+    if (name.trim().length > 100) {
+      return res.status(400).json({ error: 'Category name must be 100 characters or less' });
+    }
+
+    const existing = await prisma.categories.findUnique({ where: { id } });
+    if (!existing) {
+      return res.status(404).json({ error: 'Category not found' });
+    }
+
+    const duplicate = await prisma.categories.findFirst({ where: { name: name.trim(), id: { not: id } } });
+    if (duplicate) {
+      return res.status(409).json({ error: 'Category with this name already exists' });
+    }
+
+    const category = await prisma.categories.update({
+      where: { id },
+      data: { name: name.trim() },
+    });
+    res.json(category);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Internal server error';
+    res.status(500).json({ error: message });
+  }
+}
+
+// ============================================================
+// DELETE /api/items/categories/:id - Delete category
+// ============================================================
+export async function deleteCategory(req: Request, res: Response) {
+  try {
+    const id = parseInt(req.params.id, 10);
+    if (isNaN(id) || id < 1) {
+      return res.status(400).json({ error: 'Invalid category ID' });
+    }
+
+    const existing = await prisma.categories.findUnique({ where: { id } });
+    if (!existing) {
+      return res.status(404).json({ error: 'Category not found' });
+    }
+
+    const itemCount = await prisma.items.count({ where: { category_id: id } });
+    if (itemCount > 0) {
+      // Clear category from all items in this category
+      await prisma.items.updateMany({ where: { category_id: id }, data: { category_id: null } });
+    }
+
+    await prisma.categories.delete({ where: { id } });
+    res.json({ message: 'Category deleted successfully', reassigned: itemCount });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Internal server error';
     res.status(500).json({ error: message });

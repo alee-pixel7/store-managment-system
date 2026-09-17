@@ -71,7 +71,7 @@ export function ItemModal({ isOpen, onClose, onSave, item, categories }: ItemMod
       const data = {
         item_code: formData.item_code,
         item_name: formData.item_name,
-        category_id: formData.category_id ? Number(formData.category_id) : undefined,
+        category_id: formData.category_id ? Number(formData.category_id) : (isEditing ? null : undefined),
         brand: formData.brand || undefined,
         unit: formData.unit,
         min_stock: Number(formData.min_stock),

@@ -69,11 +69,31 @@ export async function softDeleteItem(id: number): Promise<{ message: string; ite
 }
 
 // ============================================================
-// CATEGORIES API (for dropdown)
+// CATEGORIES API (for dropdown + CRUD)
 // ============================================================
 
 export async function listCategories(): Promise<Category[]> {
   return authFetch<Category[]>('/items/categories');
+}
+
+export async function createCategory(data: { name: string }): Promise<Category> {
+  return authFetch<Category>('/items/categories', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateCategory(id: number, data: { name: string }): Promise<Category> {
+  return authFetch<Category>(`/items/categories/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteCategory(id: number): Promise<{ message: string; reassigned: number }> {
+  return authFetch<{ message: string; reassigned: number }>(`/items/categories/${id}`, {
+    method: 'DELETE',
+  });
 }
 
 // ============================================================

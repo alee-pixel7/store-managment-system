@@ -3,6 +3,7 @@
 export interface Category {
   id: number;
   name: string;
+  _count?: { items: number };
 }
 
 export interface ItemAlias {
@@ -53,6 +54,9 @@ export interface SearchItem {
   current_stock: number;
   min_stock: number;
   rack_location: string | null;
+  category_id: number | null;
+  category: { id: number; name: string } | null;
+  brand: string | null;
 }
 
 export interface CreateItemInput {
@@ -253,6 +257,7 @@ export interface ItemDetail {
   current_stock: number;
   min_stock: number;
   last_rate: number | null;
+  category: { id: number; name: string } | null;
 }
 
 export interface LedgerEntry {

@@ -143,6 +143,14 @@ export async function getItemById(id: number) {
 // ============================================================
 export async function createItem(data: CreateItemInput) {
   return prisma.$transaction(async (tx) => {
+    // Check category exists if provided
+    if (data.category_id !== undefined && data.category_id !== null) {
+      const catExists = await tx.categories.findUnique({ where: { id: data.category_id } });
+      if (!catExists) {
+        throw new Error('Category does not exist');
+      }
+    }
+
     // Create the item
     const item = await tx.items.create({
       data: {
@@ -189,6 +197,14 @@ export async function updateItem(id: number, data: UpdateItemInput) {
   }
 
   return prisma.$transaction(async (tx) => {
+    // Check category exists if being set
+    if (data.category_id !== undefined && data.category_id !== null) {
+      const catExists = await tx.categories.findUnique({ where: { id: data.category_id } });
+      if (!catExists) {
+        throw new Error('Category does not exist');
+      }
+    }
+
     // Update item fields
     const updateData: Record<string, unknown> = {};
     if (data.item_code !== undefined) updateData.item_code = data.item_code;
@@ -270,6 +286,7 @@ export async function smartSearch(query: string) {
     where: { is_active: true },
     include: {
       item_aliases: { select: { alias_name: true } },
+      category: { select: { id: true, name: true } },
     },
     take: 5000,
   });
@@ -343,6 +360,9 @@ export async function smartSearch(query: string) {
       current_stock: item.current_stock,
       min_stock: item.min_stock,
       rack_location: item.rack_location,
+      category_id: item.category_id,
+      category: item.category,
+      brand: item.brand,
     }));
 
   return results;
@@ -485,6 +505,11 @@ export async function getItemLedger(
     };
   });
 
+  // Get category for the item
+  const category = item.category_id
+    ? await prisma.categories.findUnique({ where: { id: item.category_id }, select: { id: true, name: true } }).catch(() => null)
+    : null;
+
   return {
     item: {
       id: item.id,
@@ -496,6 +521,7 @@ export async function getItemLedger(
       current_stock: item.current_stock,
       min_stock: item.min_stock,
       last_rate: item.last_rate,
+      category,
     },
     ledger,
   };

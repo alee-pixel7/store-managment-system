@@ -9,6 +9,7 @@ import { useDebounce } from '../../hooks/useDebounce';
 import { useAuth } from '../../contexts/AuthContext';
 import { ItemsTable } from './ItemsTable';
 import { ItemModal } from './ItemModal';
+import { CategoryManager } from './CategoryManager';
 import { Pagination } from './Pagination';
 
 interface ItemsPageProps {
@@ -37,6 +38,7 @@ export function ItemsPage({ onViewItem, initialFilter }: ItemsPageProps) {
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Item | null>(null);
+  const [isCategoryManagerOpen, setIsCategoryManagerOpen] = useState(false);
 
   // Load categories
   useEffect(() => {
@@ -64,9 +66,6 @@ export function ItemsPage({ onViewItem, initialFilter }: ItemsPageProps) {
         // Convert search results to items format
         const items: Item[] = searchResults.map((r) => ({
           ...r,
-          category_id: null,
-          category: null,
-          brand: null,
           last_rate: null,
           barcode: null,
           image_path: null,
@@ -179,12 +178,23 @@ export function ItemsPage({ onViewItem, initialFilter }: ItemsPageProps) {
               <span className="hidden sm:inline">{exporting === 'pdf' ? 'Exporting...' : 'PDF'}</span>
             </button>
             {canDoStockOps && (
-              <button
-                onClick={handleAdd}
-                className="px-4 py-1.5 text-sm font-semibold text-base bg-gradient-to-r from-accent to-accent-press rounded-lg hover:shadow-lg hover:shadow-accent/20 min-h-[44px] transition-all"
-              >
-                + Add
-              </button>
+              <>
+                <button
+                  onClick={() => setIsCategoryManagerOpen(true)}
+                  className="px-3 py-1.5 text-sm font-medium text-accent bg-accent-dim border border-accent/20 rounded-lg hover:bg-accent/20 flex items-center gap-2 transition-all"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z" />
+                  </svg>
+                  <span className="hidden sm:inline">Categories</span>
+                </button>
+                <button
+                  onClick={handleAdd}
+                  className="px-4 py-1.5 text-sm font-semibold text-base bg-gradient-to-r from-accent to-accent-press rounded-lg hover:shadow-lg hover:shadow-accent/20 min-h-[44px] transition-all"
+                >
+                  + Add
+                </button>
+              </>
             )}
           </div>
         </div>
@@ -212,7 +222,7 @@ export function ItemsPage({ onViewItem, initialFilter }: ItemsPageProps) {
               <option value="">All Categories</option>
               {categories.map((cat) => (
                 <option key={cat.id} value={cat.id}>
-                  {cat.name}
+                  {cat.name}{cat._count ? ` (${cat._count.items})` : ''}
                 </option>
               ))}
             </select>
@@ -271,6 +281,14 @@ export function ItemsPage({ onViewItem, initialFilter }: ItemsPageProps) {
         onSave={handleSave}
         item={editingItem}
         categories={categories}
+      />
+
+      {/* Category Manager */}
+      <CategoryManager
+        isOpen={isCategoryManagerOpen}
+        onClose={() => setIsCategoryManagerOpen(false)}
+        categories={categories}
+        onUpdate={() => listCategories().then(setCategories).catch(console.error)}
       />
     </div>
   );

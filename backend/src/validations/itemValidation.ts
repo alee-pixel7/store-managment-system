@@ -117,7 +117,7 @@ export function validateCreateItem(data: unknown): CreateItemInput {
   return {
     item_code: (input.item_code as string).trim().toUpperCase(),
     item_name: (input.item_name as string).trim(),
-    category_id: input.category_id !== undefined ? Number(input.category_id) : undefined,
+    category_id: input.category_id !== undefined && input.category_id !== null ? Number(input.category_id) : undefined,
     brand: input.brand ? String(input.brand).trim() : undefined,
     unit: (input.unit as string).toUpperCase(),
     min_stock: input.min_stock !== undefined ? Number(input.min_stock) : undefined,

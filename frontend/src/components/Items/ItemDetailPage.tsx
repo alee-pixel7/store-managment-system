@@ -143,6 +143,11 @@ export function ItemDetailPage({ itemId, onBack }: ItemDetailPageProps) {
               <div className="text-xs text-text-secondary uppercase">Brand</div>
               <div className="text-sm text-text">{item.brand || '-'}</div>
             </div>
+            {/* Category */}
+            <div>
+              <div className="text-xs text-text-secondary uppercase">Category</div>
+              <div className="text-sm text-text">{item.category?.name || '-'}</div>
+            </div>
             {/* Unit */}
             <div>
               <div className="text-xs text-text-secondary uppercase">Unit</div>
