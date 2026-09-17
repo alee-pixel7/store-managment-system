@@ -151,7 +151,7 @@ export function ItemsPage({ onViewItem, initialFilter }: ItemsPageProps) {
   return (
     <div className="min-h-screen bg-base">
       {/* Header */}
-      <div className="bg-surface/80 border-b border-border-light px-4 py-3 sticky top-0 z-10">
+      <div className="bg-surface/80 border-b border-border-light px-4 py-3 sticky top-0 z-50">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold text-text">Items</h1>
