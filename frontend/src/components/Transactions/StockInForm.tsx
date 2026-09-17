@@ -221,7 +221,7 @@ export function StockInForm({ onSaved }: StockInFormProps) {
           {/* Supplier */}
           <div className="sm:col-span-2 md:col-span-2">
             <label className="block text-[10px] font-semibold text-text-secondary uppercase tracking-[0.1em] mb-1.5">Supplier</label>
-            <div className="flex items-center border border-border rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-accent/25 focus-within:border-accent/40 transition-all bg-transparent">
+            <div className="flex items-center border border-border rounded-xl focus-within:ring-2 focus-within:ring-accent/25 focus-within:border-accent/40 transition-all bg-transparent">
               <div className="px-3 py-2.5 bg-elevated/50 flex items-center justify-center border-r border-border">
                 <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016A3.001 3.001 0 0021 9.349m-18 0V7.5a3 3 0 013-3h3.75" />
