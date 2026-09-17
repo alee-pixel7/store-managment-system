@@ -120,6 +120,18 @@ export async function getTransactionById(id: number) {
           full_name: true,
         },
       },
+      person: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      department: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
     },
   });
 }
@@ -161,6 +173,8 @@ export async function listTransactions(params: {
       include: {
         supplier: { select: { id: true, name: true } },
         creator: { select: { id: true, full_name: true } },
+        person: { select: { id: true, name: true } },
+        department: { select: { id: true, name: true } },
         _count: { select: { transaction_items: true } },
       },
       orderBy: { txn_date: 'desc' },
@@ -170,7 +184,7 @@ export async function listTransactions(params: {
   ]);
 
   return {
-    transactions,
+    items: transactions,
     pagination: {
       page,
       limit,

@@ -20,7 +20,7 @@ export function LoadingScreen({ onReady }: LoadingScreenProps) {
       attempts++;
       setStatus(`Connecting... (${attempts}/${maxAttempts})`);
       try {
-        const response = await fetch('http://localhost:5000/api/health', {
+        const response = await fetch('/api/health', {
           signal: AbortSignal.timeout(2000),
         });
         if (response.ok) {

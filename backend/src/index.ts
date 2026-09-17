@@ -50,13 +50,13 @@ const REPORT_DIR = process.env.REPORT_DIR || path.join(DATA_DIR, 'reports');
 const app = express();
 const PORT: number = parseInt(process.env.PORT || '5000', 10);
 
-// CORS: allow any device on the local network
+// CORS: allow devices on the local network
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin || origin.startsWith('http://localhost') || origin.startsWith('http://192.168.') || origin.startsWith('http://10.') || origin.startsWith('http://172.')) {
       callback(null, true);
     } else {
-      callback(null, true); // Allow all for local network use
+      callback(new Error('Not allowed by CORS'));
     }
   },
   credentials: true,

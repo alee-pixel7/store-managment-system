@@ -13,7 +13,7 @@ export function StockInPage() {
     setLoading(true);
     listTransactions({ page: 1, limit: 10, txn_type: 'IN,ADJUST' })
       .then((result) => {
-        setRecentTransactions(result.transactions);
+        setRecentTransactions(result.items);
       })
       .catch((error) => {
         console.error('Failed to fetch transactions:', error);

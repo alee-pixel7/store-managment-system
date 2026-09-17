@@ -48,7 +48,7 @@ export function validateStockInInput(data: unknown): CreateStockInInput {
         errors.push(`items[${i}].item_id is required and must be a number`);
       }
 
-      if (!item.quantity || typeof item.quantity !== 'number' || item.quantity <= 0) {
+      if (item.quantity == null || typeof item.quantity !== 'number' || item.quantity <= 0) {
         errors.push(`items[${i}].quantity is required and must be a positive number`);
       }
 
@@ -139,7 +139,7 @@ export function validateReturnInput(data: unknown): CreateReturnInput {
         errors.push(`items[${i}].item_id is required and must be a number`);
       }
 
-      if (!item.quantity || typeof item.quantity !== 'number' || item.quantity <= 0) {
+      if (item.quantity == null || typeof item.quantity !== 'number' || item.quantity <= 0) {
         errors.push(`items[${i}].quantity is required and must be a positive number`);
       }
     }
@@ -199,7 +199,7 @@ export function validateStockOutInput(data: unknown): CreateStockOutInput {
         errors.push(`items[${i}].item_id is required and must be a number`);
       }
 
-      if (!item.quantity || typeof item.quantity !== 'number' || item.quantity <= 0) {
+      if (item.quantity == null || typeof item.quantity !== 'number' || item.quantity <= 0) {
         errors.push(`items[${i}].quantity is required and must be a positive number`);
       }
     }

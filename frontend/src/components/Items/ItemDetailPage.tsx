@@ -1,7 +1,7 @@
 // ItemDetailPage Component
 // Shows item info card and ledger with running balance
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { ItemDetail, LedgerEntry } from '../../types';
 import { getItemLedger } from '../../api/items';
 import { downloadExport } from '../../api/export';
@@ -25,7 +25,7 @@ export function ItemDetailPage({ itemId, onBack }: ItemDetailPageProps) {
   const [typeFilter, setTypeFilter] = useState('');
 
   // Fetch item ledger
-  const fetchLedger = async () => {
+  const fetchLedger = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -41,7 +41,7 @@ export function ItemDetailPage({ itemId, onBack }: ItemDetailPageProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [itemId, fromDate, toDate, typeFilter]);
 
   useEffect(() => {
     fetchLedger();

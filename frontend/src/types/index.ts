@@ -134,6 +134,8 @@ export interface Transaction {
   created_at: string;
   supplier: { id: number; name: string } | null;
   creator: { id: number; full_name: string } | null;
+  person: { id: number; name: string } | null;
+  department: { id: number; name: string } | null;
   transaction_items?: TransactionItem[];
 }
 

@@ -3,6 +3,7 @@
 
 import { Request, Response } from 'express';
 import * as authService from '../services/authService';
+import prisma from '../lib/prisma';
 
 // ============================================================
 // POST /api/auth/login - Login and return JWT
@@ -60,4 +61,4 @@ export async function getMe(req: Request, res: Response) {
 }
 
 // Import prisma for getMe
-import prisma from '../lib/prisma';
+// (moved to top of file)

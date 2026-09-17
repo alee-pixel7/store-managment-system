@@ -63,6 +63,9 @@ export async function downloadBackup(req: Request, res: Response) {
 // ============================================================
 export async function restoreBackup(req: Request, res: Response) {
   try {
+    const userId = (req as any).userId;
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
     const { filename } = req.params;
 
     if (!filename) {

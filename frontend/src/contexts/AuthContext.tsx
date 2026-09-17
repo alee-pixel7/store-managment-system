@@ -1,6 +1,6 @@
 // AuthContext - Manages authentication state
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import type { User } from '../api/auth';
 import { login as apiLogin, getMe } from '../api/auth';
 import { setLogoutCallback } from '../api/fetch';
@@ -55,16 +55,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(result.user);
   };
 
-  const logout = () => {
+  const logout = useCallback(() => {
     localStorage.removeItem(TOKEN_KEY);
     setToken(null);
     setUser(null);
-  };
+  }, []);
 
   // Set up logout callback for 401 responses
   useEffect(() => {
     setLogoutCallback(logout);
-  }, []);
+  }, [logout]);
 
   // Role checks
   const isAdmin = user?.role === 'ADMIN';

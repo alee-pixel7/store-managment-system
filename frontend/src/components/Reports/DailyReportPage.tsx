@@ -378,8 +378,8 @@ export function DailyReportPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border-light">
-                      {report.receipts.map((receipt, index) => (
-                        <tr key={index} className="hover:bg-hover odd:bg-elevated/20 transition-colors">
+                      {report.receipts.map((receipt) => (
+                        <tr key={receipt.txnNo} className="hover:bg-hover odd:bg-elevated/20 transition-colors">
                           <td className="px-4 py-3">
                             <div className="font-mono text-xs text-accent font-medium">{receipt.itemCode}</div>
                             <div className="text-sm text-text truncate max-w-xs">{receipt.itemName}</div>
@@ -437,8 +437,8 @@ export function DailyReportPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border-light">
-                      {report.issues.map((issue, index) => (
-                        <tr key={index} className="hover:bg-hover odd:bg-elevated/20 transition-colors">
+                      {report.issues.map((issue) => (
+                        <tr key={issue.txnNo} className="hover:bg-hover odd:bg-elevated/20 transition-colors">
                           <td className="px-4 py-3">
                             <div className="font-mono text-xs text-accent font-medium">{issue.itemCode}</div>
                             <div className="text-sm text-text truncate max-w-xs">{issue.itemName}</div>
@@ -491,8 +491,8 @@ export function DailyReportPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border-light">
-                      {report.itemsBelowMinimum.map((item, index) => (
-                        <tr key={index} className="hover:bg-danger/5 transition-colors">
+                      {report.itemsBelowMinimum.map((item) => (
+                        <tr key={item.itemCode} className="hover:bg-danger/5 transition-colors">
                           <td className="px-4 py-3">
                             <div className="font-mono text-xs text-accent font-medium">{item.itemCode}</div>
                             <div className="text-sm text-text">{item.itemName}</div>
