@@ -10,6 +10,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { ItemsTable } from './ItemsTable';
 import { ItemModal } from './ItemModal';
 import { CategoryManager } from './CategoryManager';
+import { Dropdown } from '../ui/Dropdown';
 import { Pagination } from './Pagination';
 
 interface ItemsPageProps {
@@ -150,7 +151,7 @@ export function ItemsPage({ onViewItem, initialFilter }: ItemsPageProps) {
   return (
     <div className="min-h-screen bg-base">
       {/* Header */}
-      <div className="bg-surface/80 backdrop-blur-xl border-b border-border-light px-4 py-3 sticky top-0 z-10">
+      <div className="bg-surface/80 border-b border-border-light px-4 py-3 sticky top-0 z-10">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold text-text">Items</h1>
@@ -214,18 +215,19 @@ export function ItemsPage({ onViewItem, initialFilter }: ItemsPageProps) {
 
           <div className="flex items-center gap-3">
             {/* Category filter */}
-            <select
+            <Dropdown
+              options={[
+                { value: '', label: 'All Categories' },
+                ...categories.map((cat) => ({
+                  value: cat.id,
+                  label: cat.name,
+                  suffix: cat._count ? `(${cat._count.items})` : undefined,
+                })),
+              ]}
               value={categoryId || ''}
-              onChange={(e) => setCategoryId(e.target.value ? Number(e.target.value) : undefined)}
-              className="px-3 py-2.5 sm:py-1.5 text-sm border border-border rounded focus:ring-1 focus:ring-accent focus:border-accent min-h-[44px] flex-1 sm:flex-initial"
-            >
-              <option value="">All Categories</option>
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.name}{cat._count ? ` (${cat._count.items})` : ''}
-                </option>
-              ))}
-            </select>
+              onChange={(v) => setCategoryId(v ? Number(v) : undefined)}
+              className="flex-1 sm:flex-initial sm:w-48"
+            />
 
             {/* Low stock toggle */}
             <label className="flex items-center gap-2 text-sm text-text cursor-pointer whitespace-nowrap">
