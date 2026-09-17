@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion'
-import { AuthProvider, useAuth } from './contexts/AuthContext'
+import AuthProvider, { useAuth } from './contexts/AuthContext'
 import { useIsMobile } from './hooks/useIsMobile'
 import { LoginPage } from './components/Auth/LoginPage'
 import { DashboardPage } from './components/Dashboard/DashboardPage'
