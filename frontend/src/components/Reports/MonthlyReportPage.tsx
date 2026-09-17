@@ -4,6 +4,7 @@
 import { useState, useMemo } from 'react';
 import { getMonthlyReport } from '../../api/reports';
 import { downloadExport } from '../../api/export';
+import { Dropdown } from '../ui/Dropdown';
 import type { MonthlyReport } from '../../api/reports';
 
 type SortField = 'department' | 'machine' | 'totalQty' | 'totalValue' | 'items';
@@ -126,27 +127,21 @@ export function MonthlyReportPage() {
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
               <label className="text-sm text-text-secondary">Month:</label>
-              <select
+              <Dropdown
+                options={months.map((name, index) => ({ value: index + 1, label: name }))}
                 value={selectedMonth}
-                onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-                className="px-3 py-1.5 text-sm border border-border rounded focus:outline-none focus:ring-2 focus:ring-accent"
-              >
-                {months.map((name, index) => (
-                  <option key={index} value={index + 1}>{name}</option>
-                ))}
-              </select>
+                onChange={(v) => setSelectedMonth(Number(v))}
+                className="w-28"
+              />
             </div>
             <div className="flex items-center gap-2">
               <label className="text-sm text-text-secondary">Year:</label>
-              <select
+              <Dropdown
+                options={Array.from({ length: 10 }, (_, i) => now.getFullYear() - 5 + i).map((year) => ({ value: year, label: String(year) }))}
                 value={selectedYear}
-                onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                className="px-3 py-1.5 text-sm border border-border rounded focus:outline-none focus:ring-2 focus:ring-accent"
-              >
-                {Array.from({ length: 10 }, (_, i) => now.getFullYear() - 5 + i).map((year) => (
-                  <option key={year} value={year}>{year}</option>
-                ))}
-              </select>
+                onChange={(v) => setSelectedYear(Number(v))}
+                className="w-24"
+              />
             </div>
             <button
               onClick={handleGenerateReport}

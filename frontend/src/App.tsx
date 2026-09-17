@@ -109,7 +109,7 @@ function AppContent() {
     <div className="min-h-screen bg-base">
       {/* Desktop Navigation */}
       {!isMobile && (
-        <nav className="bg-surface/70 backdrop-blur-xl border-b border-border-light print:hidden sticky top-0 z-40">
+        <nav className="bg-surface/70 border-b border-border-light print:hidden sticky top-0 z-40">
           {/* Gradient accent line at top */}
           <div className="h-[2px] bg-gradient-to-r from-transparent via-accent/40 to-transparent" />
           <div className="max-w-7xl mx-auto pl-2 pr-6">

@@ -58,7 +58,7 @@ export function ItemsTable({ items, onEdit, onDeactivate, onViewItem, loading }:
   return (
     <div className="overflow-x-auto bg-surface rounded-xl">
       <table className="w-full text-sm">
-        <thead className="sticky top-0 z-10 bg-elevated/95 backdrop-blur-sm border-b border-border">
+        <thead className="sticky top-0 z-10 bg-elevated/95 border-b border-border">
           <tr>
             <th className="px-4 py-3 text-left text-[10px] font-semibold text-text-secondary uppercase tracking-[0.1em] w-28">Code</th>
             <th className="px-4 py-3 text-left text-[10px] font-semibold text-text-secondary uppercase tracking-[0.1em]">Name</th>

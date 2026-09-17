@@ -4,6 +4,7 @@
 import { useState, useEffect } from 'react';
 import type { Machine } from '../../types';
 import { listMachines, createMachine } from '../../api/transactions';
+import { Dropdown } from '../ui/Dropdown';
 
 interface MachineSelectProps {
   departmentId: number | null;
@@ -60,19 +61,19 @@ export function MachineSelect({ departmentId, value, onChange, disabled = false 
   return (
     <>
       <div className="flex gap-2 items-stretch">
-        <select
+        <Dropdown
+          options={[
+            { value: '', label: 'Select Machine' },
+            ...machines.map((machine) => ({
+              value: machine.id,
+              label: machine.code ? `${machine.code} - ${machine.name}` : machine.name,
+            })),
+          ]}
           value={value || ''}
-          onChange={(e) => onChange(e.target.value ? Number(e.target.value) : null)}
+          onChange={(v) => onChange(v ? Number(v) : null)}
           disabled={disabled || loading}
-          className="flex-1 min-w-0 px-3 py-1.5 text-sm border border-border rounded focus:ring-1 focus:ring-accent focus:border-accent disabled:bg-elevated"
-        >
-          <option value="">Select Machine</option>
-          {machines.map((machine) => (
-            <option key={machine.id} value={machine.id}>
-              {machine.code ? `${machine.code} - ` : ''}{machine.name}
-            </option>
-          ))}
-        </select>
+          className="flex-1 min-w-0"
+        />
         <button
           type="button"
           onClick={() => setShowAddModal(true)}

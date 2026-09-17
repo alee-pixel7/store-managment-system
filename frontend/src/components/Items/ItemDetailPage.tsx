@@ -5,6 +5,7 @@ import { useState, useEffect, useCallback } from 'react';
 import type { ItemDetail, LedgerEntry } from '../../types';
 import { getItemLedger } from '../../api/items';
 import { downloadExport } from '../../api/export';
+import { Dropdown } from '../ui/Dropdown';
 import { ItemLedger } from './ItemLedger';
 
 interface ItemDetailPageProps {
@@ -213,18 +214,19 @@ export function ItemDetailPage({ itemId, onBack }: ItemDetailPageProps) {
             {/* Type Filter */}
             <div className="flex-1 sm:flex-initial">
               <label className="text-xs text-text-secondary block sm:hidden">Type</label>
-              <select
+              <Dropdown
+                options={[
+                  { value: '', label: 'All Types' },
+                  { value: 'IN', label: 'Stock In' },
+                  { value: 'OUT', label: 'Stock Out' },
+                  { value: 'RETURN', label: 'Return' },
+                  { value: 'ADJUST', label: 'Adjustment' },
+                  { value: 'REVERSAL', label: 'Reversal' },
+                ]}
                 value={typeFilter}
-                onChange={(e) => setTypeFilter(e.target.value)}
-                className="w-full px-2 py-2 sm:py-1 text-sm border border-border rounded focus:ring-1 focus:ring-accent focus:border-accent min-h-[44px] sm:min-h-0"
-              >
-                <option value="">All Types</option>
-                <option value="IN">Stock In</option>
-                <option value="OUT">Stock Out</option>
-                <option value="RETURN">Return</option>
-                <option value="ADJUST">Adjustment</option>
-                <option value="REVERSAL">Reversal</option>
-              </select>
+                onChange={(v) => setTypeFilter(String(v))}
+                className="w-full sm:w-40"
+              />
             </div>
             {/* Clear Filters */}
             {(fromDate || toDate || typeFilter) && (

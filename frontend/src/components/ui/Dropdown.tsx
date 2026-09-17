@@ -15,9 +15,10 @@ interface DropdownProps {
   onChange: (value: string | number) => void;
   placeholder?: string;
   className?: string;
+  disabled?: boolean;
 }
 
-export function Dropdown({ options, value, onChange, placeholder = 'Select...', className = '' }: DropdownProps) {
+export function Dropdown({ options, value, onChange, placeholder = 'Select...', className = '', disabled = false }: DropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -49,8 +50,9 @@ export function Dropdown({ options, value, onChange, placeholder = 'Select...', 
     <div ref={ref} className={`relative ${className}`}>
       <button
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between gap-2 px-3 py-2.5 sm:py-1.5 text-sm border border-border rounded bg-base text-text hover:border-accent/50 focus:ring-1 focus:ring-accent focus:border-accent min-h-[44px] sm:min-h-0 text-left transition-colors"
+        onClick={() => { if (!disabled) setIsOpen(!isOpen); }}
+        disabled={disabled}
+        className="w-full flex items-center justify-between gap-2 px-3 py-2.5 sm:py-1.5 text-sm border border-border rounded bg-base text-text hover:border-accent/50 focus:ring-1 focus:ring-accent focus:border-accent min-h-[44px] sm:min-h-0 text-left transition-colors disabled:bg-elevated disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <span className={`truncate ${selected ? 'text-text' : 'text-text-secondary'}`}>
           {selected ? selected.label + (selected.suffix || '') : placeholder}

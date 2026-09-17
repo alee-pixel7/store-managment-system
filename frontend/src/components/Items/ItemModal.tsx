@@ -4,6 +4,7 @@
 import { useState, useEffect } from 'react';
 import type { Item, Category } from '../../types';
 import { AliasInput } from './AliasInput';
+import { Dropdown } from '../ui/Dropdown';
 
 interface ItemModalProps {
   isOpen: boolean;
@@ -162,18 +163,14 @@ export function ItemModal({ isOpen, onClose, onSave, item, categories }: ItemMod
               <label className="block text-sm font-medium text-text mb-1">
                 Category
               </label>
-              <select
+              <Dropdown
+                options={[
+                  { value: '', label: 'No Category' },
+                  ...categories.map((cat) => ({ value: cat.id, label: cat.name })),
+                ]}
                 value={formData.category_id}
-                onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
-                className="w-full px-3 py-1.5 border border-border rounded text-sm focus:ring-1 focus:ring-accent focus:border-accent"
-              >
-                <option value="">No Category</option>
-                {categories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </option>
-                ))}
-              </select>
+                onChange={(v) => setFormData({ ...formData, category_id: String(v) })}
+              />
             </div>
 
             {/* Brand */}
@@ -195,18 +192,11 @@ export function ItemModal({ isOpen, onClose, onSave, item, categories }: ItemMod
               <label className="block text-sm font-medium text-text mb-1">
                 Unit *
               </label>
-              <select
+              <Dropdown
+                options={UNITS.map((u) => ({ value: u, label: u }))}
                 value={formData.unit}
-                onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                required
-                className="w-full px-3 py-1.5 border border-border rounded text-sm focus:ring-1 focus:ring-accent focus:border-accent"
-              >
-                {UNITS.map((u) => (
-                  <option key={u} value={u}>
-                    {u}
-                  </option>
-                ))}
-              </select>
+                onChange={(v) => setFormData({ ...formData, unit: String(v) })}
+              />
             </div>
 
             {/* Min Stock */}

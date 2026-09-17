@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { ITEM_FIELDS, STOCK_FIELDS } from '../../api/import';
+import { Dropdown } from '../ui/Dropdown';
 
 interface ColumnMapperProps {
   headers: string[];
@@ -122,18 +123,18 @@ export function ColumnMapper({
               {header}
             </div>
             <div className="text-text-muted">→</div>
-            <select
+            <Dropdown
+              options={[
+                { value: '', label: '-- Skip this column --' },
+                ...Object.entries(fields).map(([key, config]) => ({
+                  value: key,
+                  label: `${config.label} ${config.required ? '*' : ''} - ${config.description}`,
+                })),
+              ]}
               value={mapping[header] || ''}
-              onChange={(e) => handleMappingChange(header, e.target.value)}
-              className="flex-1 px-3 py-1.5 text-sm border border-border rounded focus:ring-1 focus:ring-accent focus:border-accent"
-            >
-              <option value="">-- Skip this column --</option>
-              {Object.entries(fields).map(([key, config]) => (
-                <option key={key} value={key}>
-                  {config.label} {config.required ? '*' : ''} - {config.description}
-                </option>
-              ))}
-            </select>
+              onChange={(v) => handleMappingChange(header, String(v))}
+              className="flex-1"
+            />
           </div>
         ))}
       </div>

@@ -4,6 +4,7 @@
 import { useState, useEffect } from 'react';
 import type { Supplier } from '../../types';
 import { listSuppliers, createSupplier } from '../../api/transactions';
+import { Dropdown } from '../ui/Dropdown';
 
 interface SupplierSelectProps {
   value: number | null;
@@ -54,19 +55,16 @@ export function SupplierSelect({ value, onChange, disabled = false }: SupplierSe
   return (
     <>
       <div className="flex gap-2 items-stretch">
-        <select
+        <Dropdown
+          options={[
+            { value: '', label: 'Select Supplier' },
+            ...suppliers.map((supplier) => ({ value: supplier.id, label: supplier.name })),
+          ]}
           value={value || ''}
-          onChange={(e) => onChange(e.target.value ? Number(e.target.value) : null)}
+          onChange={(v) => onChange(v ? Number(v) : null)}
           disabled={disabled || loading}
-          className="flex-1 min-w-0 px-3 py-1.5 text-sm border border-border rounded focus:ring-1 focus:ring-accent focus:border-accent disabled:bg-elevated"
-        >
-          <option value="">Select Supplier</option>
-          {suppliers.map((supplier) => (
-            <option key={supplier.id} value={supplier.id}>
-              {supplier.name}
-            </option>
-          ))}
-        </select>
+          className="flex-1 min-w-0"
+        />
         <button
           type="button"
           onClick={() => setShowAddModal(true)}

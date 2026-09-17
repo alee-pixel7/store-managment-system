@@ -20,6 +20,7 @@ import type {
   ReorderInterval, DeadStockItem, StockValueTrend,
 } from '../../api/analytics';
 import type { SearchItem } from '../../types';
+import { Dropdown } from '../ui/Dropdown';
 
 type Tab = 'trend' | 'machines' | 'dead-stock' | 'reorder' | 'stock-value';
 
@@ -317,24 +318,18 @@ function MachineConsumptionSection() {
       {/* Month Selector */}
       <Card title="Machine-wise Consumption">
         <div className="flex flex-wrap items-center gap-3 mb-4">
-          <select
+          <Dropdown
+            options={months.map((m, i) => ({ value: i + 1, label: m }))}
             value={month}
-            onChange={(e) => setMonth(Number(e.target.value))}
-            className="bg-base border border-border-light rounded-xl px-3 py-2 text-sm text-text outline-none focus:border-accent/50 focus:ring-2 focus:ring-accent/10 transition-all"
-          >
-            {months.map((m, i) => (
-              <option key={i} value={i + 1}>{m}</option>
-            ))}
-          </select>
-          <select
+            onChange={(v) => setMonth(Number(v))}
+            className="w-28"
+          />
+          <Dropdown
+            options={[now.getFullYear(), now.getFullYear() - 1, now.getFullYear() - 2].map((y) => ({ value: y, label: String(y) }))}
             value={year}
-            onChange={(e) => setYear(Number(e.target.value))}
-            className="bg-base border border-border-light rounded-xl px-3 py-2 text-sm text-text outline-none focus:border-accent/50 focus:ring-2 focus:ring-accent/10 transition-all"
-          >
-            {[now.getFullYear(), now.getFullYear() - 1, now.getFullYear() - 2].map((y) => (
-              <option key={y} value={y}>{y}</option>
-            ))}
-          </select>
+            onChange={(v) => setYear(Number(v))}
+            className="w-24"
+          />
         </div>
 
         {loading ? <LoadingSkeleton /> : (

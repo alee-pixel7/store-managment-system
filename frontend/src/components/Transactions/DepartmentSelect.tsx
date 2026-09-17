@@ -4,6 +4,7 @@
 import { useState, useEffect } from 'react';
 import type { Department } from '../../types';
 import { listDepartments, createDepartment } from '../../api/transactions';
+import { Dropdown } from '../ui/Dropdown';
 
 interface DepartmentSelectProps {
   value: number | null;
@@ -54,19 +55,16 @@ export function DepartmentSelect({ value, onChange, disabled = false }: Departme
   return (
     <>
       <div className="flex gap-2 items-stretch">
-        <select
+        <Dropdown
+          options={[
+            { value: '', label: 'Select Department' },
+            ...departments.map((dept) => ({ value: dept.id, label: dept.name })),
+          ]}
           value={value || ''}
-          onChange={(e) => onChange(e.target.value ? Number(e.target.value) : null)}
+          onChange={(v) => onChange(v ? Number(v) : null)}
           disabled={disabled || loading}
-          className="flex-1 min-w-0 px-3 py-1.5 text-sm border border-border rounded focus:ring-1 focus:ring-accent focus:border-accent disabled:bg-elevated"
-        >
-          <option value="">Select Department</option>
-          {departments.map((dept) => (
-            <option key={dept.id} value={dept.id}>
-              {dept.name}
-            </option>
-          ))}
-        </select>
+          className="flex-1 min-w-0"
+        />
         <button
           type="button"
           onClick={() => setShowAddModal(true)}
