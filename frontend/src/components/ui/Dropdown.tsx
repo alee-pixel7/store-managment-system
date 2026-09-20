@@ -1,7 +1,8 @@
 // Dropdown Component
-// Custom dropdown to replace native <select> — no z-index/blur issues
+// Custom dropdown to replace native <select> — portal-rendered list escapes overflow-hidden parents
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 
 export interface DropdownOption {
   value: string | number;
@@ -20,17 +21,50 @@ interface DropdownProps {
 
 export function Dropdown({ options, value, onChange, placeholder = 'Select...', className = '', disabled = false }: DropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [listPos, setListPos] = useState({ top: 0, left: 0, width: 0 });
   const ref = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
 
   const selected = options.find((o) => String(o.value) === String(value));
 
-  // Close on outside click
+  // Compute list position from button rect
+  const updateListPos = useCallback(() => {
+    if (!ref.current) return;
+    const rect = ref.current.getBoundingClientRect();
+    setListPos({ top: rect.bottom + 4, left: rect.left, width: rect.width });
+  }, []);
+
+  // Toggle open/close
+  const handleToggle = useCallback(() => {
+    if (disabled) return;
+    setIsOpen(prev => {
+      if (!prev) {
+        requestAnimationFrame(() => updateListPos());
+      }
+      return !prev;
+    });
+  }, [disabled, updateListPos]);
+
+  // Recalc position on scroll/resize while open
+  useEffect(() => {
+    if (!isOpen) return;
+    const recalc = () => updateListPos();
+    window.addEventListener('scroll', recalc, true);
+    window.addEventListener('resize', recalc);
+    return () => {
+      window.removeEventListener('scroll', recalc, true);
+      window.removeEventListener('resize', recalc);
+    };
+  }, [isOpen, updateListPos]);
+
+  // Close on outside click (check both ref and list ref)
   useEffect(() => {
     if (!isOpen) return;
     const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setIsOpen(false);
-      }
+      const target = e.target as Node;
+      if (ref.current && ref.current.contains(target)) return;
+      if (listRef.current && listRef.current.contains(target)) return;
+      setIsOpen(false);
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
@@ -50,7 +84,7 @@ export function Dropdown({ options, value, onChange, placeholder = 'Select...', 
     <div ref={ref} className={`relative ${className}`}>
       <button
         type="button"
-        onClick={() => { if (!disabled) setIsOpen(!isOpen); }}
+        onClick={handleToggle}
         disabled={disabled}
         className="w-full flex items-center justify-between gap-2 px-3 py-2.5 sm:py-1.5 text-sm border border-border rounded bg-base text-text hover:border-accent/50 focus:ring-1 focus:ring-accent focus:border-accent min-h-[44px] sm:min-h-0 text-left transition-colors disabled:bg-elevated disabled:opacity-50 disabled:cursor-not-allowed"
       >
@@ -67,8 +101,12 @@ export function Dropdown({ options, value, onChange, placeholder = 'Select...', 
         </svg>
       </button>
 
-      {isOpen && (
-        <div className="absolute z-[100] mt-1 w-full bg-surface border border-border rounded-lg shadow-lg overflow-hidden">
+      {isOpen && createPortal(
+        <div
+          ref={listRef}
+          className="fixed z-[200] bg-surface border border-border rounded-lg shadow-2xl overflow-hidden min-w-[280px] animate-in fade-in zoom-in-95 duration-100"
+          style={{ top: listPos.top, left: listPos.left, width: listPos.width }}
+        >
           <div className="max-h-60 overflow-y-auto py-1">
             {options.map((option) => (
               <button
@@ -84,14 +122,15 @@ export function Dropdown({ options, value, onChange, placeholder = 'Select...', 
                     : 'text-text hover:bg-elevated'
                   }`}
               >
-                <span className="truncate">{option.label}</span>
+                <span className="whitespace-nowrap">{option.label}</span>
                 {option.suffix && (
                   <span className="text-xs text-text-secondary ml-2 flex-shrink-0">{option.suffix}</span>
                 )}
               </button>
             ))}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

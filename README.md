@@ -53,7 +53,7 @@ Phone access: `http://<your-PC-IP>:3000`
 - Fields: Date, Supplier, Invoice Number, Remarks
 - Multiple line items per transaction (Item search, Quantity, Rate, Remarks)
 - Auto-generates `IN-2026-0001` format
-- **Premium form:** glass card, icon-prefix inputs, gradient table header, animated toasts
+- **Premium form:** spacious 2-column layout, glass card, icon-prefix inputs, gradient table header, animated toasts
 - Recent 10 transactions in premium sidebar
 
 ### 4. Stock OUT (Issue)
@@ -62,7 +62,9 @@ Phone access: `http://<your-PC-IP>:3000`
 - Fields: Date, Issued To, Department, Machine, Purpose, Remarks
 - **Negative stock allowed** with glass confirmation dialog (spring animation)
 - Auto-generates `OUT-2026-0001` format
-- **Premium form:** same design as Stock In with danger-themed accents
+- **Premium form:** spacious 2-column layout, glass card, icon-prefix inputs, gradient table header, animated toasts
+- **34 pre-seeded machines** across 8 departments (Printing, Bag Making, Lamination, Slitting, Extruder, Metalizer, Hologram, UV Machine)
+- **Custom dropdown** with portal rendering — no overflow clipping, chevron toggle, min-width 280px for long names
 
 ### 5. Stock Return
 
@@ -179,6 +181,7 @@ Phone access: `http://<your-PC-IP>:3000`
 - framer-motion page transitions, stagger animations, spring dialogs
 - Animated number count-up on stat cards
 - LayoutGroup animated nav underline with layoutId
+- **Custom Dropdown component** — portal-rendered, overflow-safe, chevron toggle, click-outside close, Escape key
 - Mobile responsive with bottom navigation + animated indicator
 - Print stylesheet (clean A4, no UI elements)
 - Service worker disabled in dev mode (prevents stale CSS)
@@ -257,7 +260,7 @@ store management system/
 │   ├── prisma/
 │   │   ├── schema.prisma          # Database schema (13 tables)
 │   │   ├── dev.db                 # SQLite database
-│   │   └── seed.ts                # Admin user only
+│   │   └── seed.ts                # Admin user + 34 machines across 8 departments
 │   ├── src/
 │   │   ├── index.ts               # Express entry + graceful shutdown
 │   │   ├── lib/prisma.ts          # Prisma singleton client
@@ -431,8 +434,8 @@ store management system/
 | `items` | Main inventory (1,019 items) |
 | `item_aliases` | Alternative names for search |
 | `suppliers` | Vendors with lead_time_days |
-| `departments` | Organization units |
-| `machines` | Equipment linked to departments |
+| `departments` | Organization units (11) |
+| `machines` | Equipment linked to departments (34 pre-seeded) |
 | `persons` | People receiving material (92) |
 | `transactions` | Header — type, date, creator |
 | `transaction_items` | Line items — item, quantity, rate |

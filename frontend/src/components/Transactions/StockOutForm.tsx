@@ -260,8 +260,8 @@ export function StockOutForm({ onSaved }: StockOutFormProps) {
       </AnimatePresence>
 
       {/* Header Section */}
-      <div className="p-5 border-b border-border-light">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="p-6 border-b border-border-light">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {/* Date */}
           <div>
             <label className="block text-[10px] font-semibold text-text-secondary uppercase tracking-[0.1em] mb-1.5">Date *</label>
@@ -275,7 +275,7 @@ export function StockOutForm({ onSaved }: StockOutFormProps) {
                 type="date"
                 value={txnDate}
                 onChange={(e) => setTxnDate(e.target.value)}
-                className="flex-1 px-3 py-2.5 text-sm bg-transparent outline-none min-h-[44px] font-mono"
+                className="flex-1 px-4 py-2.5 text-sm bg-transparent outline-none min-h-[44px] font-mono"
               />
             </div>
           </div>
@@ -289,7 +289,7 @@ export function StockOutForm({ onSaved }: StockOutFormProps) {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
                 </svg>
               </div>
-              <div className="flex-1 min-h-[44px] flex items-center">
+              <div className="flex-1 min-h-[44px] flex items-center overflow-hidden">
                 <PersonSelect value={personId} onChange={setPersonId} />
               </div>
             </div>
@@ -304,7 +304,7 @@ export function StockOutForm({ onSaved }: StockOutFormProps) {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
                 </svg>
               </div>
-              <div className="flex-1 min-h-[44px] flex items-center">
+              <div className="flex-1 min-h-[44px] flex items-center overflow-hidden">
                 <DepartmentSelect value={departmentId} onChange={setDepartmentId} />
               </div>
             </div>
@@ -320,14 +320,14 @@ export function StockOutForm({ onSaved }: StockOutFormProps) {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
               </div>
-              <div className="flex-1 min-h-[44px] flex items-center">
+              <div className="flex-1 min-h-[44px] flex items-center overflow-hidden">
                 <MachineSelect departmentId={departmentId} value={machineId} onChange={setMachineId} />
               </div>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5">
           {/* Purpose */}
           <div>
             <label className="block text-[10px] font-semibold text-text-secondary uppercase tracking-[0.1em] mb-1.5">Purpose</label>
@@ -342,7 +342,7 @@ export function StockOutForm({ onSaved }: StockOutFormProps) {
                 value={purpose}
                 onChange={(e) => setPurpose(e.target.value)}
                 placeholder="Why is this item being issued?"
-                className="flex-1 px-3 py-2.5 text-sm bg-transparent outline-none min-h-[44px]"
+                className="flex-1 px-4 py-2.5 text-sm bg-transparent outline-none min-h-[44px]"
               />
             </div>
           </div>
@@ -361,7 +361,7 @@ export function StockOutForm({ onSaved }: StockOutFormProps) {
                 value={remarks}
                 onChange={(e) => setRemarks(e.target.value)}
                 placeholder="Optional remarks"
-                className="flex-1 px-3 py-2.5 text-sm bg-transparent outline-none min-h-[44px]"
+                className="flex-1 px-4 py-2.5 text-sm bg-transparent outline-none min-h-[44px]"
               />
             </div>
           </div>
@@ -369,7 +369,7 @@ export function StockOutForm({ onSaved }: StockOutFormProps) {
       </div>
 
       {/* Line Items Section */}
-      <div className="p-5">
+      <div className="p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2.5">
             <h3 className="text-sm font-semibold text-text">Items</h3>
@@ -648,7 +648,7 @@ export function StockOutForm({ onSaved }: StockOutFormProps) {
       </AnimatePresence>
 
       {/* Footer */}
-      <div className="px-5 py-4 border-t border-border-light bg-elevated/30 flex flex-col sm:flex-row justify-end gap-3">
+      <div className="px-6 py-4 border-t border-border-light bg-elevated/30 flex flex-col sm:flex-row justify-end gap-3">
         <button
           type="button"
           onClick={() => { setLines([]); setSelectedLineIndex(null); setError(null); }}

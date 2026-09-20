@@ -198,8 +198,8 @@ export function StockInForm({ onSaved }: StockInFormProps) {
       </AnimatePresence>
 
       {/* Header Section */}
-      <div className="p-5 border-b border-border-light">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="p-6 border-b border-border-light">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {/* Date */}
           <div>
             <label className="block text-[10px] font-semibold text-text-secondary uppercase tracking-[0.1em] mb-1.5">Date *</label>
@@ -213,23 +213,8 @@ export function StockInForm({ onSaved }: StockInFormProps) {
                 type="date"
                 value={txnDate}
                 onChange={(e) => setTxnDate(e.target.value)}
-                className="flex-1 px-3 py-2.5 text-sm bg-transparent outline-none min-h-[44px] font-mono"
+                className="flex-1 px-4 py-2.5 text-sm bg-transparent outline-none min-h-[44px] font-mono"
               />
-            </div>
-          </div>
-
-          {/* Supplier */}
-          <div className="sm:col-span-2 md:col-span-2">
-            <label className="block text-[10px] font-semibold text-text-secondary uppercase tracking-[0.1em] mb-1.5">Supplier</label>
-            <div className="flex items-center border border-border rounded-xl focus-within:ring-2 focus-within:ring-accent/25 focus-within:border-accent/40 transition-all bg-transparent">
-              <div className="px-3 py-2.5 bg-elevated/50 flex items-center justify-center border-r border-border">
-                <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016A3.001 3.001 0 0021 9.349m-18 0V7.5a3 3 0 013-3h3.75" />
-                </svg>
-              </div>
-              <div className="flex-1 min-h-[44px] flex items-center">
-                <SupplierSelect value={supplierId} onChange={setSupplierId} />
-              </div>
             </div>
           </div>
 
@@ -247,14 +232,29 @@ export function StockInForm({ onSaved }: StockInFormProps) {
                 value={invoiceNo}
                 onChange={(e) => setInvoiceNo(e.target.value)}
                 placeholder="Invoice number"
-                className="flex-1 px-3 py-2.5 text-sm bg-transparent outline-none min-h-[44px]"
+                className="flex-1 px-4 py-2.5 text-sm bg-transparent outline-none min-h-[44px]"
               />
+            </div>
+          </div>
+
+          {/* Supplier */}
+          <div className="md:col-span-2">
+            <label className="block text-[10px] font-semibold text-text-secondary uppercase tracking-[0.1em] mb-1.5">Supplier</label>
+            <div className="flex items-center border border-border rounded-xl focus-within:ring-2 focus-within:ring-accent/25 focus-within:border-accent/40 transition-all bg-transparent">
+              <div className="px-3 py-2.5 bg-elevated/50 flex items-center justify-center border-r border-border">
+                <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016A3.001 3.001 0 0021 9.349m-18 0V7.5a3 3 0 013-3h3.75" />
+                </svg>
+              </div>
+              <div className="flex-1 min-h-[44px] flex items-center overflow-hidden">
+                <SupplierSelect value={supplierId} onChange={setSupplierId} />
+              </div>
             </div>
           </div>
         </div>
 
         {/* Remarks */}
-        <div className="mt-4">
+        <div className="mt-5">
           <label className="block text-[10px] font-semibold text-text-secondary uppercase tracking-[0.1em] mb-1.5">Remarks</label>
           <div className="flex items-center border border-border rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-accent/25 focus-within:border-accent/40 transition-all bg-transparent">
             <div className="px-3 py-2.5 bg-elevated/50 flex items-center justify-center border-r border-border">
@@ -267,14 +267,14 @@ export function StockInForm({ onSaved }: StockInFormProps) {
               value={remarks}
               onChange={(e) => setRemarks(e.target.value)}
               placeholder="Optional remarks"
-              className="flex-1 px-3 py-2.5 text-sm bg-transparent outline-none min-h-[44px]"
+              className="flex-1 px-4 py-2.5 text-sm bg-transparent outline-none min-h-[44px]"
             />
           </div>
         </div>
       </div>
 
       {/* Line Items Section */}
-      <div className="p-5">
+      <div className="p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2.5">
             <h3 className="text-sm font-semibold text-text">Items</h3>
@@ -478,7 +478,7 @@ export function StockInForm({ onSaved }: StockInFormProps) {
       </div>
 
       {/* Footer */}
-      <div className="px-5 py-4 border-t border-border-light bg-elevated/30 flex flex-col sm:flex-row justify-end gap-3">
+      <div className="px-6 py-4 border-t border-border-light bg-elevated/30 flex flex-col sm:flex-row justify-end gap-3">
         <button
           type="button"
           onClick={() => { setLines([]); setSelectedLineIndex(null); setError(null); }}
