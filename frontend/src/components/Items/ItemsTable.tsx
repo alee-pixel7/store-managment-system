@@ -56,14 +56,15 @@ export function ItemsTable({ items, onEdit, onDeactivate, onViewItem, loading }:
   }
 
   return (
-    <div className="overflow-x-auto bg-surface rounded-xl">
+    <div className="overflow-x-auto">
       <table className="w-full text-sm">
-        <thead className="sticky top-0 z-10 bg-elevated/95 border-b border-border">
+        <thead className="sticky top-0 z-10 table-head">
           <tr>
             <th className="px-4 py-3 text-left text-[10px] font-semibold text-text-secondary uppercase tracking-[0.1em] w-28">Code</th>
             <th className="px-4 py-3 text-left text-[10px] font-semibold text-text-secondary uppercase tracking-[0.1em]">Name</th>
             <th className="px-4 py-3 text-left text-[10px] font-semibold text-text-secondary uppercase tracking-[0.1em] w-24">Category</th>
             <th className="px-4 py-3 text-left text-[10px] font-semibold text-text-secondary uppercase tracking-[0.1em] w-20">Brand</th>
+            <th className="px-4 py-3 text-left text-[10px] font-semibold text-text-secondary uppercase tracking-[0.1em] w-72">Value / Unit</th>
             <th className="px-4 py-3 text-center text-[10px] font-semibold text-text-secondary uppercase tracking-[0.1em] w-14">Unit</th>
             <th className="px-4 py-3 text-center text-[10px] font-semibold text-text-secondary uppercase tracking-[0.1em] w-24">Stock</th>
             <th className="px-4 py-3 text-right text-[10px] font-semibold text-text-secondary uppercase tracking-[0.1em] w-16">Min</th>
@@ -78,8 +79,6 @@ export function ItemsTable({ items, onEdit, onDeactivate, onViewItem, loading }:
           className="divide-y divide-line-subtle"
         >
           {items.map((item, i) => {
-            const isOutOfStock = item.current_stock <= 0;
-            const isLowStock = item.min_stock > 0 && item.current_stock <= item.min_stock;
             return (
               <motion.tr
                 key={item.id}
@@ -111,6 +110,15 @@ export function ItemsTable({ items, onEdit, onDeactivate, onViewItem, loading }:
                 </td>
                 <td className="px-4 py-2.5 text-text-secondary text-xs">
                   {item.brand || '-'}
+                </td>
+                <td className="px-4 py-2.5 text-xs">
+                  {item.spec ? (
+                    <span className="text-text font-mono" title={item.spec}>
+                      {item.spec}
+                    </span>
+                  ) : (
+                    <span className="text-text-muted">—</span>
+                  )}
                 </td>
                 <td className="px-4 py-2.5 text-center text-text-secondary text-xs">
                   {item.unit}

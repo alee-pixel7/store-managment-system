@@ -6,6 +6,7 @@ import type { ItemDetail, LedgerEntry } from '../../types';
 import { getItemLedger } from '../../api/items';
 import { downloadExport } from '../../api/export';
 import { Dropdown } from '../ui/Dropdown';
+import { DateField } from '../ui/DateField';
 import { ItemLedger } from './ItemLedger';
 
 interface ItemDetailPageProps {
@@ -74,7 +75,7 @@ export function ItemDetailPage({ itemId, onBack }: ItemDetailPageProps) {
           <div className="text-red-500 mb-4">{error}</div>
           <button
             onClick={onBack}
-            className="px-4 py-2 text-sm font-medium text-text bg-elevated border border-border rounded hover:bg-hover"
+            className="btn btn-ghost btn-md"
           >
             ← Back to Items
           </button>
@@ -88,12 +89,12 @@ export function ItemDetailPage({ itemId, onBack }: ItemDetailPageProps) {
   return (
     <div className="min-h-screen bg-base">
       {/* Header */}
-      <div className="bg-surface border-b border-border px-4 py-3">
+      <div className="bg-surface/80 backdrop-blur-xl border-b border-border-light px-4 py-3 sticky top-0 z-30">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
               onClick={onBack}
-              className="px-3 py-2 text-sm font-medium text-text bg-elevated border border-border rounded hover:bg-hover min-h-[44px]"
+              className="btn btn-ghost btn-md min-h-[44px]"
             >
               ← Back
             </button>
@@ -103,7 +104,7 @@ export function ItemDetailPage({ itemId, onBack }: ItemDetailPageProps) {
             <button
               onClick={() => handleExport('excel')}
               disabled={exporting === 'excel'}
-              className="px-3 py-1.5 text-sm font-medium text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50 flex items-center gap-2 min-h-[44px]"
+              className="btn btn-sm text-ok bg-ok-dim border border-ok/20 hover:bg-ok/20 disabled:opacity-50 min-h-[44px]"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -113,7 +114,7 @@ export function ItemDetailPage({ itemId, onBack }: ItemDetailPageProps) {
             <button
               onClick={() => handleExport('pdf')}
               disabled={exporting === 'pdf'}
-              className="px-3 py-1.5 text-sm font-medium text-white bg-red-600 rounded hover:bg-red-700 disabled:opacity-50 flex items-center gap-2 min-h-[44px]"
+              className="btn btn-sm text-danger bg-danger-dim border border-danger/20 hover:bg-danger/20 disabled:opacity-50 min-h-[44px]"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
@@ -127,41 +128,46 @@ export function ItemDetailPage({ itemId, onBack }: ItemDetailPageProps) {
       {/* Content */}
       <div className="p-2 sm:p-4">
         {/* Item Info Card */}
-        <div className="bg-surface rounded-lg shadow p-4 mb-4">
+        <div className="card p-4 mb-4">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
             {/* Code */}
             <div>
-              <div className="text-xs text-text-secondary uppercase">Code</div>
+              <div className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-1">Code</div>
               <div className="text-sm font-mono font-medium text-text">{item.item_code}</div>
             </div>
             {/* Name */}
             <div>
-              <div className="text-xs text-text-secondary uppercase">Name</div>
+              <div className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-1">Name</div>
               <div className="text-sm font-medium text-text">{item.item_name}</div>
             </div>
             {/* Brand */}
             <div>
-              <div className="text-xs text-text-secondary uppercase">Brand</div>
+              <div className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-1">Brand</div>
               <div className="text-sm text-text">{item.brand || '-'}</div>
+            </div>
+            {/* Spec / Value */}
+            <div>
+              <div className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-1">Spec / Value</div>
+              <div className="sm:col-span-1 text-sm text-text font-mono">{item.spec || '-'}</div>
             </div>
             {/* Category */}
             <div>
-              <div className="text-xs text-text-secondary uppercase">Category</div>
+              <div className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-1">Category</div>
               <div className="text-sm text-text">{item.category?.name || '-'}</div>
             </div>
             {/* Unit */}
             <div>
-              <div className="text-xs text-text-secondary uppercase">Unit</div>
+              <div className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-1">Unit</div>
               <div className="text-sm text-text">{item.unit}</div>
             </div>
             {/* Rack Location */}
             <div>
-              <div className="text-xs text-text-secondary uppercase">Rack Location</div>
+              <div className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-1">Rack Location</div>
               <div className="text-sm text-text">{item.rack_location || '-'}</div>
             </div>
             {/* Current Stock */}
             <div>
-              <div className="text-xs text-text-secondary uppercase">Current Stock</div>
+              <div className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-1">Current Stock</div>
               <div className={`text-sm font-semibold ${
                 item.current_stock <= 0
                   ? 'text-red-600'
@@ -174,12 +180,12 @@ export function ItemDetailPage({ itemId, onBack }: ItemDetailPageProps) {
             </div>
             {/* Min Stock */}
             <div>
-              <div className="text-xs text-text-secondary uppercase">Min Stock</div>
+              <div className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-1">Min Stock</div>
               <div className="text-sm text-text">{item.min_stock} {item.unit}</div>
             </div>
             {/* Last Rate */}
             <div>
-              <div className="text-xs text-text-secondary uppercase">Last Rate</div>
+              <div className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-1">Last Rate</div>
               <div className="text-sm text-text">
                 {item.last_rate != null ? `₹${item.last_rate.toFixed(2)}` : '-'}
               </div>
@@ -188,27 +194,25 @@ export function ItemDetailPage({ itemId, onBack }: ItemDetailPageProps) {
         </div>
 
         {/* Ledger Filters */}
-        <div className="bg-surface rounded-lg shadow p-4 mb-4">
+        <div className="card p-4 mb-4">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             <div className="text-sm font-medium text-text">Filters:</div>
             {/* From Date */}
             <div className="flex-1 sm:flex-initial">
               <label className="text-xs text-text-secondary block sm:hidden">From</label>
-              <input
-                type="date"
+              <DateField
                 value={fromDate}
-                onChange={(e) => setFromDate(e.target.value)}
-                className="w-full px-2 py-2 sm:py-1 text-sm border border-border rounded focus:ring-1 focus:ring-accent focus:border-accent min-h-[44px] sm:min-h-0"
+                onChange={setFromDate}
+                className="w-full [&_input]:px-2 [&_input]:py-1 [&_input]:text-sm [&_input]:border [&_input]:border-border [&_input]:rounded [&_input]:min-h-[44px] sm:[&_input]:min-h-0"
               />
             </div>
             {/* To Date */}
             <div className="flex-1 sm:flex-initial">
               <label className="text-xs text-text-secondary block sm:hidden">To</label>
-              <input
-                type="date"
+              <DateField
                 value={toDate}
-                onChange={(e) => setToDate(e.target.value)}
-                className="w-full px-2 py-2 sm:py-1 text-sm border border-border rounded focus:ring-1 focus:ring-accent focus:border-accent min-h-[44px] sm:min-h-0"
+                onChange={setToDate}
+                className="w-full [&_input]:px-2 [&_input]:py-1 [&_input]:text-sm [&_input]:border [&_input]:border-border [&_input]:rounded [&_input]:min-h-[44px] sm:[&_input]:min-h-0"
               />
             </div>
             {/* Type Filter */}

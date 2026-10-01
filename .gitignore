@@ -7,4 +7,5 @@ frontend/dist/
 .env
 tmp/
 *.log
+backend/logs/
 backend/.jwt-secret

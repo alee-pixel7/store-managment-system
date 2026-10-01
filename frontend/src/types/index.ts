@@ -26,6 +26,7 @@ export interface Item {
   barcode: string | null;
   image_path: string | null;
   is_active: boolean;
+  spec: string | null;
   notes: string | null;
   created_at: string;
   updated_at: string;
@@ -57,6 +58,7 @@ export interface SearchItem {
   category_id: number | null;
   category: { id: number; name: string } | null;
   brand: string | null;
+  spec?: string | null;
 }
 
 export interface CreateItemInput {
@@ -67,6 +69,7 @@ export interface CreateItemInput {
   unit: string;
   min_stock?: number;
   rack_location?: string;
+  spec?: string;
   notes?: string;
   aliases?: string[];
 }
@@ -81,6 +84,10 @@ export interface UpdateItemInput {
   rack_location?: string | null;
   notes?: string | null;
   aliases?: string[];
+  /** Manual stock edit → signed ADJUST transaction (negative allowed) */
+  current_stock?: number;
+  /** Spec / value (Amp, Volt, Size, Model) — Value / Unit column */
+  spec?: string | null;
 }
 
 // ============================================================
@@ -257,6 +264,7 @@ export interface ItemDetail {
   current_stock: number;
   min_stock: number;
   last_rate: number | null;
+  spec?: string | null;
   category: { id: number; name: string } | null;
 }
 

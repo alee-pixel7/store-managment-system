@@ -2,6 +2,7 @@
 // Generates Excel files with proper formatting using ExcelJS
 
 import ExcelJS from 'exceljs';
+import { formatDate } from '../utils/dates';
 import type { DailyReport } from './reportService';
 import type { MonthlyReport } from './monthlyReportService';
 
@@ -63,7 +64,7 @@ export async function exportDailyReportExcel(report: DailyReport): Promise<Buffe
   const summarySheet = workbook.addWorksheet('Summary');
   summarySheet.addRow([STORE_NAME]);
   summarySheet.getRow(1).font = { bold: true, size: 14 };
-  summarySheet.addRow([`Daily Report - ${report.date}`]);
+  summarySheet.addRow([`Daily Report - ${formatDate(report.date)}`]);
   summarySheet.getRow(2).font = { size: 12 };
   summarySheet.addRow([]);
 
@@ -207,7 +208,7 @@ export async function exportItemsListExcel(items: any[]): Promise<Buffer> {
   sheet.getRow(2).font = { size: 12 };
   sheet.addRow([]);
 
-  addHeaderRow(sheet, ['Item Code', 'Item Name', 'Category', 'Brand', 'Unit', 'Min Stock', 'Current Stock', 'Last Rate', 'Rack Location', 'Status']);
+  addHeaderRow(sheet, ['Item Code', 'Item Name', 'Category', 'Brand', 'Spec / Unit', 'Unit', 'Min Stock', 'Current Stock', 'Last Rate', 'Rack Location', 'Status']);
 
   for (const item of items) {
     sheet.addRow([
@@ -215,6 +216,7 @@ export async function exportItemsListExcel(items: any[]): Promise<Buffer> {
       item.item_name,
       item.category?.name || '',
       item.brand || '',
+      item.spec || '',
       item.unit,
       item.min_stock,
       item.current_stock,
@@ -248,7 +250,7 @@ export async function exportItemLedgerExcel(itemData: any, ledger: any[]): Promi
 
   for (const entry of ledger) {
     sheet.addRow([
-      new Date(entry.date).toLocaleDateString('en-IN'),
+      formatDate(entry.date),
       entry.txn_no,
       entry.txn_type,
       entry.in_qty || '',

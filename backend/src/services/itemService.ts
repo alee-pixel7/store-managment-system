@@ -2,6 +2,7 @@
 // Handles all business logic for item CRUD and smart search
 
 import prisma from '../lib/prisma';
+import { recalculateStock, generateTxnNo } from '../utils/stock';
 import { CreateItemInput, UpdateItemInput } from '../validations/itemValidation';
 
 // ============================================================
@@ -48,6 +49,7 @@ export async function listItems(params: {
       { item_code: { contains: searchTerm } },
       { item_name: { contains: searchTerm } },
       { brand: { contains: searchTerm } },
+      { spec: { contains: searchTerm } },
       { item_aliases: { some: { alias_name: { contains: searchTerm } } } },
     ];
   }
@@ -161,6 +163,7 @@ export async function createItem(data: CreateItemInput) {
         unit: data.unit,
         min_stock: data.min_stock || 0,
         rack_location: data.rack_location,
+        spec: data.spec,
         notes: data.notes,
       },
     });
@@ -188,13 +191,19 @@ export async function createItem(data: CreateItemInput) {
 
 // ============================================================
 // UPDATE ITEM - aliases replaced as a set
+// Optional current_stock → signed ADJUST transaction ("Manual stock edit")
 // ============================================================
-export async function updateItem(id: number, data: UpdateItemInput) {
+export async function updateItem(id: number, data: UpdateItemInput, userId?: number) {
   // Check if item exists
   const existing = await prisma.items.findUnique({ where: { id } });
   if (!existing) {
     return null;
   }
+
+  // Detect a genuine manual stock change (unchanged value → no transaction)
+  const stockChanged =
+    data.current_stock !== undefined && Number(data.current_stock) !== existing.current_stock;
+  const stockDelta = stockChanged ? Number(data.current_stock) - existing.current_stock : 0;
 
   return prisma.$transaction(async (tx) => {
     // Check category exists if being set
@@ -205,7 +214,7 @@ export async function updateItem(id: number, data: UpdateItemInput) {
       }
     }
 
-    // Update item fields
+    // Update item fields (current_stock is never a bare column update — see below)
     const updateData: Record<string, unknown> = {};
     if (data.item_code !== undefined) updateData.item_code = data.item_code;
     if (data.item_name !== undefined) updateData.item_name = data.item_name;
@@ -214,12 +223,52 @@ export async function updateItem(id: number, data: UpdateItemInput) {
     if (data.unit !== undefined) updateData.unit = data.unit;
     if (data.min_stock !== undefined) updateData.min_stock = data.min_stock;
     if (data.rack_location !== undefined) updateData.rack_location = data.rack_location;
+    if (data.spec !== undefined) updateData.spec = data.spec;
     if (data.notes !== undefined) updateData.notes = data.notes;
 
     const item = await tx.items.update({
       where: { id },
       data: updateData,
     });
+
+    // Manual stock edit → signed ADJUST transaction so recalculateStock() invariant holds
+    if (stockChanged && stockDelta !== 0) {
+      if (!userId) {
+        // Route is auth-guarded; never write a mutation without an owner
+        throw new Error('Authenticated user required for manual stock edit');
+      }
+      const year = new Date().getFullYear();
+      const txnNo = await generateTxnNo('ADJUST', year, tx);
+
+      const txn = await tx.transactions.create({
+        data: {
+          txn_no: txnNo,
+          txn_type: 'ADJUST',
+          txn_date: new Date(),
+          purpose: 'Manual stock edit',
+          remarks: `Stock set from ${existing.current_stock} to ${data.current_stock} via Edit Item`,
+          created_by: userId,
+        },
+      });
+
+      // Signed delta: positive = added, negative = removed (ADJUST quantity is signed)
+      await tx.transaction_items.create({
+        data: {
+          transaction_id: txn.id,
+          item_id: id,
+          quantity: stockDelta,
+          rate: item.last_rate || 0,
+          line_remarks: 'Manual stock edit from Edit Item modal',
+        },
+      });
+
+      // Recalculate from ledger and persist — displayed stock always matches transactions
+      const newStock = await recalculateStock(id, tx);
+      await tx.items.update({
+        where: { id },
+        data: { current_stock: newStock },
+      });
+    }
 
     // Replace aliases if provided
     if (data.aliases !== undefined) {
@@ -344,6 +393,14 @@ export async function smartSearch(query: string) {
       }
     }
 
+    // Check spec / value (Amp, Volt, Size...) — lower priority than name
+    if (score === 0) {
+      const normalizedSpec = (item.spec || '').replace(/[\s\-_]/g, '').toUpperCase();
+      if (normalizedSpec && normalizedSpec.includes(normalizedQuery)) {
+        score = 200;
+      }
+    }
+
     return { item, score };
   });
 
@@ -363,6 +420,7 @@ export async function smartSearch(query: string) {
       category_id: item.category_id,
       category: item.category,
       brand: item.brand,
+      spec: item.spec,
     }));
 
   return results;

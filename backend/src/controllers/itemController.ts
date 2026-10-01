@@ -121,7 +121,8 @@ export async function updateItem(req: Request, res: Response) {
     }
 
     const data = validateUpdateItem(req.body);
-    const item = await itemService.updateItem(id, data);
+    const userId = (req as any).userId as number | undefined;
+    const item = await itemService.updateItem(id, data, userId);
 
     if (!item) {
       return res.status(404).json({ error: 'Item not found' });

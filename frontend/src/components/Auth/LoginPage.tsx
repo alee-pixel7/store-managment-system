@@ -221,7 +221,7 @@ export function LoginPage() {
   const entrance = (delay: number) => ({
     initial: { opacity: 0, y: 16 },
     animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.45, delay, ease: [0.22, 1, 0.36, 1] },
+    transition: { duration: 0.45, delay, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
   });
 
   return (
@@ -243,13 +243,13 @@ export function LoginPage() {
           transition={{ duration: 25, repeat: Infinity, ease: 'easeInOut' }}
         />
         <motion.div
-          className="absolute w-[350px] h-[350px] rounded-full blur-[100px] bg-[#F59E0B]/[0.12]"
+          className="absolute w-[350px] h-[350px] rounded-full blur-[100px] bg-[#A78BFA]/[0.10]"
           style={{ bottom: '10%', right: '5%' }}
           animate={prefersReducedMotion ? {} : { x: [0, -70, 50, -30, 0], y: [0, 40, -60, 20, 0] }}
           transition={{ duration: 30, repeat: Infinity, ease: 'easeInOut' }}
         />
         <motion.div
-          className="absolute w-[300px] h-[300px] rounded-full blur-[90px] bg-[#D4942A]/[0.10]"
+          className="absolute w-[300px] h-[300px] rounded-full blur-[90px] bg-[#7C3AED]/[0.10]"
           style={{ top: '45%', left: '50%' }}
           animate={prefersReducedMotion ? {} : { x: [0, 50, -60, 30, 0], y: [0, -40, 30, -50, 0] }}
           transition={{ duration: 22, repeat: Infinity, ease: 'easeInOut' }}
@@ -257,7 +257,7 @@ export function LoginPage() {
 
         {/* Dot matrix pattern */}
         <div className="absolute inset-0 opacity-[0.06]" style={{
-          backgroundImage: 'radial-gradient(circle, rgba(232,160,53,1) 1px, transparent 1px)',
+          backgroundImage: 'radial-gradient(circle, rgba(139,92,246,1) 1px, transparent 1px)',
           backgroundSize: '32px 32px',
         }} />
 
@@ -312,9 +312,9 @@ export function LoginPage() {
               className="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent to-accent-press flex items-center justify-center"
               animate={prefersReducedMotion ? {} : {
                 boxShadow: [
-                  '0 0 20px rgba(232,160,53,0.25), 0 0 40px rgba(232,160,53,0.12)',
-                  '0 0 35px rgba(232,160,53,0.35), 0 0 70px rgba(232,160,53,0.18)',
-                  '0 0 20px rgba(232,160,53,0.25), 0 0 40px rgba(232,160,53,0.12)',
+                  '0 0 20px rgba(139,92,246,0.25), 0 0 40px rgba(139,92,246,0.12)',
+                  '0 0 35px rgba(139,92,246,0.35), 0 0 70px rgba(139,92,246,0.18)',
+                  '0 0 20px rgba(139,92,246,0.25), 0 0 40px rgba(139,92,246,0.12)',
                 ],
               }}
               transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
@@ -403,7 +403,7 @@ export function LoginPage() {
             <div
               className="absolute -inset-px rounded-2xl pointer-events-none"
               style={{
-                background: 'linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 40%, rgba(232,160,53,0.15) 100%)',
+                background: 'linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 40%, rgba(139,92,246,0.15) 100%)',
               }}
             />
 
@@ -412,9 +412,9 @@ export function LoginPage() {
               className="absolute -inset-1 rounded-2xl pointer-events-none"
               animate={prefersReducedMotion ? {} : {
                 boxShadow: [
-                  '0 0 30px rgba(232,160,53,0.06), 0 0 60px rgba(232,160,53,0.03)',
-                  '0 0 40px rgba(232,160,53,0.12), 0 0 80px rgba(232,160,53,0.06)',
-                  '0 0 30px rgba(232,160,53,0.06), 0 0 60px rgba(232,160,53,0.03)',
+                  '0 0 30px rgba(139,92,246,0.06), 0 0 60px rgba(139,92,246,0.03)',
+                  '0 0 40px rgba(139,92,246,0.12), 0 0 80px rgba(139,92,246,0.06)',
+                  '0 0 30px rgba(139,92,246,0.06), 0 0 60px rgba(139,92,246,0.03)',
                 ],
               }}
               transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
@@ -424,7 +424,7 @@ export function LoginPage() {
             <div
               className="absolute inset-0 rounded-2xl pointer-events-none"
               style={{
-                boxShadow: '0 2px 4px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.5), 0 0 40px rgba(232,160,53,0.15)',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.5), 0 0 40px rgba(139,92,246,0.15)',
               }}
             />
 
@@ -486,9 +486,9 @@ export function LoginPage() {
                   }`}
                   style={disableTilt ? {} : { translateZ: 10 }}
                   animate={focusedField === 'username' ? {
-                    boxShadow: '0 0 0 4px rgba(232,160,53,0.12), 0 0 24px rgba(232,160,53,0.08)',
+                    boxShadow: '0 0 0 4px rgba(139,92,246,0.12), 0 0 24px rgba(139,92,246,0.08)',
                   } : {
-                    boxShadow: '0 0 0 0px rgba(232,160,53,0), 0 0 0px rgba(232,160,53,0)',
+                    boxShadow: '0 0 0 0px rgba(139,92,246,0), 0 0 0px rgba(139,92,246,0)',
                   }}
                   transition={{ duration: 0.3 }}
                 >
@@ -520,9 +520,9 @@ export function LoginPage() {
                   }`}
                   style={disableTilt ? {} : { translateZ: 10 }}
                   animate={focusedField === 'password' ? {
-                    boxShadow: '0 0 0 4px rgba(232,160,53,0.12), 0 0 24px rgba(232,160,53,0.08)',
+                    boxShadow: '0 0 0 4px rgba(139,92,246,0.12), 0 0 24px rgba(139,92,246,0.08)',
                   } : {
-                    boxShadow: '0 0 0 0px rgba(232,160,53,0), 0 0 0px rgba(232,160,53,0)',
+                    boxShadow: '0 0 0 0px rgba(139,92,246,0), 0 0 0px rgba(139,92,246,0)',
                   }}
                   transition={{ duration: 0.3 }}
                 >
@@ -582,7 +582,7 @@ export function LoginPage() {
                   type="submit" disabled={loading || success}
                   whileTap={disableTilt ? {} : { scale: 0.96 }}
                   transition={{ type: 'spring', stiffness: 400, damping: 15 }}
-                  className="w-full relative overflow-hidden bg-gradient-to-r from-accent to-accent-press hover:from-accent-hover hover:to-accent text-base font-bold py-3.5 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-accent/20 hover:shadow-xl hover:shadow-accent/30 group"
+                  className="btn btn-primary btn-lg w-full relative overflow-hidden text-base font-bold group"
                   style={disableTilt ? {} : { translateZ: 5 }}
                 >
                   {/* Shine sweep */}

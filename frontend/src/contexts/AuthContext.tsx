@@ -1,6 +1,7 @@
 // AuthContext - Manages authentication state
 
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import type { ReactNode } from 'react';
 import type { User } from '../api/auth';
 import { login as apiLogin, getMe } from '../api/auth';
 import { setLogoutCallback } from '../api/fetch';

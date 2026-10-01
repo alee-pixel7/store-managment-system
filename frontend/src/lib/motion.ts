@@ -8,7 +8,7 @@ export const pageVariants = {
 
 export const pageTransition = {
   type: 'tween' as const,
-  ease: 'easeOut',
+  ease: 'easeOut' as const,
   duration: 0.2,
 };
 

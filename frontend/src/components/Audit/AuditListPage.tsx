@@ -4,6 +4,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { listAudits, startAudit } from '../../api/audits';
+import { formatDate } from '../../lib/dates';
 import type { AuditSummary } from '../../api/audits';
 
 interface AuditListPageProps {
@@ -60,14 +61,6 @@ export function AuditListPage({ onOpenAudit }: AuditListPageProps) {
     }
   };
 
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('en-IN', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    });
-  };
-
   return (
     <div className="min-h-screen bg-base">
       {/* Header */}
@@ -81,12 +74,12 @@ export function AuditListPage({ onOpenAudit }: AuditListPageProps) {
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="Notes (optional)"
-                className="flex-1 sm:flex-initial px-3 py-2.5 sm:py-1.5 text-sm border border-border rounded focus:outline-none focus:ring-2 focus:ring-accent min-h-[44px]"
+                className="input flex-1 sm:flex-initial text-sm min-h-[44px]"
               />
               <button
                 onClick={handleStartAudit}
                 disabled={starting}
-                className="px-4 py-2.5 sm:py-1.5 text-sm font-medium text-white bg-accent rounded hover:bg-accent-hover disabled:opacity-50 min-h-[44px] whitespace-nowrap"
+                className="btn btn-primary btn-md disabled:opacity-50 min-h-[44px] whitespace-nowrap"
               >
                 {starting ? 'Starting...' : '+ New'}
               </button>
@@ -102,7 +95,7 @@ export function AuditListPage({ onOpenAudit }: AuditListPageProps) {
         ) : audits.length === 0 ? (
           <div className="text-center py-8 text-text-secondary">No audits found. Start a new audit to begin.</div>
         ) : (
-          <div className="bg-surface rounded-lg shadow overflow-hidden">
+          <div className="card overflow-hidden">
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-elevated border-b border-border">

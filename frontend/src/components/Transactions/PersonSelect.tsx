@@ -75,15 +75,15 @@ export function PersonSelect({ value, onChange, disabled = false }: PersonSelect
           type="button"
           onClick={() => setShowAddModal(true)}
           disabled={disabled}
-          className="px-2 py-1 text-sm text-accent border border-accent rounded hover:bg-accent-dim disabled:opacity-50"
+          className="btn btn-outline btn-sm"
         >
           +
         </button>
       </div>
 
       {showAddModal && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-surface rounded-lg shadow-xl w-full max-w-sm">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="card-elevated rounded-2xl w-full max-w-sm">
             <div className="px-4 py-3 border-b border-border">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold">Add Person</h3>
@@ -98,7 +98,7 @@ export function PersonSelect({ value, onChange, disabled = false }: PersonSelect
                   value={newPerson.name}
                   onChange={(e) => setNewPerson({ ...newPerson, name: e.target.value })}
                   placeholder="Person name"
-                  className="w-full px-3 py-1.5 text-sm border border-border rounded focus:ring-1 focus:ring-accent"
+                  className="input w-full text-sm"
                   autoFocus
                 />
               </div>
@@ -109,13 +109,13 @@ export function PersonSelect({ value, onChange, disabled = false }: PersonSelect
                   value={newPerson.phone}
                   onChange={(e) => setNewPerson({ ...newPerson, phone: e.target.value })}
                   placeholder="Phone number"
-                  className="w-full px-3 py-1.5 text-sm border border-border rounded focus:ring-1 focus:ring-accent"
+                  className="input w-full text-sm"
                 />
               </div>
             </div>
             <div className="px-4 py-3 border-t border-border flex justify-end gap-2">
-              <button onClick={() => setShowAddModal(false)} className="px-3 py-1.5 text-sm text-text bg-surface border border-border rounded hover:bg-hover">Cancel</button>
-              <button onClick={handleAdd} disabled={!newPerson.name.trim() || saving} className="px-3 py-1.5 text-sm text-white bg-accent rounded hover:bg-accent-hover disabled:opacity-50">
+              <button onClick={() => setShowAddModal(false)} className="btn btn-ghost btn-sm">Cancel</button>
+              <button onClick={handleAdd} disabled={!newPerson.name.trim() || saving} className="btn btn-primary btn-sm">
                 {saving ? 'Adding...' : 'Add'}
               </button>
             </div>

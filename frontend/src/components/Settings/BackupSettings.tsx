@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createBackup, listBackups, getDownloadUrl, restoreBackup } from '../../api/backup';
+import { formatDate } from '../../lib/dates';
 import type { BackupInfo } from '../../api/backup';
 
 export function BackupSettings() {
@@ -88,11 +89,6 @@ export function BackupSettings() {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
-  };
-
   return (
     <>
       {/* Toast Notifications */}
@@ -134,7 +130,7 @@ export function BackupSettings() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-        className="glass rounded-2xl border border-border-light overflow-hidden"
+        className="card overflow-hidden"
       >
         {/* Card Header */}
         <div className="px-5 py-4 border-b border-border-light flex items-center justify-between">
@@ -153,7 +149,7 @@ export function BackupSettings() {
             onClick={handleCreateBackup}
             disabled={creating}
             whileTap={{ scale: 0.97 }}
-            className="relative overflow-hidden bg-gradient-to-r from-accent to-accent-press hover:from-accent-hover hover:to-accent text-base font-semibold text-sm px-4 py-2 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-accent/15 hover:shadow-accent/25 flex items-center gap-2 group"
+            className="btn btn-primary btn-md relative overflow-hidden group"
           >
             <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none" />
             {creating ? (
@@ -294,7 +290,7 @@ export function BackupSettings() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-              className="glass rounded-2xl border border-border-light shadow-2xl w-full max-w-md"
+              className="card-elevated w-full max-w-md"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Modal Header */}
@@ -352,7 +348,7 @@ export function BackupSettings() {
                     onClick={handleRestore}
                     disabled={restoring || confirmText !== 'RESTORE'}
                     whileTap={{ scale: 0.97 }}
-                    className="flex-1 relative overflow-hidden px-4 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-low to-orange-600 rounded-xl hover:from-orange-500 hover:to-orange-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all shadow-lg shadow-low/15 group"
+                    className="btn btn-md flex-1 relative overflow-hidden font-semibold bg-gradient-to-r from-low to-orange-600 hover:from-orange-500 hover:to-orange-600 disabled:opacity-50 shadow-lg shadow-low/15 group"
                   >
                     <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none" />
                     {restoring ? (

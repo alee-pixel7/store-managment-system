@@ -59,6 +59,7 @@ model items {
   barcode        String?  // Future QR feature
   image_path     String?  // Future photo feature
   is_active      Boolean  @default(true)
+  spec           String?  // Spec / value from Excel (Amp, Volt, Size, Model) — Value / Unit column
   notes          String?
   created_at     DateTime @default(now())
   updated_at     DateTime @updatedAt

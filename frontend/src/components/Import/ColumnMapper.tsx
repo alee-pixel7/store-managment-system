@@ -105,7 +105,7 @@ export function ColumnMapper({
   const mappedCount = Object.values(mapping).filter(Boolean).length;
 
   return (
-    <div className="bg-surface rounded-lg shadow p-6">
+    <div className="card p-6">
       <h2 className="text-lg font-medium text-text mb-4">
         Map Columns - {importType === 'items' ? 'Items' : 'Opening Stock'}
         {sheetName && <span className="text-text-secondary font-normal ml-2">({sheetName})</span>}
@@ -154,7 +154,7 @@ export function ColumnMapper({
           <button
             onClick={handleConfirm}
             disabled={loading}
-            className="px-4 py-2 text-sm font-medium text-white bg-accent rounded hover:bg-accent-hover disabled:opacity-50"
+            className="btn btn-primary btn-md disabled:opacity-50"
           >
             {loading ? 'Validating...' : 'Continue →'}
           </button>

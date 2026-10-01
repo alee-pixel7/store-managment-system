@@ -24,6 +24,8 @@ export function ItemModal({ isOpen, onClose, onSave, item, categories }: ItemMod
     brand: '',
     unit: 'PCS',
     min_stock: '0',
+    current_stock: '',
+    spec: '',
     rack_location: '',
     notes: '',
     aliases: [] as string[],
@@ -43,6 +45,8 @@ export function ItemModal({ isOpen, onClose, onSave, item, categories }: ItemMod
         brand: item.brand || '',
         unit: item.unit,
         min_stock: String(item.min_stock),
+        current_stock: String(item.current_stock),
+        spec: item.spec || '',
         rack_location: item.rack_location || '',
         notes: item.notes || '',
         aliases: item.item_aliases.map((a) => a.alias_name),
@@ -55,6 +59,8 @@ export function ItemModal({ isOpen, onClose, onSave, item, categories }: ItemMod
         brand: '',
         unit: 'PCS',
         min_stock: '0',
+        current_stock: '',
+        spec: '',
         rack_location: '',
         notes: '',
         aliases: [],
@@ -69,7 +75,7 @@ export function ItemModal({ isOpen, onClose, onSave, item, categories }: ItemMod
     setError(null);
 
     try {
-      const data = {
+      const data: Record<string, unknown> = {
         item_code: formData.item_code,
         item_name: formData.item_name,
         category_id: formData.category_id ? Number(formData.category_id) : (isEditing ? null : undefined),
@@ -77,9 +83,29 @@ export function ItemModal({ isOpen, onClose, onSave, item, categories }: ItemMod
         unit: formData.unit,
         min_stock: Number(formData.min_stock),
         rack_location: formData.rack_location || undefined,
+        // Send raw: '' clears the spec on the server, text sets it
+        spec: formData.spec,
         notes: formData.notes || undefined,
         aliases: formData.aliases,
       };
+
+      // Manual stock edit — only when the field was actually touched.
+      // Empty/non-numeric blocked here; negative allowed (signed ADJUST on server).
+      if (isEditing && formData.current_stock !== String(item!.current_stock)) {
+        const raw = formData.current_stock.trim();
+        if (raw === '') {
+          setError('Current Stock cannot be empty — enter a number (negative allowed)');
+          setLoading(false);
+          return;
+        }
+        const parsed = Number(raw);
+        if (!Number.isFinite(parsed)) {
+          setError('Current Stock must be a valid number (negative allowed)');
+          setLoading(false);
+          return;
+        }
+        data.current_stock = parsed;
+      }
 
       await onSave(data);
       onClose();
@@ -100,19 +126,19 @@ export function ItemModal({ isOpen, onClose, onSave, item, categories }: ItemMod
 
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50"
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm"
       onClick={handleBackdropClick}
     >
-      <div className="bg-surface rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
+      <div className="card-elevated rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
         {/* Header */}
-        <div className="px-4 py-3 border-b border-border bg-elevated">
+        <div className="px-5 py-4 border-b border-border-light bg-elevated">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-text">
               {isEditing ? 'Edit Item' : 'Add New Item'}
             </h2>
             <button
               onClick={onClose}
-              className="text-text-secondary hover:text-text text-xl font-bold"
+              className="p-1.5 -mr-1.5 text-text-secondary hover:text-text text-xl font-bold leading-none rounded-lg hover:bg-hover transition-colors"
             >
               ×
             </button>
@@ -130,7 +156,7 @@ export function ItemModal({ isOpen, onClose, onSave, item, categories }: ItemMod
           <div className="grid grid-cols-2 gap-4">
             {/* Item Code */}
             <div>
-              <label className="block text-sm font-medium text-text mb-1">
+              <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1.5">
                 Item Code *
               </label>
               <input
@@ -139,13 +165,13 @@ export function ItemModal({ isOpen, onClose, onSave, item, categories }: ItemMod
                 onChange={(e) => setFormData({ ...formData, item_code: e.target.value.toUpperCase() })}
                 required
                 placeholder="e.g., BRG-6205"
-                className="w-full px-3 py-1.5 border border-border rounded text-sm font-mono focus:ring-1 focus:ring-accent focus:border-accent"
+                className="input w-full text-sm font-mono"
               />
             </div>
 
             {/* Item Name */}
             <div>
-              <label className="block text-sm font-medium text-text mb-1">
+              <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1.5">
                 Item Name *
               </label>
               <input
@@ -154,13 +180,13 @@ export function ItemModal({ isOpen, onClose, onSave, item, categories }: ItemMod
                 onChange={(e) => setFormData({ ...formData, item_name: e.target.value })}
                 required
                 placeholder="e.g., Deep Groove Ball Bearing"
-                className="w-full px-3 py-1.5 border border-border rounded text-sm focus:ring-1 focus:ring-accent focus:border-accent"
+                className="input w-full text-sm"
               />
             </div>
 
             {/* Category */}
             <div>
-              <label className="block text-sm font-medium text-text mb-1">
+              <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1.5">
                 Category
               </label>
               <Dropdown
@@ -175,7 +201,7 @@ export function ItemModal({ isOpen, onClose, onSave, item, categories }: ItemMod
 
             {/* Brand */}
             <div>
-              <label className="block text-sm font-medium text-text mb-1">
+              <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1.5">
                 Brand
               </label>
               <input
@@ -183,13 +209,31 @@ export function ItemModal({ isOpen, onClose, onSave, item, categories }: ItemMod
                 value={formData.brand}
                 onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
                 placeholder="e.g., SKF"
-                className="w-full px-3 py-1.5 border border-border rounded text-sm focus:ring-1 focus:ring-accent focus:border-accent"
+                className="input w-full text-sm"
               />
+            </div>
+
+            {/* Spec / Value */}
+            <div className="col-span-2">
+              <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1.5">
+                Spec / Value
+              </label>
+              <input
+                type="text"
+                value={formData.spec}
+                onChange={(e) => setFormData({ ...formData, spec: e.target.value })}
+                placeholder="e.g., 10A / 24V / 110MM / 6205ZZ"
+                maxLength={200}
+                className="input w-full text-sm"
+              />
+              <p className="mt-1 text-[11px] text-text-muted">
+                Shown in the Value / Unit column and exports
+              </p>
             </div>
 
             {/* Unit */}
             <div>
-              <label className="block text-sm font-medium text-text mb-1">
+              <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1.5">
                 Unit *
               </label>
               <Dropdown
@@ -201,7 +245,7 @@ export function ItemModal({ isOpen, onClose, onSave, item, categories }: ItemMod
 
             {/* Min Stock */}
             <div>
-              <label className="block text-sm font-medium text-text mb-1">
+              <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1.5">
                 Min Stock
               </label>
               <input
@@ -210,13 +254,33 @@ export function ItemModal({ isOpen, onClose, onSave, item, categories }: ItemMod
                 onChange={(e) => setFormData({ ...formData, min_stock: e.target.value })}
                 min="0"
                 step="1"
-                className="w-full px-3 py-1.5 border border-border rounded text-sm focus:ring-1 focus:ring-accent focus:border-accent"
+                className="input w-full text-sm"
               />
             </div>
 
+            {/* Current Stock — manual edit records a signed ADJUST transaction */}
+            {isEditing && (
+              <div>
+                <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1.5">
+                  Current Stock
+                </label>
+                <input
+                  type="number"
+                  value={formData.current_stock}
+                  onChange={(e) => setFormData({ ...formData, current_stock: e.target.value })}
+                  step="1"
+                  placeholder="e.g., 120"
+                  className="input w-full text-sm font-mono"
+                />
+                <p className="mt-1 text-[11px] text-text-muted">
+                  Saves as an ADJUST transaction · negative allowed
+                </p>
+              </div>
+            )}
+
             {/* Rack Location */}
             <div className="col-span-2">
-              <label className="block text-sm font-medium text-text mb-1">
+              <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1.5">
                 Rack Location
               </label>
               <input
@@ -224,13 +288,13 @@ export function ItemModal({ isOpen, onClose, onSave, item, categories }: ItemMod
                 value={formData.rack_location}
                 onChange={(e) => setFormData({ ...formData, rack_location: e.target.value })}
                 placeholder="e.g., Rack A-03 / Bin 7"
-                className="w-full px-3 py-1.5 border border-border rounded text-sm focus:ring-1 focus:ring-accent focus:border-accent"
+                className="input w-full text-sm"
               />
             </div>
 
             {/* Aliases */}
             <div className="col-span-2">
-              <label className="block text-sm font-medium text-text mb-1">
+              <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1.5">
                 Aliases (press Enter to add)
               </label>
               <AliasInput
@@ -242,25 +306,25 @@ export function ItemModal({ isOpen, onClose, onSave, item, categories }: ItemMod
 
             {/* Notes */}
             <div className="col-span-2">
-              <label className="block text-sm font-medium text-text mb-1">
+              <label className="block text-xs font-semibold text-text-secondary uppercase tracking-wider mb-1.5">
                 Notes
               </label>
               <textarea
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                 rows={2}
-                className="w-full px-3 py-1.5 border border-border rounded text-sm focus:ring-1 focus:ring-accent focus:border-accent"
+                className="input w-full text-sm"
               />
             </div>
           </div>
         </form>
 
         {/* Footer */}
-        <div className="px-4 py-3 border-t border-border bg-elevated flex justify-end gap-2">
+        <div className="px-5 py-4 border-t border-border-light bg-elevated flex justify-end gap-2.5">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-1.5 text-sm text-text bg-surface border border-border rounded hover:bg-hover"
+            className="btn btn-ghost btn-md"
           >
             Cancel
           </button>
@@ -268,7 +332,7 @@ export function ItemModal({ isOpen, onClose, onSave, item, categories }: ItemMod
             type="submit"
             onClick={handleSubmit}
             disabled={loading}
-            className="px-4 py-1.5 text-sm text-white bg-accent rounded hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed"
+            className="btn btn-primary btn-md"
           >
             {loading ? 'Saving...' : isEditing ? 'Update Item' : 'Add Item'}
           </button>

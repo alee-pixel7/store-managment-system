@@ -2,6 +2,7 @@
 // Premium dark-themed PDFs using pdfkit
 
 import PDFDocument from 'pdfkit';
+import { formatDate } from '../utils/dates';
 import type { DailyReport } from './reportService';
 import type { MonthlyReport } from './monthlyReportService';
 
@@ -237,7 +238,7 @@ function addPageNumbers(doc: PDFKit.PDFDocument) {
     doc.text(`Page ${i + 1} of ${range.count}`, 30, footerY, { width: pageW - 60, align: 'center' });
 
     // Date right
-    doc.text(new Date().toLocaleDateString('en-IN'), 30, footerY, { width: pageW - 60, align: 'right' });
+    doc.text(formatDate(new Date()), 30, footerY, { width: pageW - 60, align: 'right' });
   }
 }
 
@@ -254,7 +255,7 @@ export async function exportDailyReportPDF(report: DailyReport): Promise<Buffer>
     doc.on('error', reject);
 
     // Title bar
-    drawTitleBar(doc, 'Daily Stock Report', `Date: ${report.date}`, report.date);
+    drawTitleBar(doc, 'Daily Stock Report', `Date: ${formatDate(report.date)}`, formatDate(report.date));
 
     // Summary cards
     const summaryCards = [
@@ -438,12 +439,13 @@ export async function exportItemsListPDF(items: any[]): Promise<Buffer> {
       i.item_name,
       i.category?.name || '-',
       i.brand || '-',
+      i.spec || '-',
       i.unit,
       String(i.current_stock),
       String(i.min_stock),
       i.rack_location || '-',
     ]);
-    drawTable(doc, ['Code', 'Name', 'Category', 'Brand', 'Unit', 'Stock', 'Min', 'Location'], itemRows, doc.y, 30, [55, 160, 70, 55, 35, 40, 35, 55], C.gold);
+    drawTable(doc, ['Code', 'Name', 'Category', 'Brand', 'Spec / Unit', 'Unit', 'Stock', 'Min', 'Location'], itemRows, doc.y, 30, [50, 125, 60, 45, 75, 30, 35, 30, 45], C.gold);
 
     addPageNumbers(doc);
     doc.end();
@@ -478,7 +480,7 @@ export async function exportItemLedgerPDF(itemData: any, ledger: any[]): Promise
     // Ledger
     drawSectionHeader(doc, 'Transaction Ledger', C.gold);
     const ledgerRows = ledger.map((e) => [
-      new Date(e.date).toLocaleDateString('en-IN'),
+      formatDate(e.date),
       e.txn_no,
       e.txn_type,
       e.in_qty != null ? String(e.in_qty) : '',

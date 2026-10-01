@@ -21,7 +21,7 @@ interface LowStockAlertProps {
 export function LowStockAlert({ items, onViewItem }: LowStockAlertProps) {
   if (items.length === 0) {
     return (
-      <div className="glass rounded-xl border border-border-light overflow-hidden h-full">
+      <div className="card overflow-hidden h-full">
         <div className="px-5 py-4 border-b border-border-light flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-ok-dim flex items-center justify-center">
             <svg className="w-4 h-4 text-ok" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
@@ -49,7 +49,7 @@ export function LowStockAlert({ items, onViewItem }: LowStockAlertProps) {
   }
 
   return (
-    <div className="glass rounded-xl border border-low/20 overflow-hidden h-full">
+    <div className="card border-low/20 overflow-hidden h-full">
       <div className="px-5 py-4 border-b border-low/10 bg-low-dim/30 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-low/15 flex items-center justify-center relative">

@@ -18,11 +18,16 @@ Complete inventory management system for machine-parts stores. Replaces Excel-ba
 
 | Field | Value |
 |-------|-------|
-| URL | `http://localhost:3000` |
+| URL (single-port / production) | `http://localhost:5000` |
+| URL (dev mode) | `http://localhost:3000` |
 | Username | `STORE ADMIN` |
 | Password | `S123T` |
 
-Phone access: `http://<your-PC-IP>:3000`
+Phone access: `http://<your-PC-IP>:5000` (single-port) or `:3000` (dev)
+
+**Single-port mode:** after `cd frontend && npm run build`, the backend serves the built
+frontend on port 5000 — one process, one port, no Vite needed. In dev mode (build output
+absent), keep using Vite on 3000 as before.
 
 ---
 
@@ -42,10 +47,28 @@ Phone access: `http://<your-PC-IP>:3000`
 
 - View all items in a searchable, filterable table
 - Add/edit/soft-delete items
+- **Manual stock edit** — the Edit modal has a Current Stock field; saving a changed
+  value writes a signed **ADJUST** transaction ("Manual stock edit"), never a bare
+  column update. Unchanged value → no transaction. Negative stock allowed, empty/NaN
+  blocked (STORE_INCHARGE+)
+- **Spec / Value column** — `spec` field (Amp, Volt, Size, Model...) shown in a
+  288px "Value / Unit" table column, the item detail card, exports, and searchable
+  in both browse and smart-search modes
 - View item detail with full transaction history (ledger)
-- Smart fuzzy search — matches code, name, brand, aliases (ignores spaces, dashes, case)
+- Smart fuzzy search — matches code, name, brand, **spec**, aliases (ignores spaces, dashes, case)
 - 31 categories with item counts
-- Export items list as Excel or PDF
+- Export items list as Excel or PDF (includes Spec / Unit column)
+
+### 2b. Dates — Day-First Everywhere
+
+- Display format: **`26 Sep 2026`** (day-first) across pages, reports, exports, PDFs
+- Shared helpers: `frontend/src/lib/dates.ts` + `backend/src/utils/dates.ts`
+  (`formatDate`, `formatDateLong`, `formatDateTime`, `formatDateShort`, `todayISO`)
+- **Custom DateField** replaces every native `type="date"` (Stock In/Out/Return forms,
+  Daily Report, Item Detail): type `29-09-2026` / `29 Sep 2026`, plus a dark portal
+  calendar popup (month/year nav, today ring, violet selection, Escape/click-outside close)
+- Filenames and API payloads stay ISO (`2026-09-26`)
+- `todayISO()` is timezone-safe (no UTC day-shift before 5:30 AM IST)
 
 ### 3. Stock IN (Receipts)
 
@@ -53,16 +76,16 @@ Phone access: `http://<your-PC-IP>:3000`
 - Fields: Date, Supplier, Invoice Number, Remarks
 - Multiple line items per transaction (Item search, Quantity, Rate, Remarks)
 - Auto-generates `IN-2026-0001` format
-- **Premium form:** spacious 2-column layout, glass card, icon-prefix inputs, gradient table header, animated toasts
+- **Premium form:** spacious 2-column layout, elevated card, icon-prefix inputs, gradient table header, animated toasts
 - Recent 10 transactions in premium sidebar
 
 ### 4. Stock OUT (Issue)
 
 - Issue stock to people/departments
 - Fields: Date, Issued To, Department, Machine, Purpose, Remarks
-- **Negative stock allowed** with glass confirmation dialog (spring animation)
+- **Negative stock allowed** with confirmation dialog (spring animation)
 - Auto-generates `OUT-2026-0001` format
-- **Premium form:** spacious 2-column layout, glass card, icon-prefix inputs, gradient table header, animated toasts
+- **Premium form:** spacious 2-column layout, elevated card, icon-prefix inputs, gradient table header, animated toasts
 - **34 pre-seeded machines** across 8 departments (Printing, Bag Making, Lamination, Slitting, Extruder, Metalizer, Hologram, UV Machine)
 - **Custom dropdown** with portal rendering — no overflow clipping, chevron toggle, min-width 280px for long names
 
@@ -72,7 +95,7 @@ Phone access: `http://<your-PC-IP>:3000`
 - Fields: Date, Supplier (optional), Remarks
 - Multiple line items per transaction
 - Auto-generates `RETURN-2026-0001` format
-- **Premium form:** amber-themed, glass cards, gradient save button
+- **Premium form:** danger-tinted save button, elevated cards, animated toasts
 
 ### 6. Stock Reversal
 
@@ -128,13 +151,13 @@ Phone access: `http://<your-PC-IP>:3000`
 
 ### 11. Analytics (Premium — 5 Views)
 
-**Premium dark glass design** with animated tab bar, gradient charts, stagger-animated tables:
+**Premium dark design** with animated tab bar, gradient charts, stagger-animated tables:
 
 | View | What it shows |
 |------|---------------|
-| Stock Value Trend | 12-month stock value line chart with gold/green/red gradient lines |
+| Stock Value Trend | 12-month stock value line chart with violet/green/red gradient lines |
 | Item Consumption Trend | Per-item line chart over 12 months (searchable) |
-| Machine-wise Consumption | Bar chart comparing machines (gold + green gradients) |
+| Machine-wise Consumption | Bar chart comparing machines (violet + green gradients) |
 | Unusual Consumption | Machines >50% above 6-month average (danger-highlighted) |
 | Dead Stock | Items with no movement — 90/180/365 day filters, tied-up value |
 | Smart Reorder Points | Suggested min_stock based on consumption + lead time |
@@ -162,26 +185,44 @@ Phone access: `http://<your-PC-IP>:3000`
 - 12hr token expiry
 - Role-based access control on all routes
 
-### 14. Premium Dark Industrial Theme
+### 14. Noir + Amethyst Theme (Desktop Left Sidebar)
 
-**Design system — "control panel of good machinery":**
+**Design system — deep noir surfaces + electric violet accent:**
 
 | Element | Color | Usage |
 |---------|-------|-------|
-| Base | `#0B0D11` | Page background |
-| Surface | `#14161C` | Cards, panels |
-| Elevated | `#1C1F26` | Modals, table headers |
-| Accent | `#E8A035` | Buttons, active nav, links (gold) |
+| Base | `#07080B` | Page background |
+| Surface | `#0E1015` | Sidebar, cards, panels |
+| Elevated | `#15181F` | Modals, dropdowns |
+| Accent | `#8B5CF6` | Buttons, active nav, links, highlights (violet) |
+| Accent text | `#A78BFA` | Readable violet on dark |
 | OK | `#4ADE80` | Stock ok (green) |
 | Low | `#F59E0B` | Low stock (amber) |
 | Danger | `#EF4444` | Out of stock (red) |
 
+**Layout:**
+- **Fixed left sidebar (260px, desktop)** — logo, grouped nav (Main / Operations /
+  Insights / Admin), collapsible Reports group, user card + logout; scrollable when
+  tall (`min-h-0`), violet active pill with glow
+- **Mobile keeps the bottom navigation** with animated active indicator + glass popup
+- Content area padded `pl-[260px]` (`print:pl-0` for clean A4 prints)
+
+**Component system (`@layer components` in `index.css`):**
+- `.btn` family — `btn-primary` (violet gradient), `btn-outline`, `btn-ghost`,
+  `btn-solid`, `btn-danger`, `btn-danger-outline`, sizes `btn-sm/md/lg`
+- `.card` / `.card-elevated` / `.card-hover` / `.card-accent-top` — static panels use
+  cards; only floating layers (dropdowns, toasts, calendar, search) stay glass
+- `.input` — unified dark input/select/textarea with violet focus ring
+- `.sidebar-link` / `.sidebar-link-active`, `.table-head`, `.table-row-hover`, `.num`
+- All component classes live in `@layer components`, so Tailwind utilities always
+  override them (cascade layers beat specificity)
+- Violet glow shadows (`--shadow-glow*`), violet text selection, violet focus ring
+
 **Features:**
-- Glass morphism (backdrop-blur) on cards, dialogs, toasts
 - framer-motion page transitions, stagger animations, spring dialogs
 - Animated number count-up on stat cards
-- LayoutGroup animated nav underline with layoutId
 - **Custom Dropdown component** — portal-rendered, overflow-safe, chevron toggle, click-outside close, Escape key
+- **Custom DateField** — day-first input + dark portal calendar (violet selection)
 - Mobile responsive with bottom navigation + animated indicator
 - Print stylesheet (clean A4, no UI elements)
 - Service worker disabled in dev mode (prevents stale CSS)
@@ -219,6 +260,9 @@ Place Excel files in `exel file/` directory, then:
 ```bash
 cd backend
 node src/scripts/reimport-clean.js
+node src/scripts/dedupe-items.js
+node src/scripts/verify-sections.js
+node src/scripts/fix-recalc-mismatch.js
 ```
 
 ### 4. Start Development Servers
@@ -235,9 +279,19 @@ cd backend && npm run dev
 cd frontend && npm run dev
 ```
 
-### 5. Login
+### 5. Single-Port Production Mode
 
-Open `http://localhost:3000`:
+```bash
+cd frontend && npm run build   # outputs frontend/dist
+cd ../backend && npm run dev   # backend now serves the app on :5000
+```
+
+Open `http://localhost:5000`. The backend serves `frontend/dist` with SPA fallback
+when the build exists; unknown `/api` paths still return JSON 404.
+
+### 6. Login
+
+Open `http://localhost:5000` (or `:3000` in dev):
 - Username: `STORE ADMIN`
 - Password: `S123T`
 
@@ -245,10 +299,80 @@ Open `http://localhost:3000`:
 
 Backend listens on `0.0.0.0:5000`. Open in phone browser:
 ```
-http://<your-PC-IP>:3000
+http://<your-PC-IP>:5000     # single-port mode
+http://<your-PC-IP>:3000     # dev mode (Vite)
 ```
 
 Find your PC IP: `ip addr show` or `hostname -I`
+
+---
+
+## Maintenance Scripts
+
+All scripts are idempotent (safe to re-run) and self-verify. Recommended cycle after a
+fresh import:
+
+```bash
+cd backend
+node src/scripts/reimport-clean.js        # 1. import from master Excel
+node src/scripts/dedupe-items.js          # 2. merge duplicates
+node src/scripts/verify-sections.js       # 3. Excel vs DB section check
+node src/scripts/fix-recalc-mismatch.js   # 4. heal stock/ledger drift
+```
+
+| Script | What it does | Self-verify |
+|--------|--------------|-------------|
+| `reimport-clean.js` | Reads `exel file/` master workbook, builds items/categories/transactions | Summary counts |
+| `dedupe-items.js` | Merges only same-category + same-name + same-spec duplicates; keeper = most txns → highest stock → lowest code; stock summed, txns reassigned, dupes soft-deleted | 0 duplicate groups |
+| `verify-sections.js` | Compares every sheet's categories/stock against the DB (adaptive header detection); clear message if master Excel missing | categories + stock match |
+| `fix-recalc-mismatch.js` | For each item where `current_stock ≠ recalc`, creates ONE signed ADJUST with the delta (never touches the column directly) | mismatch = 0 |
+
+`--dry-run` flag supported on `dedupe-items.js` and `fix-recalc-mismatch.js`.
+
+**Rules encoded in `dedupe-items.js`:**
+- Same name with different spec/notes = different items (SINGLE POLE 10A vs 6A, HEATER sizes) — never merged
+- Cross-category pairs left alone (machine-specific parts)
+- Duplicates are soft-deleted (`is_active=false`), never hard-deleted
+
+---
+
+## Windows Auto-Start Launchers
+
+For a Windows deployment where the app starts at login with no console windows:
+
+| File | Role |
+|------|------|
+| `auto-start.ps1` | Starts the backend hidden at login. Named mutex (only one instance), TCP health-check on `127.0.0.1`, log rotation (`server.err.log` → `.old`), waits up to 30s for health. Runs `dist/index.js` if built, else `ts-node`. |
+| `open-app.ps1` | Desktop icon entry: ensures backend is up (calls `auto-start.ps1`), waits up to 4s, shows `show-starting.vbs` popup if still booting (cold boot 6–20s), then opens `http://localhost:5000`. On failure opens `server.err.log` in Notepad. |
+| `run-hidden.vbs` | Runs any `.ps1` with no PowerShell window (`wscript run-hidden.vbs script.ps1`). |
+| `show-starting.vbs` | "Starting..." info popup, auto-dismisses after 25s. |
+
+Setup: put a shortcut to `open-app.ps1` on the desktop and a shortcut to
+`auto-start.ps1` in `shell:startup`. Logs land in `backend\logs\`.
+
+> Note: these scripts were written on Linux and are syntax-reviewed but **not
+> executed here** — first run should be verified on the Windows machine.
+
+---
+
+## Linux Shortcuts (login auto + desktop icon)
+
+| File | Role |
+|------|------|
+| `start-app.sh` | Single entry point: health-check → start backend hidden if down (PID file + log rotation, 30s boot wait) → open browser. Already running → skips. `--no-browser` for autostart. Subcommands: `status`, `stop` (SIGINT→SIGKILL, all pids), `restart`. Failures surface as KDE/desktop notifications (`.desktop` runs without a terminal). |
+| `store-management.desktop` | Template — `install-shortcut.sh` writes the absolute (space-quoted) Exec path. |
+| `install-shortcut.sh` | Idempotent installer: menu entry (`~/.local/share/applications`), desktop icon (`~/Desktop`, executable), login autostart (`~/.config/autostart`, `--no-browser` = backend only), app icon (hicolor), `desktop-file-validate` + menu DB refresh. `--uninstall` removes all. |
+
+```bash
+./install-shortcut.sh        # install (safe to re-run)
+./start-app.sh status        # running? pid, port
+./start-app.sh stop          # graceful stop
+./install-shortcut.sh --uninstall
+```
+
+- Double-click desktop icon → backend start (if needed) + browser opens `http://localhost:5000`
+- Login → backend starts hidden (no browser)
+- Repo path contains spaces — Exec values are quoted; the script self-locates, so it works from anywhere
 
 ---
 
@@ -256,17 +380,21 @@ Find your PC IP: `ip addr show` or `hostname -I`
 
 ```
 store management system/
+├── auto-start.ps1                    # Windows: hidden backend start at login (mutex + health-check)
+├── open-app.ps1                      # Windows: desktop entry — start backend, open browser
+├── run-hidden.vbs                    # Windows: run a .ps1 with no console window
+├── show-starting.vbs                 # Windows: "Starting..." popup (25s auto-dismiss)
 ├── backend/
 │   ├── prisma/
-│   │   ├── schema.prisma          # Database schema (13 tables)
+│   │   ├── schema.prisma          # Database schema (13 tables, items.spec added)
 │   │   ├── dev.db                 # SQLite database
 │   │   └── seed.ts                # Admin user + 34 machines across 8 departments
 │   ├── src/
-│   │   ├── index.ts               # Express entry + graceful shutdown
+│   │   ├── index.ts               # Express entry + single-port static serving + graceful shutdown
 │   │   ├── lib/prisma.ts          # Prisma singleton client
 │   │   ├── middleware/auth.ts     # JWT auth + role checks
 │   │   ├── services/
-│   │   │   ├── itemService.ts
+│   │   │   ├── itemService.ts     # CRUD + manual stock edit (signed ADJUST) + spec search
 │   │   │   ├── transactionService.ts   # Stock IN/OUT/Return/Reversal (by ID + by txn_no)
 │   │   │   ├── reportService.ts        # Daily report (correct stock calculation)
 │   │   │   ├── monthlyReportService.ts # Monthly report (correct stock calculation)
@@ -276,29 +404,36 @@ store management system/
 │   │   │   ├── auditService.ts
 │   │   │   ├── backupService.ts        # Path traversal protected
 │   │   │   ├── importService.ts
-│   │   │   ├── pdfExportService.ts     # Premium gold-themed PDFs
-│   │   │   ├── excelExportService.ts
+│   │   │   ├── pdfExportService.ts     # Premium gold-themed PDFs (day-first dates, Spec/Unit col)
+│   │   │   ├── excelExportService.ts   # (day-first dates, Spec/Unit col)
 │   │   │   └── authService.ts          # Persisted JWT secret
 │   │   ├── controllers/
 │   │   ├── routes/
 │   │   ├── validations/
 │   │   ├── utils/stock.ts              # recalculateStock, generateTxnNo
-│   │   └── scripts/                    # Import scripts
+│   │   ├── utils/dates.ts              # Day-first date helpers (backend twin)
+│   │   └── scripts/
+│   │       ├── reimport-clean.js       # Master Excel import
+│   │       ├── dedupe-items.js         # Safe duplicate merge (self-verify)
+│   │       ├── verify-sections.js      # Excel vs DB section check
+│   │       └── fix-recalc-mismatch.js  # Signed-ADJUST ledger heal (self-verify)
 │   └── backups/                        # Automatic backups
 │
 ├── frontend/
 │   ├── src/
-│   │   ├── App.tsx                     # Nav, routing, AnimatePresence
-│   │   ├── index.css                   # @theme block + glass utilities
+│   │   ├── App.tsx                     # Left sidebar shell, routing, AnimatePresence
+│   │   ├── index.css                   # Noir+Amethyst tokens, @layer components (.btn/.card/.input/.sidebar-link)
 │   │   ├── lib/motion.ts               # Animation presets
+│   │   ├── lib/dates.ts                # Day-first date helpers (single source of truth)
 │   │   ├── api/                        # API clients (authFetch wrapper)
 │   │   ├── contexts/AuthContext.tsx
 │   │   ├── hooks/                      # useDebounce, useIsMobile
 │   │   └── components/
-│   │       ├── Auth/LoginPage.tsx       # Premium login
+│   │       ├── ui/DateField.tsx        # Day-first input + dark calendar popup
+│   │       ├── Auth/LoginPage.tsx       # Premium login (aurora + violet glows)
 │   │       ├── Dashboard/              # Premium dashboard (4+2 layout)
-│   │       ├── Items/                  # Items page + detail + ledger
-│   │       ├── Transactions/           # Stock In/Out/Return (premium forms)
+│   │       ├── Items/                  # Items page + detail + ledger + Value/Unit col
+│   │       ├── Transactions/           # Stock In/Out/Return (premium forms, DateField)
 │   │       ├── Reports/                # Daily + Monthly (with reverse)
 │   │       ├── Import/ImportWizard.tsx
 │   │       ├── Settings/BackupSettings.tsx
@@ -316,7 +451,7 @@ store management system/
 │   ├── tauri.conf.json                 # Window config + NSIS installer
 │   ├── Cargo.toml                      # Rust dependencies
 │   └── icons/                          # App icons (gold gear theme)
-└── exel file/                          # User's Excel files
+└── exel file/                          # User's Excel files (all stock new.xlsx = master)
 ```
 
 ---
@@ -431,18 +566,21 @@ store management system/
 |-------|---------|
 | `users` | Login credentials, roles |
 | `categories` | Item categories (31) |
-| `items` | Main inventory (1,019 items) |
+| `items` | Main inventory (989 active items, incl. `spec` column) |
 | `item_aliases` | Alternative names for search |
 | `suppliers` | Vendors with lead_time_days |
 | `departments` | Organization units (11) |
 | `machines` | Equipment linked to departments (34 pre-seeded) |
 | `persons` | People receiving material (92) |
-| `transactions` | Header — type, date, creator |
+| `transactions` | Header — type, date, creator (980 total, 882 ADJUST) |
 | `transaction_items` | Line items — item, quantity, rate |
 | `stock_audits` | Audit sessions |
 | `stock_audit_lines` | Item counts within audits |
 
-**Stock calculation:** `current_stock` maintained by `recalculateStock()` — IN/RETURN add, OUT subtract, ADJUST/REVERSAL signed. Correct type-aware calculation (not raw sum).
+> Counts are from the working DB after running `dedupe-items.js` + `fix-recalc-mismatch.js`
+> (2026-10-01). They will shift after the next master-Excel import (`reimport-clean.js`).
+
+**Stock calculation:** `current_stock` maintained by `recalculateStock()` — IN/RETURN add, OUT subtract, ADJUST/REVERSAL signed. Correct type-aware calculation (not raw sum). Manual edits from the item modal and the maintenance scripts always go through signed ADJUST transactions, so displayed stock and ledger never drift.
 
 ---
 
@@ -468,16 +606,19 @@ store management system/
 ## Development
 
 ```bash
-# TypeScript check
+# TypeScript check (both must pass clean)
 cd backend && npx tsc --noEmit
-cd frontend && npx tsc --noEmit
+cd frontend && npx tsc -b --force && npx vite build
 
-# Build frontend
-cd frontend && npx vite build
+# Build frontend for single-port mode
+cd frontend && npm run build
 
 # Reset database
 cd backend && npx prisma migrate reset
 node src/scripts/reimport-clean.js
+node src/scripts/dedupe-items.js
+node src/scripts/verify-sections.js
+node src/scripts/fix-recalc-mismatch.js
 ```
 
 ## Desktop App (Tauri)

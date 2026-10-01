@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { staggerContainer, staggerItem } from '../../lib/motion';
+import { formatDateShort } from '../../lib/dates';
 
 interface Transaction {
   id: number;
@@ -46,7 +47,7 @@ export function RecentActivity({ transactions, onNavigate }: RecentActivityProps
     if (diffMins < 60) return `${diffMins}m ago`;
     if (diffHours < 24) return `${diffHours}h ago`;
     if (diffDays < 7) return `${diffDays}d ago`;
-    return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+    return formatDateShort(date);
   };
 
   const handleTxnClick = (txnType: string) => {
@@ -58,7 +59,7 @@ export function RecentActivity({ transactions, onNavigate }: RecentActivityProps
   };
 
   return (
-    <div className="glass rounded-xl border border-border-light overflow-hidden h-full">
+    <div className="card overflow-hidden h-full">
       <div className="px-5 py-4 border-b border-border-light flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-accent-dim flex items-center justify-center">
@@ -95,7 +96,6 @@ export function RecentActivity({ transactions, onNavigate }: RecentActivityProps
 
           {transactions.map((txn, idx) => {
             const style = getTxnStyle(txn.txn_type);
-            const isLast = idx === transactions.length - 1;
             return (
               <motion.button
                 key={txn.id}

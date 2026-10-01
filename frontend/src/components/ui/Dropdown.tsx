@@ -86,7 +86,7 @@ export function Dropdown({ options, value, onChange, placeholder = 'Select...', 
         type="button"
         onClick={handleToggle}
         disabled={disabled}
-        className="w-full flex items-center justify-between gap-2 px-3 py-2.5 sm:py-1.5 text-sm border border-border rounded bg-base text-text hover:border-accent/50 focus:ring-1 focus:ring-accent focus:border-accent min-h-[44px] sm:min-h-0 text-left transition-colors disabled:bg-elevated disabled:opacity-50 disabled:cursor-not-allowed"
+        className="input w-full flex items-center justify-between gap-2 min-h-[44px] sm:min-h-0 text-left hover:border-accent/50 disabled:bg-elevated disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <span className={`truncate ${selected ? 'text-text' : 'text-text-secondary'}`}>
           {selected ? selected.label + (selected.suffix || '') : placeholder}
@@ -104,7 +104,7 @@ export function Dropdown({ options, value, onChange, placeholder = 'Select...', 
       {isOpen && createPortal(
         <div
           ref={listRef}
-          className="fixed z-[200] bg-surface border border-border rounded-lg shadow-2xl overflow-hidden min-w-[280px] animate-in fade-in zoom-in-95 duration-100"
+          className="fixed z-[200] glass border border-border rounded-xl shadow-2xl overflow-hidden min-w-[280px] animate-in fade-in zoom-in-95 duration-100"
           style={{ top: listPos.top, left: listPos.left, width: listPos.width }}
         >
           <div className="max-h-60 overflow-y-auto py-1">
@@ -119,7 +119,7 @@ export function Dropdown({ options, value, onChange, placeholder = 'Select...', 
                 className={`w-full px-3 py-2 text-sm text-left flex items-center justify-between transition-colors
                   ${String(option.value) === String(value)
                     ? 'bg-accent/10 text-accent font-medium'
-                    : 'text-text hover:bg-elevated'
+                    : 'text-text hover:bg-hover'
                   }`}
               >
                 <span className="whitespace-nowrap">{option.label}</span>

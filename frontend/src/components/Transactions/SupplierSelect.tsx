@@ -69,7 +69,7 @@ export function SupplierSelect({ value, onChange, disabled = false }: SupplierSe
           type="button"
           onClick={() => setShowAddModal(true)}
           disabled={disabled}
-          className="px-3 py-1.5 text-sm text-accent border border-accent rounded hover:bg-accent-dim disabled:opacity-50"
+          className="btn btn-outline btn-sm"
         >
           + New
         </button>
@@ -77,8 +77,8 @@ export function SupplierSelect({ value, onChange, disabled = false }: SupplierSe
 
       {/* Add Supplier Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-surface rounded-lg shadow-xl w-full max-w-md">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="card-elevated rounded-2xl w-full max-w-md">
             <div className="px-4 py-3 border-b border-border">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold">Add New Supplier</h3>
@@ -97,7 +97,7 @@ export function SupplierSelect({ value, onChange, disabled = false }: SupplierSe
                   type="text"
                   value={newSupplier.name}
                   onChange={(e) => setNewSupplier({ ...newSupplier, name: e.target.value })}
-                  className="w-full px-3 py-1.5 text-sm border border-border rounded focus:ring-1 focus:ring-accent"
+                  className="input w-full text-sm"
                   placeholder="Supplier name"
                 />
               </div>
@@ -107,7 +107,7 @@ export function SupplierSelect({ value, onChange, disabled = false }: SupplierSe
                   type="text"
                   value={newSupplier.phone}
                   onChange={(e) => setNewSupplier({ ...newSupplier, phone: e.target.value })}
-                  className="w-full px-3 py-1.5 text-sm border border-border rounded focus:ring-1 focus:ring-accent"
+                  className="input w-full text-sm"
                   placeholder="Phone number"
                 />
               </div>
@@ -117,7 +117,7 @@ export function SupplierSelect({ value, onChange, disabled = false }: SupplierSe
                   type="text"
                   value={newSupplier.address}
                   onChange={(e) => setNewSupplier({ ...newSupplier, address: e.target.value })}
-                  className="w-full px-3 py-1.5 text-sm border border-border rounded focus:ring-1 focus:ring-accent"
+                  className="input w-full text-sm"
                   placeholder="Address"
                 />
               </div>
@@ -125,14 +125,14 @@ export function SupplierSelect({ value, onChange, disabled = false }: SupplierSe
             <div className="px-4 py-3 border-t border-border flex justify-end gap-2">
               <button
                 onClick={() => setShowAddModal(false)}
-                className="px-4 py-1.5 text-sm text-text bg-surface border border-border rounded hover:bg-hover"
+                className="btn btn-ghost btn-md"
               >
                 Cancel
               </button>
               <button
                 onClick={handleAddSupplier}
                 disabled={!newSupplier.name.trim() || saving}
-                className="px-4 py-1.5 text-sm text-white bg-accent rounded hover:bg-accent-hover disabled:opacity-50"
+                className="btn btn-primary btn-md"
               >
                 {saving ? 'Adding...' : 'Add Supplier'}
               </button>

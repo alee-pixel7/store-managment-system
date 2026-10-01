@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=Store Management System
+GenericName=Inventory Management
+Comment=Start the store management app (backend + browser)
+# @EXEC@ is replaced with the absolute path by install-shortcut.sh
+Exec="@EXEC@"
+Icon=store-management
+Terminal=false
+Categories=Office;
+StartupNotify=false
+StartupWMClass=store-management
+X-KDE-StartupNotify=false

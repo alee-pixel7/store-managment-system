@@ -21,8 +21,8 @@ function getGreeting() {
 
 function formatDashboardDate() {
   const now = new Date();
-  const dateStr = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-  const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  const dateStr = now.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+  const timeStr = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
   return { dateStr, timeStr };
 }
 
@@ -93,10 +93,10 @@ export function DashboardPage({ onNavigate, onViewItem }: DashboardPageProps) {
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="text-center glass border border-border rounded-2xl p-8 max-w-sm"
+          className="text-center card p-8 max-w-sm"
         >
           <div className="text-danger mb-3 text-lg font-medium">{error}</div>
-          <button onClick={loadSummary} className="px-4 py-2 text-sm font-semibold text-base bg-gradient-to-r from-accent to-accent-press rounded-xl hover:shadow-lg hover:shadow-accent/20 transition-all">
+          <button onClick={loadSummary} className="btn btn-primary btn-md">
             Retry
           </button>
         </motion.div>
@@ -165,7 +165,7 @@ export function DashboardPage({ onNavigate, onViewItem }: DashboardPageProps) {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.1 }}
-          className="glass rounded-xl border border-border-light p-4"
+          className="card card-accent-top p-4"
         >
           <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
             <div className="flex items-center gap-2">

@@ -24,7 +24,7 @@ export function ImportWizard() {
   const { canDoStockOps } = useAuth();
   const [importType, setImportType] = useState<ImportType>('items');
   const [step, setStep] = useState<Step>('upload');
-  const [file, setFile] = useState<File | null>(null);
+  const [, setFile] = useState<File | null>(null);
   const [multiSheetData, setMultiSheetData] = useState<MultiSheetData | null>(null);
   const [selectedSheet, setSelectedSheet] = useState<SheetInfo | null>(null);
   const [fileData, setFileData] = useState<ParsedFile | null>(null);
@@ -183,12 +183,12 @@ export function ImportWizard() {
   return (
     <div className="min-h-screen bg-base">
       {/* Header */}
-      <div className="bg-surface border-b border-border px-4 py-3">
+      <div className="bg-surface/80 backdrop-blur-xl border-b border-border-light px-4 py-3">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-semibold text-text">Import Data</h1>
           <button
             onClick={handleReset}
-            className="px-4 py-1.5 text-sm font-medium text-text-secondary hover:text-text hover:bg-hover rounded"
+            className="btn btn-ghost btn-sm"
           >
             Start Over
           </button>
@@ -210,7 +210,7 @@ export function ImportWizard() {
                   <div
                     className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
                       isActive
-                        ? 'bg-accent text-white'
+                        ? 'bg-accent text-base shadow-md shadow-accent/30'
                         : isCompleted
                         ? 'bg-green-500 text-white'
                         : 'bg-gray-200 text-text-secondary'
@@ -228,7 +228,7 @@ export function ImportWizard() {
 
         {/* Step: Upload */}
         {step === 'upload' && (
-          <div className="bg-surface rounded-lg shadow p-6">
+          <div className="card p-6">
             <h2 className="text-lg font-medium text-text mb-4">Select Import Type</h2>
             <div className="flex gap-4 mb-6">
               <button
@@ -290,7 +290,7 @@ export function ImportWizard() {
 
         {/* Step: Sheet Selection */}
         {step === 'sheets' && multiSheetData && (
-          <div className="bg-surface rounded-lg shadow p-6">
+          <div className="card p-6">
             <h2 className="text-lg font-medium text-text mb-2">Select Sheet to Import</h2>
             <p className="text-sm text-text-secondary mb-4">
               This file has {multiSheetData.totalSheets} sheets. Select one to import:
@@ -370,7 +370,7 @@ export function ImportWizard() {
 
         {/* Step: Result */}
         {step === 'result' && result && (
-          <div className="bg-surface rounded-lg shadow p-6">
+          <div className="card p-6">
             <h2 className="text-lg font-medium text-text mb-4">Import Complete</h2>
             <div className="grid grid-cols-3 gap-4 mb-6">
               <div className="bg-green-50 rounded-lg p-4 text-center">
@@ -411,7 +411,7 @@ export function ImportWizard() {
 
             <button
               onClick={handleReset}
-              className="px-4 py-2 text-sm font-medium text-white bg-accent rounded hover:bg-accent-hover"
+              className="btn btn-primary btn-md"
             >
               Import More Data
             </button>

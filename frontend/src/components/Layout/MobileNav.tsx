@@ -109,17 +109,17 @@ export function MobileNav({ currentPage, onNavigate, canDoStockOps }: MobileNavP
                   whileTap={{ scale: 0.85 }}
                   onClick={() => setShowReports(!showReports)}
                   className={`relative flex flex-col items-center justify-center gap-0.5 min-w-[56px] min-h-[44px] px-2 py-1 rounded-xl transition-colors duration-150 ${
-                    isActive ? 'text-accent' : 'text-text-secondary'
+                    isActive ? 'text-accent bg-accent/10' : 'text-text-secondary hover:text-text'
                   }`}
                 >
                   {isActive && (
                     <motion.div
                       layoutId="mobile-indicator"
-                      className="absolute -top-1 w-6 h-0.5 bg-accent rounded-full shadow-[0_0_8px_rgba(232,160,53,0.4)]"
+                      className="absolute -top-1 w-6 h-0.5 bg-accent rounded-full shadow-[0_0_8px_rgba(139,92,246,0.4)]"
                       transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                     />
                   )}
-                  <div className={isActive ? 'drop-shadow-[0_0_6px_rgba(232,160,53,0.3)]' : ''}>
+                  <div className={isActive ? 'drop-shadow-[0_0_6px_rgba(139,92,246,0.3)]' : ''}>
                     {item.icon}
                   </div>
                   <span className="text-[10px] font-medium">{item.label}</span>
@@ -131,7 +131,7 @@ export function MobileNav({ currentPage, onNavigate, canDoStockOps }: MobileNavP
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 8, scale: 0.95 }}
                       transition={{ duration: 0.12 }}
-                      className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-44 bg-elevated border border-border rounded-xl shadow-xl z-[60] overflow-hidden"
+                      className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-44 glass border border-border rounded-xl shadow-2xl z-[60] overflow-hidden"
                     >
                       <button
                         onClick={() => { onNavigate('daily-report'); setShowReports(false); }}
@@ -158,17 +158,17 @@ export function MobileNav({ currentPage, onNavigate, canDoStockOps }: MobileNavP
               whileTap={{ scale: 0.85 }}
               onClick={() => onNavigate(item.id)}
               className={`relative flex flex-col items-center justify-center gap-0.5 min-w-[56px] min-h-[44px] px-2 py-1 rounded-xl transition-colors duration-150 ${
-                isActive ? 'text-accent' : 'text-text-secondary'
+                isActive ? 'text-accent bg-accent/10' : 'text-text-secondary hover:text-text'
               }`}
             >
               {isActive && (
                 <motion.div
                   layoutId="mobile-indicator"
-                  className="absolute -top-1 w-6 h-0.5 bg-accent rounded-full shadow-[0_0_8px_rgba(232,160,53,0.4)]"
+                  className="absolute -top-1 w-6 h-0.5 bg-accent rounded-full shadow-[0_0_8px_rgba(139,92,246,0.4)]"
                   transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                 />
               )}
-              <div className={isActive ? 'drop-shadow-[0_0_6px_rgba(232,160,53,0.3)]' : ''}>
+              <div className={isActive ? 'drop-shadow-[0_0_6px_rgba(139,92,246,0.3)]' : ''}>
                 {item.icon}
               </div>
               <span className="text-[10px] font-medium">{item.label}</span>

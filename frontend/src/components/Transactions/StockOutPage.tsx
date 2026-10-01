@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import type { Transaction } from '../../types';
 import { listTransactions } from '../../api/transactions';
+import { formatDateShort } from '../../lib/dates';
 import { StockOutForm } from './StockOutForm';
 
 export function StockOutPage() {
@@ -55,7 +56,7 @@ export function StockOutPage() {
           </div>
 
           {/* Recent Transactions Sidebar */}
-          <div className="glass rounded-2xl border border-border-light overflow-hidden order-first lg:order-last">
+          <div className="card overflow-hidden order-first lg:order-last">
             <div className="px-5 py-4 border-b border-border-light flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-danger-dim flex items-center justify-center">
@@ -95,7 +96,7 @@ export function StockOutPage() {
                       initial={{ opacity: 0, x: 10 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: idx * 0.05, duration: 0.25 }}
-                      className="glass rounded-xl p-3.5 hover:bg-hover transition-colors group cursor-default"
+                      className="card p-3.5 hover:bg-hover transition-colors group cursor-default"
                     >
                       <div className="flex items-center gap-3">
                         <div className="w-2.5 h-2.5 rounded-full flex-shrink-0 bg-danger" />
@@ -105,7 +106,7 @@ export function StockOutPage() {
                               {txn.txn_no}
                             </span>
                             <span className="text-[10px] text-text-muted tabular-nums flex-shrink-0">
-                              {new Date(txn.txn_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                              {formatDateShort(txn.txn_date)}
                             </span>
                           </div>
                           <div className="flex items-center gap-2 mt-1 text-xs text-text-secondary">

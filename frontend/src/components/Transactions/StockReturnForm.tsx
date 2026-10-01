@@ -1,17 +1,18 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { SearchItem, StockInLineItem } from '../../types';
-import { createReturn, listSuppliers } from '../../api/transactions';
-import type { Supplier } from '../../types';
+import { createReturn } from '../../api/transactions';
+import { todayISO } from '../../lib/dates';
 import { ItemSearch } from './ItemSearch';
 import { SupplierSelect } from './SupplierSelect';
+import { DateField } from '../ui/DateField';
 
 interface StockReturnFormProps {
   onSaved?: () => void;
 }
 
 export function StockReturnForm({ onSaved }: StockReturnFormProps) {
-  const [txnDate, setTxnDate] = useState(new Date().toISOString().split('T')[0]);
+  const [txnDate, setTxnDate] = useState(todayISO());
   const [supplierId, setSupplierId] = useState<number | null>(null);
   const [remarks, setRemarks] = useState('');
   const [lines, setLines] = useState<StockInLineItem[]>([]);
@@ -68,7 +69,7 @@ export function StockReturnForm({ onSaved }: StockReturnFormProps) {
     }
   };
 
-  const handleQuantityKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
+  const handleQuantityKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, _index: number) => {
     if (e.key === 'Enter') {
       e.preventDefault();
       const searchInput = document.querySelector('[data-search-input]') as HTMLInputElement;
@@ -116,7 +117,7 @@ export function StockReturnForm({ onSaved }: StockReturnFormProps) {
       setSuccess({ txn_no: result.txn_no });
       onSaved?.();
 
-      setTxnDate(new Date().toISOString().split('T')[0]);
+      setTxnDate(todayISO());
       setSupplierId(null);
       setRemarks('');
       setLines([]);
@@ -129,7 +130,7 @@ export function StockReturnForm({ onSaved }: StockReturnFormProps) {
   };
 
   return (
-    <div className="glass rounded-2xl border border-border-light shadow-xl overflow-hidden">
+    <div className="card-elevated overflow-hidden">
       {/* Toasts */}
       <AnimatePresence>
         {success && (
@@ -137,7 +138,7 @@ export function StockReturnForm({ onSaved }: StockReturnFormProps) {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="mx-4 mt-4 p-4 glass rounded-xl border border-ok/15 flex items-center gap-3"
+            className="mx-4 mt-4 p-4 card border-ok/15 flex items-center gap-3"
           >
             <div className="w-8 h-8 rounded-lg bg-ok/10 flex items-center justify-center flex-shrink-0">
               <svg className="w-5 h-5 text-ok" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
@@ -161,7 +162,7 @@ export function StockReturnForm({ onSaved }: StockReturnFormProps) {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="mx-4 mt-4 p-4 glass rounded-xl border border-danger/15 flex items-center gap-3"
+            className="mx-4 mt-4 card p-4 border-danger/15 flex items-center gap-3"
           >
             <div className="w-8 h-8 rounded-lg bg-danger/10 flex items-center justify-center flex-shrink-0">
               <svg className="w-5 h-5 text-danger" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
@@ -201,12 +202,7 @@ export function StockReturnForm({ onSaved }: StockReturnFormProps) {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
                 </svg>
               </div>
-              <input
-                type="date"
-                value={txnDate}
-                onChange={(e) => setTxnDate(e.target.value)}
-                className="w-full pl-10 pr-3 py-2.5 text-sm border border-border rounded-xl focus:ring-2 focus:ring-low/25 focus:border-low/40 bg-transparent outline-none transition-all"
-              />
+              <DateField value={txnDate} onChange={setTxnDate} className="w-full [&_input]:pl-10 [&_input]:border [&_input]:border-border [&_input]:rounded-xl [&_input]:min-h-[44px]" />
             </div>
           </div>
 
@@ -315,7 +311,7 @@ export function StockReturnForm({ onSaved }: StockReturnFormProps) {
                 key={line.id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={`p-3 glass rounded-xl border ${selectedLineIndex === index ? 'border-low/30 ring-2 ring-low/10' : 'border-border-light'}`}
+                className={`p-3 card border ${selectedLineIndex === index ? 'border-low/30 ring-2 ring-low/10' : 'border-border-light'}`}
               >
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex-1 min-w-0">
@@ -379,7 +375,7 @@ export function StockReturnForm({ onSaved }: StockReturnFormProps) {
             setSelectedLineIndex(null);
             setError(null);
           }}
-          className="flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-medium text-text-secondary border border-border rounded-xl hover:bg-hover min-h-[44px] transition-all"
+          className="btn btn-ghost btn-lg min-h-[44px]"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
             <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
@@ -390,7 +386,7 @@ export function StockReturnForm({ onSaved }: StockReturnFormProps) {
           type="button"
           onClick={handleSubmit}
           disabled={saving || lines.length === 0}
-          className="flex items-center justify-center gap-2 px-6 py-2.5 text-sm font-semibold text-base bg-gradient-to-r from-low to-low/80 rounded-xl hover:shadow-lg hover:shadow-low/20 disabled:opacity-50 min-h-[44px] transition-all"
+          className="btn btn-lg min-h-[44px] font-semibold text-base bg-gradient-to-r from-low to-low/80 hover:shadow-lg hover:shadow-low/20 disabled:opacity-50"
         >
           {saving ? (
             <>

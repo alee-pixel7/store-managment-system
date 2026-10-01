@@ -35,7 +35,7 @@ export function PreviewTable({
   };
 
   return (
-    <div className="bg-surface rounded-lg shadow p-6">
+    <div className="card p-6">
       <h2 className="text-lg font-medium text-text mb-4">
         Preview - {importType === 'items' ? 'Items' : 'Opening Stock'}
       </h2>
@@ -166,7 +166,7 @@ export function PreviewTable({
         <button
           onClick={onConfirm}
           disabled={loading || (errors.length > 0 && importType === 'items')}
-          className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="btn btn-md bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? 'Importing...' : `Import ${totalRows} Rows`}
         </button>

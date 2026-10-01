@@ -152,7 +152,7 @@ export function AuditCountPage({ auditId, onBack }: AuditCountPageProps) {
       <div className="min-h-screen bg-base flex items-center justify-center">
         <div className="text-center">
           <div className="text-red-500 mb-4">{error}</div>
-          <button onClick={onBack} className="px-4 py-2 text-sm bg-elevated border border-border rounded hover:bg-hover">
+          <button onClick={onBack} className="btn btn-ghost btn-md">
             ← Back
           </button>
         </div>
@@ -168,7 +168,7 @@ export function AuditCountPage({ auditId, onBack }: AuditCountPageProps) {
           <div className="flex items-center gap-2 sm:gap-3">
             <button
               onClick={onBack}
-              className="px-3 py-2 text-sm font-medium text-text bg-elevated border border-border rounded hover:bg-hover min-h-[44px]"
+              className="btn btn-ghost btn-md min-h-[44px]"
             >
               ← Back
             </button>
@@ -184,7 +184,7 @@ export function AuditCountPage({ auditId, onBack }: AuditCountPageProps) {
             {!isFinalised && (
               <button
                 onClick={handleLoadVariance}
-className="px-3 py-2 text-sm font-medium text-text bg-elevated border border-border rounded hover:bg-hover min-h-[44px]"
+className="btn btn-ghost btn-md min-h-[44px]"
               >
                 Variance
               </button>
@@ -223,7 +223,7 @@ className="px-3 py-2 text-sm font-medium text-text bg-elevated border border-bor
       {/* Variance Report Modal */}
       {showVariance && varianceReport && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center p-4">
-          <div className="bg-surface rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
+          <div className="card-elevated rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
             <div className="px-4 py-3 border-b border-border flex items-center justify-between">
               <h2 className="text-lg font-semibold">Variance Report</h2>
               <button onClick={() => setShowVariance(false)} className="text-text-secondary hover:text-text">✕</button>
@@ -281,7 +281,7 @@ className="px-3 py-2 text-sm font-medium text-text bg-elevated border border-bor
                 <button
                   onClick={handleFinalise}
                   disabled={finalising}
-                  className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50"
+                  className="btn btn-md bg-green-600 text-white hover:bg-green-700 disabled:opacity-50"
                 >
                   {finalising ? 'Finalising...' : 'Finalise & Create ADJUST'}
                 </button>
@@ -295,7 +295,7 @@ className="px-3 py-2 text-sm font-medium text-text bg-elevated border border-bor
       {!isFinalised && (
         <div className="p-2 sm:p-4">
           {/* Search Box */}
-          <div className="bg-surface rounded-lg shadow p-3 sm:p-4 mb-4">
+          <div className="card p-3 sm:p-4 mb-4">
             <label className="text-sm font-medium text-text block mb-2">
               Search or Scan Item
             </label>
@@ -307,13 +307,13 @@ className="px-3 py-2 text-sm font-medium text-text bg-elevated border border-bor
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                 placeholder="Enter item code, name, or scan barcode..."
-                className="flex-1 px-4 py-3 text-lg border border-border rounded focus:outline-none focus:ring-2 focus:ring-accent min-h-[52px]"
+                className="input flex-1 px-4 py-3 text-lg min-h-[52px]"
                 autoFocus
               />
               <button
                 onClick={handleSearch}
                 disabled={searching || !searchQuery.trim()}
-                className="px-6 py-3 text-sm font-medium text-white bg-accent rounded hover:bg-accent-hover disabled:opacity-50 min-h-[52px] min-w-[52px]"
+                className="btn btn-primary btn-lg min-h-[52px] min-w-[52px]"
               >
                 {searching ? '...' : 'Search'}
               </button>
@@ -322,7 +322,7 @@ className="px-3 py-2 text-sm font-medium text-text bg-elevated border border-bor
 
           {/* Search Results */}
           {searchResults.length > 0 && !selectedItem && (
-            <div className="bg-surface rounded-lg shadow mb-4">
+            <div className="card mb-4">
               <div className="px-4 py-2 border-b border-border text-sm font-medium text-text">
                 {searchResults.length} result(s) found
               </div>
@@ -355,7 +355,7 @@ className="px-3 py-2 text-sm font-medium text-text bg-elevated border border-bor
 
           {/* Count Input */}
           {selectedItem && (
-            <div className="bg-surface rounded-lg shadow p-4">
+            <div className="card p-4">
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <div className="font-mono text-sm text-accent">{selectedItem.itemCode}</div>
@@ -373,7 +373,7 @@ className="px-3 py-2 text-sm font-medium text-text bg-elevated border border-bor
                 </button>
               </div>
 
-              <div className="bg-elevated rounded p-3 mb-4">
+              <div className="card p-3 mb-4">
                 <div className="text-sm text-text-secondary">System Quantity</div>
                 <div className="text-2xl font-bold text-text">{selectedItem.systemQty} {selectedItem.unit}</div>
               </div>
@@ -389,7 +389,7 @@ className="px-3 py-2 text-sm font-medium text-text bg-elevated border border-bor
                   onKeyDown={(e) => e.key === 'Enter' && handleCount()}
                   placeholder="Enter counted quantity"
                   inputMode="numeric"
-                  className="w-full px-4 py-4 text-3xl font-bold border-2 border-border rounded focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent text-center min-h-[64px]"
+                  className="input w-full px-4 py-4 text-3xl font-bold text-center min-h-[64px]"
                   autoFocus
                 />
                 {countValue && (
@@ -409,7 +409,7 @@ className="px-3 py-2 text-sm font-medium text-text bg-elevated border border-bor
               <button
                 onClick={handleCount}
                 disabled={counting || !countValue}
-                className="w-full py-4 text-lg font-medium text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50 min-h-[56px]"
+                className="btn btn-lg w-full py-4 text-lg font-semibold bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 min-h-[56px]"
               >
                 {counting ? 'Saving...' : 'Save Count'}
               </button>
@@ -421,7 +421,7 @@ className="px-3 py-2 text-sm font-medium text-text bg-elevated border border-bor
       {/* All Items List (for review) */}
       {audit && audit.lines.length > 0 && (
         <div className="p-2 sm:p-4">
-          <div className="bg-surface rounded-lg shadow">
+          <div className="card">
             <div className="px-4 py-3 border-b border-border">
               <h2 className="text-sm font-medium text-text">All Items ({audit.lines.length})</h2>
             </div>

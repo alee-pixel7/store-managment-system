@@ -67,6 +67,7 @@ export function ItemsPage({ onViewItem, initialFilter }: ItemsPageProps) {
         // Convert search results to items format
         const items: Item[] = searchResults.map((r) => ({
           ...r,
+          spec: r.spec ?? null,
           last_rate: null,
           barcode: null,
           image_path: null,
@@ -151,7 +152,7 @@ export function ItemsPage({ onViewItem, initialFilter }: ItemsPageProps) {
   return (
     <div className="min-h-screen bg-base">
       {/* Header */}
-      <div className="bg-surface/80 border-b border-border-light px-4 py-3 sticky top-0 z-50">
+      <div className="bg-surface/80 backdrop-blur-xl border-b border-border-light px-4 py-3 sticky top-0 z-50">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold text-text">Items</h1>
@@ -161,7 +162,7 @@ export function ItemsPage({ onViewItem, initialFilter }: ItemsPageProps) {
             <button
               onClick={() => handleExport('excel')}
               disabled={exporting === 'excel'}
-              className="px-3 py-1.5 text-sm font-medium text-ok bg-ok-dim border border-ok/20 rounded-lg hover:bg-ok/20 disabled:opacity-50 flex items-center gap-2 transition-all"
+              className="btn btn-sm text-ok bg-ok-dim border border-ok/20 hover:bg-ok/20 disabled:opacity-50"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -171,7 +172,7 @@ export function ItemsPage({ onViewItem, initialFilter }: ItemsPageProps) {
             <button
               onClick={() => handleExport('pdf')}
               disabled={exporting === 'pdf'}
-              className="px-3 py-1.5 text-sm font-medium text-danger bg-danger-dim border border-danger/20 rounded-lg hover:bg-danger/20 disabled:opacity-50 flex items-center gap-2 transition-all"
+              className="btn btn-sm text-danger bg-danger-dim border border-danger/20 hover:bg-danger/20 disabled:opacity-50"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
@@ -182,7 +183,7 @@ export function ItemsPage({ onViewItem, initialFilter }: ItemsPageProps) {
               <>
                 <button
                   onClick={() => setIsCategoryManagerOpen(true)}
-                  className="px-3 py-1.5 text-sm font-medium text-accent bg-accent-dim border border-accent/20 rounded-lg hover:bg-accent/20 flex items-center gap-2 transition-all"
+                  className="btn btn-sm text-accent bg-accent-dim border border-accent/20 hover:bg-accent/20"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z" />
@@ -191,7 +192,7 @@ export function ItemsPage({ onViewItem, initialFilter }: ItemsPageProps) {
                 </button>
                 <button
                   onClick={handleAdd}
-                  className="px-4 py-1.5 text-sm font-semibold text-base bg-gradient-to-r from-accent to-accent-press rounded-lg hover:shadow-lg hover:shadow-accent/20 min-h-[44px] transition-all"
+                  className="btn btn-primary btn-sm min-h-[44px]"
                 >
                   + Add
                 </button>
@@ -209,7 +210,7 @@ export function ItemsPage({ onViewItem, initialFilter }: ItemsPageProps) {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search items..."
-              className="w-full px-3 py-2.5 sm:py-1.5 text-sm border border-border rounded focus:ring-1 focus:ring-accent focus:border-accent min-h-[44px]"
+              className="input w-full text-sm min-h-[44px]"
             />
           </div>
 
@@ -257,7 +258,7 @@ export function ItemsPage({ onViewItem, initialFilter }: ItemsPageProps) {
       </div>
 
       {/* Table */}
-      <div className="mx-2 sm:mx-4 my-4 bg-surface rounded-lg shadow">
+      <div className="card mx-2 sm:mx-4 my-4 overflow-hidden">
         <ItemsTable
           items={items}
           onEdit={handleEdit}

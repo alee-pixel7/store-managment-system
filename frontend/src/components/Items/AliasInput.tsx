@@ -1,7 +1,8 @@
 // AliasInput Component
 // Input field that allows adding multiple aliases as chips/tags
 
-import { useState, KeyboardEvent } from 'react';
+import { useState } from 'react';
+import type { KeyboardEvent } from 'react';
 
 interface AliasInputProps {
   aliases: string[];
@@ -41,11 +42,11 @@ export function AliasInput({
   };
 
   return (
-    <div className="flex flex-wrap gap-1.5 p-1.5 border border-border rounded bg-surface min-h-[38px] focus-within:border-accent focus-within:ring-1 focus-within:ring-accent">
+    <div className="input flex flex-wrap gap-1.5 p-1.5 min-h-[38px] focus-within:border-accent/55 focus-within:shadow-[0_0_0_3px_rgba(139,92,246,0.15)]">
       {aliases.map((alias, index) => (
         <span
           key={index}
-          className="inline-flex items-center gap-1 px-2 py-0.5 bg-accent-dim text-accent-text text-sm font-mono rounded"
+          className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-accent-dim text-accent-text text-sm font-mono rounded-full border border-accent/20"
         >
           {alias}
           {!disabled && (

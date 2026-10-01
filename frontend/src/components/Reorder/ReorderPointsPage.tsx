@@ -115,7 +115,7 @@ export function ReorderPointsPage() {
             <button
               onClick={handleAcceptBulk}
               disabled={bulkAccepting}
-              className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 disabled:opacity-50 min-h-[44px]"
+              className="btn btn-md bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 min-h-[44px]"
             >
               {bulkAccepting ? 'Accepting...' : `Accept ${selected.size} Suggestion${selected.size > 1 ? 's' : ''}`}
             </button>
@@ -161,7 +161,7 @@ export function ReorderPointsPage() {
         {loading ? (
           <div className="text-center py-12 text-text-secondary">Loading suggestions...</div>
         ) : (
-          <div className="bg-surface rounded-lg shadow overflow-hidden">
+          <div className="card overflow-hidden">
             {/* Select all */}
             <div className="px-4 py-2 border-b border-border bg-elevated flex items-center gap-3">
               <input
@@ -243,7 +243,7 @@ export function ReorderPointsPage() {
                           <button
                             onClick={() => handleAcceptOne(item.itemId)}
                             disabled={accepting === item.itemId}
-                            className="px-3 py-1.5 text-xs font-medium bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 min-h-[36px]"
+                            className="btn btn-sm bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 min-h-[36px]"
                           >
                             {accepting === item.itemId ? '...' : 'Accept'}
                           </button>

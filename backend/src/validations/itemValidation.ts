@@ -9,6 +9,7 @@ export interface CreateItemInput {
   unit: string;
   min_stock?: number;
   rack_location?: string;
+  spec?: string;
   notes?: string;
   aliases?: string[];
 }
@@ -21,8 +22,11 @@ export interface UpdateItemInput {
   unit?: string;
   min_stock?: number;
   rack_location?: string | null;
+  spec?: string | null;
   notes?: string | null;
   aliases?: string[];
+  // Manual stock edit — recorded as a signed ADJUST transaction (negative allowed)
+  current_stock?: number;
 }
 
 const VALID_UNITS = ['PCS', 'KG', 'MTR', 'LTR', 'SET'];
@@ -88,6 +92,13 @@ export function validateCreateItem(data: unknown): CreateItemInput {
     }
   }
 
+  // spec: optional, string, max 200 chars (Amp / Volt / Size / Model...)
+  if (input.spec !== undefined && input.spec !== null && typeof input.spec === 'string') {
+    if (input.spec.trim().length > 200) {
+      errors.push('spec must be 200 characters or less');
+    }
+  }
+
   // notes: optional, string, max 500 chars
   if (input.notes !== undefined && input.notes !== null && typeof input.notes === 'string') {
     if (input.notes.trim().length > 500) {
@@ -122,6 +133,7 @@ export function validateCreateItem(data: unknown): CreateItemInput {
     unit: (input.unit as string).toUpperCase(),
     min_stock: input.min_stock !== undefined ? Number(input.min_stock) : undefined,
     rack_location: input.rack_location ? String(input.rack_location).trim() : undefined,
+    spec: input.spec ? String(input.spec).trim() : undefined,
     notes: input.notes ? String(input.notes).trim() : undefined,
     aliases: input.aliases ? (input.aliases as string[]).map(a => a.trim()) : [],
   };
@@ -194,6 +206,13 @@ export function validateUpdateItem(data: unknown): UpdateItemInput {
     }
   }
 
+  // spec: optional, string, max 200 chars or null
+  if (input.spec !== undefined && input.spec !== null && typeof input.spec === 'string') {
+    if (input.spec.trim().length > 200) {
+      errors.push('spec must be 200 characters or less');
+    }
+  }
+
   // notes: optional, string, max 500 chars or null
   if (input.notes !== undefined && input.notes !== null && typeof input.notes === 'string') {
     if (input.notes.trim().length > 500) {
@@ -216,6 +235,14 @@ export function validateUpdateItem(data: unknown): UpdateItemInput {
     }
   }
 
+  // current_stock: optional manual stock edit — finite number, negative allowed
+  // (empty string / NaN / Infinity rejected; the DB value must never be clobbered silently)
+  if (input.current_stock !== undefined && input.current_stock !== null) {
+    if (typeof input.current_stock !== 'number' || !Number.isFinite(input.current_stock)) {
+      errors.push('current_stock must be a finite number (negative stock is allowed)');
+    }
+  }
+
   if (errors.length > 0) {
     throw new Error(errors.join('; '));
   }
@@ -228,8 +255,19 @@ export function validateUpdateItem(data: unknown): UpdateItemInput {
     unit: input.unit ? (input.unit as string).toUpperCase() : undefined,
     min_stock: input.min_stock !== undefined ? Number(input.min_stock) : undefined,
     rack_location: input.rack_location === null ? null : input.rack_location ? String(input.rack_location).trim() : undefined,
+    // Empty string clears the spec ('' → null), any other value sets it
+    spec:
+      input.spec === null || input.spec === ''
+        ? null
+        : input.spec
+          ? String(input.spec).trim()
+          : undefined,
     notes: input.notes === null ? null : input.notes ? String(input.notes).trim() : undefined,
     aliases: input.aliases ? (input.aliases as string[]).map(a => a.trim()) : undefined,
+    current_stock:
+      input.current_stock !== undefined && input.current_stock !== null && Number.isFinite(Number(input.current_stock))
+        ? Number(input.current_stock)
+        : undefined,
   };
 }
 

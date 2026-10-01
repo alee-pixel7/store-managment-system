@@ -2,9 +2,11 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { SearchItem, StockOutLineItem } from '../../types';
 import { createStockOut } from '../../api/transactions';
+import { todayISO } from '../../lib/dates';
 import { ItemSearch } from './ItemSearch';
 import { DepartmentSelect } from './DepartmentSelect';
 import { MachineSelect } from './MachineSelect';
+import { DateField } from '../ui/DateField';
 import { PersonSelect } from './PersonSelect';
 
 interface StockOutFormProps {
@@ -12,7 +14,7 @@ interface StockOutFormProps {
 }
 
 export function StockOutForm({ onSaved }: StockOutFormProps) {
-  const [txnDate, setTxnDate] = useState(new Date().toISOString().split('T')[0]);
+  const [txnDate, setTxnDate] = useState(todayISO());
   const [personId, setPersonId] = useState<number | null>(null);
   const [departmentId, setDepartmentId] = useState<number | null>(null);
   const [machineId, setMachineId] = useState<number | null>(null);
@@ -24,7 +26,7 @@ export function StockOutForm({ onSaved }: StockOutFormProps) {
   const [success, setSuccess] = useState<{ txn_no: string; warnings: Array<{ item_code: string; message: string }> } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showNegativeConfirm, setShowNegativeConfirm] = useState(false);
-  const [pendingSubmit, setPendingSubmit] = useState(false);
+  const [, setPendingSubmit] = useState(false);
   const quantityRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
@@ -90,7 +92,7 @@ export function StockOutForm({ onSaved }: StockOutFormProps) {
     }
   }, []);
 
-  const handleRemarksKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
+  const handleRemarksKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>, _index: number) => {
     if (e.key === 'Enter') {
       e.preventDefault();
       const searchInput = document.querySelector('[data-search-input]') as HTMLInputElement;
@@ -143,7 +145,7 @@ export function StockOutForm({ onSaved }: StockOutFormProps) {
         })),
       });
       setSuccess({ txn_no: result.transaction.txn_no, warnings: result.warnings });
-      setTxnDate(new Date().toISOString().split('T')[0]);
+      setTxnDate(todayISO());
       setPersonId(null);
       setDepartmentId(null);
       setMachineId(null);
@@ -166,7 +168,7 @@ export function StockOutForm({ onSaved }: StockOutFormProps) {
 
   const handleNewIssue = useCallback(() => {
     setSuccess(null);
-    setTxnDate(new Date().toISOString().split('T')[0]);
+    setTxnDate(todayISO());
     setPersonId(null);
     setDepartmentId(null);
     setMachineId(null);
@@ -177,7 +179,7 @@ export function StockOutForm({ onSaved }: StockOutFormProps) {
   }, []);
 
   return (
-    <div className="glass rounded-2xl border border-border-light shadow-xl overflow-hidden">
+    <div className="card-elevated overflow-hidden">
       {/* Success Toast */}
       <AnimatePresence>
         {success && (
@@ -216,7 +218,7 @@ export function StockOutForm({ onSaved }: StockOutFormProps) {
                 </div>
                 <button
                   onClick={handleNewIssue}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-base bg-gradient-to-r from-accent to-accent-press rounded-xl hover:shadow-lg hover:shadow-accent/20 transition-all"
+                  className="btn btn-primary btn-md"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-6-6h12" />
@@ -271,12 +273,7 @@ export function StockOutForm({ onSaved }: StockOutFormProps) {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
                 </svg>
               </div>
-              <input
-                type="date"
-                value={txnDate}
-                onChange={(e) => setTxnDate(e.target.value)}
-                className="flex-1 px-4 py-2.5 text-sm bg-transparent outline-none min-h-[44px] font-mono"
-              />
+              <DateField value={txnDate} onChange={setTxnDate} className="flex-1" />
             </div>
           </div>
 
@@ -484,7 +481,7 @@ export function StockOutForm({ onSaved }: StockOutFormProps) {
                 key={line.id}
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={`p-4 glass rounded-xl border transition-all ${
+                className={`p-4 card border transition-all ${
                   selectedLineIndex === index ? 'ring-2 ring-accent/30 border-accent/30' :
                   line.warning ? 'border-low/30' : 'border-border-light'
                 }`}
@@ -581,7 +578,7 @@ export function StockOutForm({ onSaved }: StockOutFormProps) {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-              className="relative glass rounded-2xl border border-low/20 shadow-2xl w-full max-w-md overflow-hidden"
+              className="relative card-elevated border-low/20 w-full max-w-md overflow-hidden"
             >
               <div className="p-6 text-center">
                 <div className="mx-auto w-16 h-16 rounded-2xl bg-low/10 flex items-center justify-center mb-4 shadow-lg shadow-low/10">
@@ -614,14 +611,14 @@ export function StockOutForm({ onSaved }: StockOutFormProps) {
                 <div className="flex gap-3 justify-center">
                   <button
                     onClick={cancelNegativeConfirm}
-                    className="flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-text border border-border rounded-xl hover:bg-hover min-h-[44px] transition-all"
+                    className="btn btn-ghost btn-lg min-h-[44px]"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={doSubmit}
                     disabled={saving}
-                    className="flex items-center gap-2 px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-low to-low/80 rounded-xl hover:shadow-lg hover:shadow-low/20 disabled:opacity-50 min-h-[44px] transition-all"
+                    className="btn btn-lg min-h-[44px] font-semibold text-base bg-gradient-to-r from-low to-low/80 hover:shadow-lg hover:shadow-low/20 disabled:opacity-50"
                   >
                     {saving ? (
                       <>
@@ -663,7 +660,7 @@ export function StockOutForm({ onSaved }: StockOutFormProps) {
           type="button"
           onClick={handleSubmit}
           disabled={saving || lines.length === 0}
-          className="flex items-center justify-center gap-2 px-7 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-danger to-danger/80 rounded-xl hover:shadow-lg hover:shadow-danger/20 disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] transition-all"
+          className="btn btn-danger btn-lg min-h-[44px]"
         >
           {saving ? (
             <>

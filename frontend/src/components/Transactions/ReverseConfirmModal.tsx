@@ -3,6 +3,7 @@
 
 import { useState } from 'react';
 import type { Transaction } from '../../types';
+import { formatDate } from '../../lib/dates';
 
 interface ReverseConfirmModalProps {
   isOpen: boolean;
@@ -54,12 +55,12 @@ export function ReverseConfirmModal({
     <div className="fixed inset-0 z-[60] flex items-center justify-center">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black bg-opacity-50"
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
         onClick={handleClose}
       />
 
       {/* Modal */}
-      <div className="relative bg-surface rounded-lg shadow-xl w-full max-w-md mx-4">
+      <div className="relative card-elevated rounded-2xl w-full max-w-md mx-4">
         {/* Header */}
         <div className="px-4 py-3 border-b border-border">
           <div className="flex items-center justify-between">
@@ -80,7 +81,7 @@ export function ReverseConfirmModal({
             <div className="text-sm">
               <div className="font-medium text-text">{transaction.txn_no}</div>
               <div className="text-text-secondary">
-                {new Date(transaction.txn_date).toLocaleDateString('en-IN')} •{' '}
+                {formatDate(transaction.txn_date)} •{' '}
                 {transaction.txn_type}
               </div>
               {transaction.transaction_items && (
@@ -116,7 +117,7 @@ export function ReverseConfirmModal({
               onChange={(e) => setReason(e.target.value)}
               placeholder="Enter reason for reversal..."
               rows={3}
-              className="w-full px-3 py-2 text-sm border border-border rounded focus:ring-1 focus:ring-accent focus:border-accent"
+              className="input w-full text-sm"
               autoFocus
             />
             {error && <div className="mt-1 text-sm text-red-600">{error}</div>}
@@ -127,14 +128,14 @@ export function ReverseConfirmModal({
             <button
               type="button"
               onClick={handleClose}
-              className="px-4 py-2 text-sm font-medium text-text bg-gray-200 rounded hover:bg-gray-300"
+              className="btn btn-ghost btn-md"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading || !reason.trim()}
-              className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn btn-danger btn-md"
             >
               {loading ? 'Reversing...' : 'Reverse Transaction'}
             </button>

@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { getDailyReport } from '../../api/reports';
 import { reverseTransactionByNo } from '../../api/transactions';
 import { downloadExport } from '../../api/export';
+import { todayISO, formatDateLong, formatDateTime } from '../../lib/dates';
+import { DateField } from '../ui/DateField';
 import type { DailyReport } from '../../api/reports';
 
 interface ReverseTarget {
@@ -11,10 +13,7 @@ interface ReverseTarget {
 }
 
 export function DailyReportPage() {
-  const [selectedDate, setSelectedDate] = useState(() => {
-    const today = new Date();
-    return today.toISOString().split('T')[0];
-  });
+  const [selectedDate, setSelectedDate] = useState(() => todayISO());
   const [report, setReport] = useState<DailyReport | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -79,15 +78,7 @@ export function DailyReportPage() {
     }
   };
 
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-IN', {
-      weekday: 'long',
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric',
-    });
-  };
+  const formatDate = (dateStr: string) => formatDateLong(dateStr);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -137,7 +128,7 @@ export function DailyReportPage() {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.1 }}
-          className="glass rounded-2xl border border-border-light p-4 mb-6"
+          className="card p-4 mb-6"
         >
           <div className="flex flex-wrap items-center gap-3">
             {/* Date Picker */}
@@ -147,12 +138,7 @@ export function DailyReportPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
                 </svg>
               </div>
-              <input
-                type="date"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="px-3 py-2.5 text-sm bg-transparent outline-none min-h-[44px] font-mono"
-              />
+              <DateField value={selectedDate} onChange={setSelectedDate} className="px-1" />
             </div>
 
             {/* Generate Button */}
@@ -161,7 +147,7 @@ export function DailyReportPage() {
               whileTap={{ scale: 0.97 }}
               onClick={handleGenerateReport}
               disabled={loading}
-              className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-base bg-gradient-to-r from-accent to-accent-press rounded-xl hover:shadow-lg hover:shadow-accent/20 disabled:opacity-50 min-h-[44px] transition-all"
+              className="btn btn-primary btn-lg min-h-[44px]"
             >
               {loading ? (
                 <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -230,7 +216,7 @@ export function DailyReportPage() {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="mb-4 p-4 glass rounded-xl border border-ok/15 flex items-center justify-between"
+              className="mb-4 p-4 card border-ok/15 flex items-center justify-between"
             >
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-ok/15 flex items-center justify-center">
@@ -256,7 +242,7 @@ export function DailyReportPage() {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="mb-4 p-4 glass rounded-xl border border-danger/15 flex items-center justify-between"
+              className="mb-4 card p-4 border-danger/15 flex items-center justify-between"
             >
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-danger/15 flex items-center justify-center">
@@ -285,7 +271,7 @@ export function DailyReportPage() {
               <h1 className="text-2xl font-bold text-center mb-1">Daily Stock Report</h1>
               <p className="text-center text-text-secondary">{formatDate(report.date)}</p>
               <p className="text-center text-sm text-text-secondary mt-1">
-                Generated on: {new Date().toLocaleString('en-IN')}
+                Generated on: {formatDateTime(new Date())}
               </p>
             </div>
 
@@ -294,7 +280,7 @@ export function DailyReportPage() {
               <h2 className="text-xs font-semibold text-text-secondary uppercase tracking-[0.12em] mb-4">Summary</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {/* Receipts */}
-                <div className="glass rounded-xl gradient-border-left-ok p-4">
+                <div className="card gradient-border-left-ok p-4">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-[0.1em]">Receipts</span>
                     <div className="w-8 h-8 rounded-lg bg-ok/10 flex items-center justify-center">
@@ -308,7 +294,7 @@ export function DailyReportPage() {
                 </div>
 
                 {/* Issues */}
-                <div className="glass rounded-xl gradient-border-left-danger p-4">
+                <div className="card gradient-border-left-danger p-4">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-[0.1em]">Issues</span>
                     <div className="w-8 h-8 rounded-lg bg-danger/10 flex items-center justify-center">
@@ -322,7 +308,7 @@ export function DailyReportPage() {
                 </div>
 
                 {/* Returns */}
-                <div className="glass rounded-xl gradient-border-left-accent p-4">
+                <div className="card gradient-border-left-accent p-4">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-[0.1em]">Returns</span>
                     <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center">
@@ -336,7 +322,7 @@ export function DailyReportPage() {
                 </div>
 
                 {/* Total */}
-                <div className="glass rounded-xl gradient-border-left-purple p-4">
+                <div className="card gradient-border-left-purple p-4">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-[0.1em]">Total</span>
                     <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center">
@@ -579,7 +565,7 @@ export function DailyReportPage() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-              className="relative glass rounded-2xl border border-low/20 shadow-2xl w-full max-w-md overflow-hidden"
+              className="relative card-elevated border-low/20 w-full max-w-md overflow-hidden"
             >
               <div className="p-6">
                 <div className="flex items-center gap-3 mb-4">
@@ -617,9 +603,9 @@ export function DailyReportPage() {
                     Cancel
                   </button>
                   <button
-                    onClick={handleReverse}
+                    onClick={() => { void handleReverse(); }}
                     disabled={reversing || !reverseReason.trim()}
-                    className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-low to-low/80 rounded-xl hover:shadow-lg hover:shadow-low/20 disabled:opacity-50 min-h-[44px] transition-all"
+                    className="btn btn-lg min-h-[44px] font-semibold text-base bg-gradient-to-r from-low to-low/80 hover:shadow-lg hover:shadow-low/20 disabled:opacity-50"
                   >
                     {reversing ? (
                       <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -654,7 +640,7 @@ export function DailyReportPage() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-              className="relative glass rounded-2xl border border-danger/20 shadow-2xl w-full max-w-md overflow-hidden"
+              className="relative card-elevated border-danger/20 w-full max-w-md overflow-hidden"
             >
               <div className="p-6">
                 <div className="flex items-center gap-3 mb-4">
@@ -683,7 +669,7 @@ export function DailyReportPage() {
                   <button
                     onClick={() => handleReverse(true)}
                     disabled={reversing}
-                    className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-danger to-danger/80 rounded-xl hover:shadow-lg hover:shadow-danger/20 disabled:opacity-50 min-h-[44px] transition-all"
+                    className="btn btn-danger btn-lg min-h-[44px]"
                   >
                     {reversing ? (
                       <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">

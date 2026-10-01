@@ -118,7 +118,7 @@ export function StatCards({
             variants={cardHover}
             whileHover="hover"
             whileTap="tap"
-            className={`relative glass rounded-xl ${card.border} overflow-hidden text-left shadow-md ${card.glow} hover:shadow-xl transition-all duration-200 group`}
+            className={`relative card ${card.border} overflow-hidden text-left transition-all duration-200 group`}
           >
             <div className="p-5">
               <div className="flex items-center justify-between mb-4">
@@ -135,7 +135,7 @@ export function StatCards({
                   )}
                 </div>
               </div>
-              <div className={`text-3xl font-bold ${card.accent} tracking-tight`}>
+              <div className={`text-3xl font-bold ${card.accent} tracking-tight num`}>
                 {card.isCurrency ? (
                   <AnimatedNumber value={card.value} prefix="₹" />
                 ) : (
@@ -161,7 +161,7 @@ export function StatCards({
           transition={{ delay: 0.3, duration: 0.35 }}
           whileHover={{ scale: 1.01 }}
           whileTap={{ scale: 0.98 }}
-          className="glass rounded-xl border border-ok/15 overflow-hidden text-left hover:shadow-lg hover:shadow-ok/5 transition-all duration-200 group"
+          className="card border-ok/15 overflow-hidden text-left hover:shadow-lg hover:shadow-ok/5 transition-all duration-200 group"
         >
           <div className="p-5 flex items-center gap-5">
             <div className="w-14 h-14 rounded-2xl bg-ok/10 flex items-center justify-center flex-shrink-0 group-hover:bg-ok/15 transition-colors">
@@ -195,7 +195,7 @@ export function StatCards({
           transition={{ delay: 0.37, duration: 0.35 }}
           whileHover={{ scale: 1.01 }}
           whileTap={{ scale: 0.98 }}
-          className="glass rounded-xl border border-danger/15 overflow-hidden text-left hover:shadow-lg hover:shadow-danger/5 transition-all duration-200 group"
+          className="card border-danger/15 overflow-hidden text-left hover:shadow-lg hover:shadow-danger/5 transition-all duration-200 group"
         >
           <div className="p-5 flex items-center gap-5">
             <div className="w-14 h-14 rounded-2xl bg-danger/10 flex items-center justify-center flex-shrink-0 group-hover:bg-danger/15 transition-colors">

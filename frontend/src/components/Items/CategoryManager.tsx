@@ -70,11 +70,11 @@ export function CategoryManager({ isOpen, onClose, categories, onUpdate }: Categ
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50" onClick={onClose}>
-      <div className="bg-surface rounded-lg shadow-xl w-full max-w-md max-h-[80vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
-        <div className="px-4 py-3 border-b border-border bg-elevated flex items-center justify-between">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
+      <div className="card-elevated rounded-2xl w-full max-w-md max-h-[80vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+        <div className="px-5 py-4 border-b border-border-light bg-elevated flex items-center justify-between">
           <h2 className="text-lg font-semibold text-text">Manage Categories</h2>
-          <button onClick={onClose} className="text-text-secondary hover:text-text text-xl font-bold">×</button>
+          <button onClick={onClose} className="p-1.5 -mr-1.5 text-text-secondary hover:text-text text-xl font-bold leading-none rounded-lg hover:bg-hover transition-colors">×</button>
         </div>
 
         <div className="p-4 overflow-y-auto max-h-[calc(80vh-140px)]">
@@ -90,12 +90,12 @@ export function CategoryManager({ isOpen, onClose, categories, onUpdate }: Categ
               onChange={(e) => setNewName(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
               placeholder="New category name..."
-              className="flex-1 px-3 py-1.5 border border-border rounded text-sm focus:ring-1 focus:ring-accent focus:border-accent"
+              className="input flex-1 text-sm"
             />
             <button
               onClick={handleCreate}
               disabled={loading || !newName.trim()}
-              className="px-3 py-1.5 text-sm font-medium text-base bg-accent rounded hover:bg-accent-hover disabled:opacity-50"
+              className="btn btn-primary btn-md"
             >
               Add
             </button>
@@ -104,7 +104,7 @@ export function CategoryManager({ isOpen, onClose, categories, onUpdate }: Categ
           {/* Category list */}
           <div className="space-y-1">
             {categories.map((cat) => (
-              <div key={cat.id} className="flex items-center gap-2 py-2 px-2 rounded hover:bg-elevated group">
+              <div key={cat.id} className="flex items-center gap-2 py-2 px-2 rounded-lg hover:bg-hover group">
                 {editingId === cat.id ? (
                   <>
                     <input
@@ -146,8 +146,8 @@ export function CategoryManager({ isOpen, onClose, categories, onUpdate }: Categ
           </div>
         </div>
 
-        <div className="px-4 py-3 border-t border-border bg-elevated flex justify-end">
-          <button onClick={onClose} className="px-4 py-1.5 text-sm text-text bg-surface border border-border rounded hover:bg-hover">Close</button>
+        <div className="px-5 py-4 border-t border-border-light bg-elevated flex justify-end">
+          <button onClick={onClose} className="btn btn-ghost btn-md">Close</button>
         </div>
       </div>
     </div>

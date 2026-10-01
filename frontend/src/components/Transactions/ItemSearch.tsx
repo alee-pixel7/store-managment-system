@@ -1,7 +1,8 @@
 // ItemSearch Component
 // Smart search dropdown for finding items quickly
 
-import { useState, useEffect, useRef, KeyboardEvent } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import type { KeyboardEvent } from 'react';
 import type { SearchItem } from '../../types';
 import { searchItems } from '../../api/transactions';
 import { useDebounce } from '../../hooks/useDebounce';
@@ -105,7 +106,7 @@ export function ItemSearch({ onSelect, placeholder = 'Search items...', disabled
         }}
         placeholder={placeholder}
         disabled={disabled}
-        className="w-full px-3 py-2.5 sm:py-1.5 text-sm border border-border rounded focus:ring-1 focus:ring-accent focus:border-accent disabled:bg-elevated min-h-[48px] sm:min-h-0"
+        className="input w-full text-sm disabled:bg-elevated min-h-[48px] sm:min-h-0"
       />
 
       {loading && (
@@ -115,7 +116,7 @@ export function ItemSearch({ onSelect, placeholder = 'Search items...', disabled
       )}
 
       {isOpen && results.length > 0 && (
-        <div className="absolute z-50 w-full mt-1 bg-surface border border-border rounded-lg shadow-lg max-h-64 overflow-y-auto">
+        <div className="absolute z-50 w-full mt-1 glass border border-border rounded-xl shadow-2xl max-h-64 overflow-y-auto">
           {results.map((item, index) => (
             <div
               key={item.id}

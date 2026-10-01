@@ -45,7 +45,7 @@ export function Pagination({ page, totalPages, total, onPageChange }: Pagination
   };
 
   return (
-    <div className="flex items-center justify-between px-4 py-2 bg-surface border-t border-border">
+    <div className="flex items-center justify-between px-4 py-2.5 bg-surface border-t border-border-light">
       <div className="text-sm text-text-secondary">
         {total} total items
       </div>
@@ -53,7 +53,7 @@ export function Pagination({ page, totalPages, total, onPageChange }: Pagination
         <button
           onClick={() => onPageChange(page - 1)}
           disabled={page === 1}
-          className="px-2 py-1 text-sm border border-border rounded hover:bg-hover disabled:opacity-50 disabled:cursor-not-allowed"
+          className="btn btn-ghost btn-sm"
         >
           ← Prev
         </button>
@@ -67,11 +67,7 @@ export function Pagination({ page, totalPages, total, onPageChange }: Pagination
             <button
               key={p}
               onClick={() => onPageChange(p)}
-              className={`px-2 py-1 text-sm border rounded ${
-                p === page
-                  ? 'bg-accent text-white border-accent'
-                  : 'border-border hover:bg-hover'
-              }`}
+              className={`btn btn-sm ${p === page ? 'btn-primary' : 'btn-ghost'}`}
             >
               {p}
             </button>
@@ -81,7 +77,7 @@ export function Pagination({ page, totalPages, total, onPageChange }: Pagination
         <button
           onClick={() => onPageChange(page + 1)}
           disabled={page === totalPages}
-          className="px-2 py-1 text-sm border border-border rounded hover:bg-hover disabled:opacity-50 disabled:cursor-not-allowed"
+          className="btn btn-ghost btn-sm"
         >
           Next →
         </button>

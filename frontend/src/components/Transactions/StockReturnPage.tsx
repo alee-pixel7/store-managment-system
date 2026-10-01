@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import type { Transaction } from '../../types';
 import { listTransactions } from '../../api/transactions';
+import { formatDateShort } from '../../lib/dates';
 import { StockReturnForm } from './StockReturnForm';
 
 export function StockReturnPage() {
@@ -36,7 +37,7 @@ export function StockReturnPage() {
           </div>
 
           {/* Premium Sidebar */}
-          <div className="glass rounded-2xl border border-border-light overflow-hidden order-first lg:order-last">
+          <div className="card overflow-hidden order-first lg:order-last">
             {/* Sidebar Header */}
             <div className="p-4 border-b border-border-light flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg bg-low/10 flex items-center justify-center">
@@ -76,7 +77,7 @@ export function StockReturnPage() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: idx * 0.05, duration: 0.2 }}
-                      className="p-3 glass rounded-xl border border-border-light hover:border-low/20 transition-colors"
+                      className="card p-3 hover:border-low/20 transition-colors"
                     >
                       <div className="flex items-center justify-between mb-1.5">
                         <div className="flex items-center gap-2">
@@ -86,7 +87,7 @@ export function StockReturnPage() {
                           </span>
                         </div>
                         <span className="text-[10px] text-text-muted">
-                          {new Date(txn.txn_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                          {formatDateShort(txn.txn_date)}
                         </span>
                       </div>
                       <div className="text-xs text-text-secondary">

@@ -83,6 +83,46 @@ app.use('/api/audits', authenticate, auditRoutes);
 app.use('/api/analytics', authenticate, analyticsRoutes);
 app.use('/api/reorder', authenticate, reorderRoutes);
 
+// ============================================================
+// SINGLE-PORT PRODUCTION MODE
+// Serve the built frontend (frontend/dist) on the same port.
+// Dev mode keeps using Vite on :3000 — this only activates when
+// the build output exists (after `cd frontend && npm run build`).
+// ============================================================
+const FRONTEND_DIST = path.resolve(__dirname, '../../frontend/dist');
+
+if (fs.existsSync(path.join(FRONTEND_DIST, 'index.html'))) {
+  // Hashed assets (JS/CSS/images) can be cached hard; index.html never is
+  app.use(
+    express.static(FRONTEND_DIST, {
+      index: false,
+      setHeaders: (res, filePath) => {
+        if (/\.(js|css|woff2?|png|jpg|jpeg|svg|ico|webp)$/.test(filePath)) {
+          res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        }
+      },
+    })
+  );
+
+  // Unknown API paths must still return JSON (never index.html)
+  app.use('/api', (_req, res) => {
+    res.status(404).json({ error: 'Endpoint not found' });
+  });
+
+  // SPA fallback — everything else serves index.html
+  app.get('*', (_req, res) => {
+    res.setHeader('Cache-Control', 'no-cache');
+    res.sendFile(path.join(FRONTEND_DIST, 'index.html'));
+  });
+
+  console.log(`🌐 Serving frontend from ${FRONTEND_DIST}`);
+} else {
+  // Dev: unknown API paths get JSON 404
+  app.use('/api', (_req, res) => {
+    res.status(404).json({ error: 'Endpoint not found' });
+  });
+}
+
 // Start server
 async function startServer() {
   try {

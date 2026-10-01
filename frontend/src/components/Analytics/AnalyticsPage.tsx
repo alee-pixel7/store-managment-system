@@ -78,7 +78,7 @@ export function AnalyticsPage() {
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.1 }}
-        className="glass rounded-2xl border border-border-light p-1.5"
+        className="card p-1.5"
       >
         <div className="flex gap-1 overflow-x-auto">
           {tabs.map((tab) => (
@@ -147,8 +147,8 @@ function StockValueSection() {
           <LineChart data={data}>
             <defs>
               <linearGradient id="gradNet" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#E8A035" stopOpacity={0.2} />
-                <stop offset="95%" stopColor="#E8A035" stopOpacity={0} />
+                <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.2} />
+                <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0} />
               </linearGradient>
               <linearGradient id="gradIn" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#4ADE80" stopOpacity={0.15} />
@@ -164,7 +164,7 @@ function StockValueSection() {
             <YAxis tick={{ fontSize: 11, fill: '#6B7280' }} tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`} axisLine={false} tickLine={false} />
             <Tooltip content={<CustomTooltip />} />
             <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12, paddingTop: 12 }} />
-            <Line type="monotone" dataKey="stockValue" name="Net Stock Value" stroke="#E8A035" strokeWidth={2.5} dot={{ r: 4, fill: '#E8A035', stroke: '#0B0D11', strokeWidth: 2 }} activeDot={{ r: 6, stroke: '#E8A035', strokeWidth: 2, fill: '#0B0D11' }} />
+            <Line type="monotone" dataKey="stockValue" name="Net Stock Value" stroke="#8B5CF6" strokeWidth={2.5} dot={{ r: 4, fill: '#8B5CF6', stroke: '#0B0D11', strokeWidth: 2 }} activeDot={{ r: 6, stroke: '#8B5CF6', strokeWidth: 2, fill: '#0B0D11' }} />
             <Line type="monotone" dataKey="inValue" name="Total Inward" stroke="#4ADE80" strokeWidth={1.5} dot={{ r: 3, fill: '#4ADE80', stroke: '#0B0D11', strokeWidth: 2 }} strokeDasharray="5 5" />
             <Line type="monotone" dataKey="outValue" name="Total Outward" stroke="#EF4444" strokeWidth={1.5} dot={{ r: 3, fill: '#EF4444', stroke: '#0B0D11', strokeWidth: 2 }} strokeDasharray="5 5" />
           </LineChart>
@@ -264,15 +264,15 @@ function ConsumptionTrendSection() {
             <LineChart data={data}>
               <defs>
                 <linearGradient id="gradConsumption" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#E8A035" stopOpacity={0.2} />
-                  <stop offset="95%" stopColor="#E8A035" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.2} />
+                  <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#2E323A" vertical={false} />
               <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#6B7280' }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontSize: 11, fill: '#6B7280' }} axisLine={false} tickLine={false} />
               <Tooltip content={<SimpleTooltip />} />
-              <Line type="monotone" dataKey="quantity" name="Quantity Consumed" stroke="#E8A035" strokeWidth={2.5} dot={{ r: 4, fill: '#E8A035', stroke: '#0B0D11', strokeWidth: 2 }} activeDot={{ r: 6, stroke: '#E8A035', strokeWidth: 2, fill: '#0B0D11' }} />
+              <Line type="monotone" dataKey="quantity" name="Quantity Consumed" stroke="#8B5CF6" strokeWidth={2.5} dot={{ r: 4, fill: '#8B5CF6', stroke: '#0B0D11', strokeWidth: 2 }} activeDot={{ r: 6, stroke: '#8B5CF6', strokeWidth: 2, fill: '#0B0D11' }} />
             </LineChart>
           </ResponsiveContainer>
         )}
@@ -339,8 +339,8 @@ function MachineConsumptionSection() {
                 <BarChart data={data}>
                   <defs>
                     <linearGradient id="gradQty" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#E8A035" stopOpacity={0.9} />
-                      <stop offset="100%" stopColor="#E8A035" stopOpacity={0.6} />
+                      <stop offset="0%" stopColor="#8B5CF6" stopOpacity={0.9} />
+                      <stop offset="100%" stopColor="#8B5CF6" stopOpacity={0.6} />
                     </linearGradient>
                     <linearGradient id="gradValue" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="#4ADE80" stopOpacity={0.9} />
@@ -375,7 +375,7 @@ function MachineConsumptionSection() {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: i * 0.05 }}
-                className="p-4 glass rounded-xl border border-danger/15"
+                className="card p-4 border-danger/15"
               >
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
@@ -595,7 +595,7 @@ function ReorderIntervalSection() {
 // ============================================================
 function Card({ title, titleColor, children }: { title: string; titleColor?: string; children: React.ReactNode }) {
   return (
-    <div className="glass rounded-2xl border border-border-light overflow-hidden">
+    <div className="card overflow-hidden">
       <div className="px-5 py-4 border-b border-border-light flex items-center gap-2">
         <h2 className={`text-sm font-semibold ${titleColor || 'text-text'}`}>{title}</h2>
       </div>
