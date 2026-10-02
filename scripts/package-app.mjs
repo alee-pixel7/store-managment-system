@@ -37,10 +37,13 @@ const die = (...m) => {
 
 function run(cmd, cmdArgs, opts = {}) {
   const isWin = process.platform === 'win32';
-  const res = spawnSync(isWin ? `${cmd}.cmd` : cmd, cmdArgs, {
+  // Windows: npm/npx are .cmd shims (need shell); tar and friends are .exe —
+  // blindly appending .cmd breaks them ("'tar.cmd' is not recognized").
+  const isShim = /^(npm|npx|pnpm|yarn)$/.test(cmd);
+  const res = spawnSync(isWin && isShim ? `${cmd}.cmd` : cmd, cmdArgs, {
     stdio: 'inherit',
     encoding: 'utf8',
-    shell: isWin,
+    shell: isWin && isShim,
     ...opts,
   });
   if (res.status !== 0) {

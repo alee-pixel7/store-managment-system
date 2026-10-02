@@ -97,7 +97,7 @@ fn show_app(app: &tauri::AppHandle, navigate: bool) {
     }
 }
 
-fn main() {
+pub fn run() {
     tauri::Builder::default()
         .setup(|app| {
             let window = app.get_webview_window("main").unwrap();

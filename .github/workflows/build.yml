@@ -115,6 +115,7 @@ jobs:
         run: npm run build:backend
 
       - name: Stage app bundle (node runtime + prod deps + template DB)
+        shell: bash
         run: node scripts/package-app.mjs 2>&1 | tee stage.log
 
       - uses: dtolnay/rust-toolchain@stable
@@ -124,6 +125,7 @@ jobs:
           workspaces: src-tauri
 
       - name: Build deb + AppImage
+        shell: bash
         run: |
           npx tauri --version 2>&1 | tee tauri.log
           npx tauri build --bundles deb,appimage 2>&1 | tee -a tauri.log
