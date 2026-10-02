@@ -376,6 +376,46 @@ Setup: put a shortcut to `open-app.ps1` on the desktop and a shortcut to
 
 ---
 
+## Offline Installers (Windows + Linux)
+
+Har **push pe GitHub Actions** automatically dono platforms ke offline installers
+build karta hai (`.github/workflows/build.yml`) — internet sirf build ke waqt
+(Actions runner) chahiye, **install ke waqt bilkul nahi**.
+
+| Platform | Installer | Kaise banega |
+|----------|-----------|--------------|
+| Windows 10/11 | `Store Management System_1.0.0_x64-setup.exe` (NSIS) | Actions → *windows-installer* artifact, ya Release |
+| Ubuntu/Debian | `store-management-system_1.0.0_amd64.deb` | Actions → *linux-installers* artifact, ya Release |
+| Any Linux | `Store Management System_1.0.0_amd64.AppImage` | Same artifact |
+
+**Release flow:** `git tag v1.0.0 && git push origin v1.0.0` → installers
+Release me attach → download → `setup/windows/` + `setup/linux/` folders me daalein
+(USB ke liye ready; ye folders gitignored hain — details `setup/README.md` me).
+
+**Kaise banta hai package** (`scripts/package-app.mjs):
+- `src-tauri/bundle/` me staging: portable **Node runtime** (nodejs.org se), backend
+  `dist` + **production node_modules** (Prisma engines samet), `frontend/dist`
+- **Fresh `template.db`** — CI me `prisma migrate deploy` + seed (STORE ADMIN,
+  11 departments, 34 machines) → pehli baar app chalne pe app-data me copy hota hai
+- Tauri app (`src-tauri/src/lib.rs`) bundled Node se backend launch karta hai,
+  health ready hone pe window `http://localhost:5000` load karti hai — app
+  **same-to-same** chalta hai (single-port behavior, wahi login, wahi data flow)
+
+**Install ke baad (target PC):**
+- Fresh DB — login `STORE ADMIN` / `S123T`, 0 items, 34 machines ready
+- Data location: Windows `%APPDATA%\Store Management System\`, Linux `~/.local/share/com.storemanagement.app/`
+- Purana data → Settings → Backup → Restore
+- Windows SmartScreen warning: **More info → Run anyway** (installer unsigned hai)
+
+**Local build (bina CI):**
+```bash
+npm run build:frontend && npm run build:backend
+node scripts/package-app.mjs      # bundle stage karta hai
+npx tauri build                   # Rust + NSIS/deb toolchain chahiye
+```
+
+---
+
 ## Project Structure
 
 ```
@@ -384,11 +424,14 @@ store management system/
 ├── open-app.ps1                      # Windows: desktop entry — start backend, open browser
 ├── run-hidden.vbs                    # Windows: run a .ps1 with no console window
 ├── show-starting.vbs                 # Windows: "Starting..." popup (25s auto-dismiss)
+├── .github/workflows/build.yml       # CI: auto-build Windows (NSIS) + Linux (deb/AppImage) installers
+├── scripts/package-app.mjs           # Stages src-tauri/bundle (portable node + prod deps + template.db)
+├── setup/                            # Local folders for installers (gitignored, see setup/README.md)
 ├── backend/
 │   ├── prisma/
 │   │   ├── schema.prisma          # Database schema (13 tables, items.spec added)
 │   │   ├── dev.db                 # SQLite database
-│   │   └── seed.ts                # Admin user + 34 machines across 8 departments
+│   │   └── seed.ts                # Admin user + 11 departments + 34 machines (fresh-DB template)
 │   ├── src/
 │   │   ├── index.ts               # Express entry + single-port static serving + graceful shutdown
 │   │   ├── lib/prisma.ts          # Prisma singleton client

@@ -9,3 +9,11 @@ tmp/
 *.log
 backend/logs/
 backend/.jwt-secret
+
+# Installer staging (built by CI / scripts/package-app.mjs)
+setup/*
+!setup/README.md
+src-tauri/bundle/
+src-tauri/target/
+src-tauri/gen/
+

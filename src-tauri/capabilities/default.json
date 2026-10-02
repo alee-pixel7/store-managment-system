@@ -1,0 +1,6 @@
+{
+  "identifier": "default",
+  "description": "Default permissions for the main window (events, window basics)",
+  "windows": ["main"],
+  "permissions": ["core:default"]
+}

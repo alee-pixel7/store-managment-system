@@ -24,6 +24,10 @@ export function LoadingScreen({ onReady }: LoadingScreenProps) {
           signal: AbortSignal.timeout(2000),
         });
         if (response.ok) {
+          // Guard: the Tauri splash serves static assets here — only accept
+          // the real JSON health payload ({"status":"ok",...})
+          const data = await response.json().catch(() => null);
+          if (data?.status !== 'ok') throw new Error('not ready');
           setStatus('Ready!');
           clearInterval(interval);
           setTimeout(onReady, 300);

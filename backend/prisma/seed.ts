@@ -3,6 +3,21 @@ import * as bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
+// Departments must exist before machines (FK) — fixed IDs so machine refs hold
+const departments = [
+  { id: 3, name: 'Bag Making' },
+  { id: 4, name: 'Extruder' },
+  { id: 5, name: 'Printing' },
+  { id: 6, name: 'Lamination' },
+  { id: 7, name: 'Slitting' },
+  { id: 8, name: 'Metalizer' },
+  { id: 9, name: 'Hologram' },
+  { id: 10, name: 'UV Machine' },
+  { id: 11, name: 'Office' },
+  { id: 12, name: 'Basic Mechanical' },
+  { id: 13, name: 'Basic Electrical' },
+];
+
 const machines = [
   { name: 'Wordly GRV 1', departmentId: 5 },
   { name: 'Wordly GRV 2', departmentId: 5 },
@@ -55,6 +70,19 @@ async function main() {
     },
   });
   console.log(`User: ${admin.username} (${admin.role})`);
+
+  let deptsCreated = 0;
+  for (const dept of departments) {
+    const existing = await prisma.departments.findFirst({
+      where: { id: dept.id },
+    });
+    if (existing) continue;
+    await prisma.departments.create({
+      data: { id: dept.id, name: dept.name },
+    });
+    deptsCreated++;
+  }
+  console.log(`Departments: ${deptsCreated} created, ${departments.length - deptsCreated} skipped (already exist)`);
 
   let created = 0;
   let skipped = 0;

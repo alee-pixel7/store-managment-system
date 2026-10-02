@@ -37,6 +37,12 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
+    "resources": {
+      "bundle/bin": "bin",
+      "bundle/backend": "backend",
+      "bundle/frontend": "frontend",
+      "bundle/template.db": "template.db"
+    },
     "windows": {
       "nsis": {
         "installMode": "both",
@@ -44,18 +50,6 @@
         "installerIcon": "icons/icon.ico",
         "languages": ["English"]
       }
-    }
-  },
-  "plugins": {
-    "shell": {
-      "sidecar": true,
-      "scope": [
-        {
-          "name": "backend",
-          "sidecar": true,
-          "args": true
-        }
-      ]
     }
   }
 }

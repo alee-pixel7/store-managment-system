@@ -7,12 +7,16 @@ import prisma from '../lib/prisma';
 import * as crypto from 'crypto';
 
 const BACKUP_DIR = process.env.BACKUP_DIR || path.join(__dirname, '../../backups');
-const DB_URL = process.env.DATABASE_URL || 'file:./prisma/dev.db';
-const DB_PATH_RAW = DB_URL.replace('file:', '');
-// Prisma resolves file:./dev.db relative to schema.prisma (prisma/ folder)
-const DB_PATH = path.isAbsolute(DB_PATH_RAW)
-  ? DB_PATH_RAW
-  : path.resolve(__dirname, '../../prisma', DB_PATH_RAW);
+// Resolved LAZILY at call time: index.ts sets DATABASE_URL (app-data dir) after
+// module imports run, so an import-time const would capture the wrong path.
+// Relative file: paths resolve against the prisma/ schema folder (Prisma semantics).
+function getDbPath(): string {
+  const dbUrl = process.env.DATABASE_URL || 'file:./dev.db';
+  const raw = dbUrl.replace('file:', '');
+  return path.isAbsolute(raw)
+    ? raw
+    : path.resolve(__dirname, '../../prisma', raw);
+}
 const KEEP_DAYS = 30;
 const MAX_DAILY_BACKUPS = 3;
 const BACKUP_PREFIX = 'store-';
@@ -46,14 +50,14 @@ export async function createBackup(): Promise<BackupInfo> {
 
   // If backup for today already exists, overwrite it (don't create timestamped copies)
   if (fs.existsSync(backupPath)) {
-    fs.copyFileSync(DB_PATH, backupPath);
+    fs.copyFileSync(getDbPath(), backupPath);
     console.log(`✅ Backup updated: ${filename}`);
     await cleanupOldBackups();
     return getBackupInfo(filename);
   }
 
   // Copy database file
-  fs.copyFileSync(DB_PATH, backupPath);
+  fs.copyFileSync(getDbPath(), backupPath);
   console.log(`✅ Backup created: ${filename}`);
 
   // Cap daily backups — keep only newest 3 per day
@@ -265,11 +269,11 @@ export async function restoreBackup(filename: string): Promise<{ safetyBackup: s
     const now = new Date();
     const safetyName = `${BACKUP_PREFIX}${now.toISOString().split('T')[0]}-restore-safety.db`;
     const safetyPath = path.join(BACKUP_DIR, safetyName);
-    fs.copyFileSync(DB_PATH, safetyPath);
+    fs.copyFileSync(getDbPath(), safetyPath);
     console.log(`🛡️  Safety backup created: ${safetyName}`);
 
     // 2. Copy backup file over live database
-    fs.copyFileSync(backupPath, DB_PATH);
+    fs.copyFileSync(backupPath, getDbPath());
     console.log(`✅ Restored from backup: ${filename}`);
 
     // 3. Reconnect Prisma to pick up the restored database
