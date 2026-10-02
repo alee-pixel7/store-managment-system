@@ -19,7 +19,7 @@ import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const BACKEND = path.join(ROOT, 'backend');
@@ -82,7 +82,15 @@ if (!fs.existsSync(path.join(FRONTEND, 'dist', 'index.html'))) {
 if (!args.has('--skip-template')) {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'sms-template-'));
   const dbPath = path.join(tmp, 'template.db');
-  const env = { ...process.env, DATABASE_URL: pathToFileURL(dbPath).href };
+  const env = {
+    ...process.env,
+    // Prisma's expected file: URL — NOT pathToFileURL (which makes file:///C:/...
+    // on Windows and gets rejected; Prisma wants file:C:/... / file:/abs/path)
+    DATABASE_URL:
+      process.platform === 'win32'
+        ? 'file:' + dbPath.replace(/\\/g, '/')
+        : 'file:' + dbPath,
+  };
   log('template DB: migrate deploy ...');
   run('npx', ['prisma', 'migrate', 'deploy'], { cwd: BACKEND, env });
   log('template DB: seed (admin + departments + 34 machines) ...');
