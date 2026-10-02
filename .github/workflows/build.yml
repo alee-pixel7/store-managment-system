@@ -128,13 +128,14 @@ jobs:
         shell: bash
         run: |
           npx tauri --version 2>&1 | tee tauri.log
-          npx tauri build --bundles deb,appimage 2>&1 | tee -a tauri.log
+          npx tauri build --bundles deb,rpm,appimage 2>&1 | tee -a tauri.log
 
       - uses: actions/upload-artifact@v4
         with:
           name: linux-installers
           path: |
             src-tauri/target/release/bundle/deb/*.deb
+            src-tauri/target/release/bundle/rpm/*.rpm
             src-tauri/target/release/bundle/appimage/*.AppImage
           if-no-files-found: error
 
@@ -148,6 +149,7 @@ jobs:
             --verify-tag || true
           gh release upload "$GITHUB_REF_NAME" \
             src-tauri/target/release/bundle/deb/*.deb \
+            src-tauri/target/release/bundle/rpm/*.rpm \
             src-tauri/target/release/bundle/appimage/*.AppImage \
             --clobber
 

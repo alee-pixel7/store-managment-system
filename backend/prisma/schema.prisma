@@ -3,6 +3,10 @@
 
 generator client {
   provider = "prisma-client-js"
+  // Ship engines for every offline target: CI builds on Debian/Ubuntu
+  // (native) and Windows; installs must also run on RHEL/Fedora-family
+  // Linux, where Prisma resolves "rhel-openssl-3.0.x" at runtime.
+  binaryTargets = ["native", "windows", "debian-openssl-3.0.x", "rhel-openssl-3.0.x"]
 }
 
 datasource db {

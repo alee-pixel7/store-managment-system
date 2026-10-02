@@ -384,9 +384,10 @@ build karta hai (`.github/workflows/build.yml`) — internet sirf build ke waqt
 
 | Platform | Installer | Kaise banega |
 |----------|-----------|--------------|
-| Windows 10/11 | `Store Management System_1.0.0_x64-setup.exe` (NSIS) | Actions → *windows-installer* artifact, ya Release |
-| Ubuntu/Debian | `store-management-system_1.0.0_amd64.deb` | Actions → *linux-installers* artifact, ya Release |
-| Any Linux | `Store Management System_1.0.0_amd64.AppImage` | Same artifact |
+| Windows 10/11 | `Store.Management.System_1.0.0_x64-setup.exe` (NSIS) | Actions → *windows-installer* artifact, ya Release |
+| Ubuntu/Debian | `Store.Management.System_1.0.0_amd64.deb` | Actions → *linux-installers* artifact, ya Release |
+| Fedora/RHEL/openSUSE | `Store_Management_System-1.0.0-1.x86_64.rpm` | Same artifact |
+| Any Linux | `Store.Management.System_1.0.0_amd64.AppImage` | Same artifact |
 
 **Release flow:** `git tag v1.0.0 && git push origin v1.0.0` → installers
 Release me attach → download → `setup/windows/` + `setup/linux/` folders me daalein
@@ -716,9 +717,13 @@ npx tauri build
 
 | Platform | File | Install |
 |----------|------|---------|
-| Windows | `Store Management System_1.0.0_x64-setup.exe` | Double-click → Install |
-| Linux | `store-management-system_1.0.0_amd64.deb` | `sudo dpkg -i *.deb` |
-| Linux | `Store Management System_1.0.0_amd64.AppImage` | `chmod +x *.AppImage` → Double-click |
+| Windows | `Store.Management.System_1.0.0_x64-setup.exe` | Double-click → Install |
+| Ubuntu/Debian | `Store.Management.System_1.0.0_amd64.deb` | `sudo dpkg -i *.deb` |
+| Fedora/RHEL/openSUSE | `Store_Management_System-1.0.0-1.x86_64.rpm` | `sudo dnf install ./*.rpm` (Fedora pe AppImage ki jagah yeh — niche note) |
+| Any Linux | `Store.Management.System_1.0.0_amd64.AppImage` | `chmod +x *.AppImage` → Double-click |
+
+> **Fedora note:** AppImage known WebKitGTK issue se blank window dikha sakta hai —
+> Fedora/RHEL pe **.rpm** use karein (distro ka apna WebKitGTK = stable rendering).
 
 **What the user gets:**
 - Desktop icon — "Store Management System"

@@ -95,6 +95,12 @@ fn show_app(app: &tauri::AppHandle) {
 }
 
 pub fn run() {
+    // WebKitGTK on some Wayland/GPU setups aborts with
+    // "Could not create default EGL display: EGL_BAD_PARAMETER"
+    // before the window can render — force the non-dmabuf path.
+    #[cfg(target_os = "linux")]
+    std::env::set_var("WEBKIT_DISABLE_DMABUF_RENDERER", "1");
+
     tauri::Builder::default()
         .setup(|app| {
             let app_handle = app.handle().clone();
