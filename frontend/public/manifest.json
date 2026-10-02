@@ -4,8 +4,8 @@
   "description": "Inventory and stock management for machine parts store",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0B0D11",
-  "theme_color": "#E8A035",
+  "background_color": "#0C0918",
+  "theme_color": "#8B5CF6",
   "orientation": "any",
   "scope": "/",
   "icons": [
