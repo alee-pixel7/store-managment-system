@@ -186,7 +186,17 @@ if (!args.has('--skip-node')) {
   fs.rmSync(extractDir, { recursive: true, force: true });
   fs.mkdirSync(extractDir, { recursive: true });
   log('extracting ...');
-  run('tar', ['-xf', archive, '-C', cache]);
+  if (process.platform === 'win32') {
+    // Windows bsdtar treats "D:\..." as a remote host
+    // ("Cannot connect to D: resolve failed") — Expand-Archive is reliable.
+    run('powershell', [
+      '-NoProfile',
+      '-Command',
+      `Expand-Archive -LiteralPath "${archive}" -DestinationPath "${cache}" -Force`,
+    ]);
+  } else {
+    run('tar', ['-xf', archive, '-C', cache]);
+  }
 
   const nodeSrc =
     plat === 'win32'

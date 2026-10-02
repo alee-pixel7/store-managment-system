@@ -84,15 +84,12 @@ fn backend_healthy() -> bool {
     buf.contains("\"ok\"")
 }
 
-/// Reveal the main window and navigate it to the backend-served app.
-fn show_app(app: &tauri::AppHandle, navigate: bool) {
+/// Navigate the main window to the backend-served app (splash -> real app).
+fn show_app(app: &tauri::AppHandle) {
     if let Some(window) = app.get_webview_window("main") {
-        if navigate {
-            if let Ok(url) = tauri::Url::parse("http://localhost:5000") {
-                window.navigate(url).ok();
-            }
+        if let Ok(url) = tauri::Url::parse("http://localhost:5000") {
+            window.navigate(url).ok();
         }
-        window.set_visible(true).ok();
         window.emit("backend-ready", ()).ok();
     }
 }
@@ -100,7 +97,6 @@ fn show_app(app: &tauri::AppHandle, navigate: bool) {
 pub fn run() {
     tauri::Builder::default()
         .setup(|app| {
-            let window = app.get_webview_window("main").unwrap();
             let app_handle = app.handle().clone();
 
             // App data directory (SQLite + backups + reports live here)
@@ -116,9 +112,6 @@ pub fn run() {
 
             #[cfg(not(debug_assertions))]
             {
-                // Hide the splash until the backend is reachable
-                window.set_visible(false).ok();
-
                 let resource_dir = app.path().resource_dir().expect("resource dir");
 
                 // First run: seed a fresh database from the bundled template
@@ -204,13 +197,12 @@ pub fn run() {
                         attempts += 1;
                         if backend_healthy() {
                             let a = probe_app.clone();
-                            let _ = probe_app.run_on_main_thread(move || show_app(&a, true));
+                            let _ = probe_app.run_on_main_thread(move || show_app(&a));
                             break;
                         }
                         if attempts >= MAX_ATTEMPTS {
-                            // Show the splash anyway so the user sees the error state
-                            let a = probe_app.clone();
-                            let _ = probe_app.run_on_main_thread(move || show_app(&a, false));
+                            // Splash stays visible and shows its own
+                            // "Backend failed to start" error state
                             break;
                         }
                         std::thread::sleep(Duration::from_millis(500));
@@ -221,7 +213,6 @@ pub fn run() {
             #[cfg(debug_assertions)]
             {
                 // Dev: backend comes from `npm run dev`, window loads the Vite devUrl
-                let _ = &window;
                 let _ = &app_handle;
             }
 
