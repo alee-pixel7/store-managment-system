@@ -13,12 +13,18 @@ export function LoadingScreen({ onReady }: LoadingScreenProps) {
 
   useEffect(() => {
     let attempts = 0;
-    const maxAttempts = 60;
+    const maxAttempts = 180; // ~90s+: first run on a new PC (antivirus scanning
+    // the bundled node_modules) can take well over 30s
+    let warned = false;
     let interval: ReturnType<typeof setInterval>;
 
     const checkHealth = async () => {
       attempts++;
-      setStatus(`Connecting... (${attempts}/${maxAttempts})`);
+      setStatus(
+        attempts <= 60
+          ? `Connecting... (${attempts}/${maxAttempts})`
+          : 'Starting backend — first run on a new PC can take a minute...'
+      );
       try {
         const response = await fetch('/api/health', {
           signal: AbortSignal.timeout(2000),
@@ -34,9 +40,11 @@ export function LoadingScreen({ onReady }: LoadingScreenProps) {
           return;
         }
       } catch { }
-      if (attempts >= maxAttempts) {
-        setError('Backend failed to start. Please restart.');
-        clearInterval(interval);
+      if (attempts >= maxAttempts && !warned) {
+        warned = true;
+        // Keep polling: if the backend comes up later, the Rust side navigates
+        // the window automatically and this screen reloads fresh.
+        setError('Backend is taking too long to start. If this keeps happening, check backend.log.');
       }
     };
 

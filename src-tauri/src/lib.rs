@@ -84,6 +84,36 @@ fn backend_healthy() -> bool {
     buf.contains("\"ok\"")
 }
 
+/// Append a timestamped diagnostic line to `backend.log`.
+/// Windows release builds are `windows_subsystem = "windows"` (no console),
+/// so this file is the only place diagnostics are visible.
+#[allow(dead_code)]
+fn append_log(log_path: &Path, msg: &str) {
+    let ts = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_secs())
+        .unwrap_or(0);
+    if let Ok(mut f) = OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(log_path)
+    {
+        let _ = writeln!(f, "[{ts}] {msg}");
+    }
+}
+
+/// Non-blocking check: did the spawned backend child exit (crash)?
+#[allow(dead_code)]
+fn backend_exit_status(app: &tauri::AppHandle) -> Option<String> {
+    let state = app.try_state::<BackendProcess>()?;
+    let mut guard = state.0.lock().ok()?;
+    let child = guard.as_mut()?;
+    match child.try_wait() {
+        Ok(Some(status)) => Some(format!("backend process exited ({status})")),
+        _ => None,
+    }
+}
+
 /// Navigate the main window to the backend-served app (splash -> real app).
 fn show_app(app: &tauri::AppHandle) {
     if let Some(window) = app.get_webview_window("main") {
@@ -122,12 +152,19 @@ pub fn run() {
 
                 // First run: seed a fresh database from the bundled template
                 let db_path = app_data_dir.join("store.db");
+                let log_path = app_data_dir.join("backend.log");
                 if !db_path.exists() {
-                    if let Some(template) =
-                        find_marker(&resource_dir, "template.db", 3)
-                    {
-                        std::fs::copy(&template, &db_path).ok();
-                        println!("First run: database created from template");
+                    match find_marker(&resource_dir, "template.db", 3) {
+                        Some(template) => match std::fs::copy(&template, &db_path) {
+                            Ok(n) => append_log(
+                                &log_path,
+                                &format!("First run: database created from template ({n} bytes)"),
+                            ),
+                            Err(e) => {
+                                append_log(&log_path, &format!("ERROR: could not copy template.db: {e}"))
+                            }
+                        },
+                        None => append_log(&log_path, "ERROR: template.db not found in resources"),
                     }
                 }
 
@@ -137,13 +174,12 @@ pub fn run() {
                 let server_js = find_marker(&resource_dir, "backend/dist/index.js", 3);
 
                 let mut spawned: Option<Child> = None;
-                match (node_bin, server_js) {
+                match (&node_bin, &server_js) {
                     (Some(node), Some(server)) => {
                         if backend_healthy() {
-                            println!("Existing backend on :5000 detected — reusing it");
+                            append_log(&log_path, "Existing backend on :5000 detected — reusing it");
                         } else {
                             let backend_dir = server.parent().unwrap().parent().unwrap().to_path_buf();
-                            let log_path = app_data_dir.join("backend.log");
                             let out = OpenOptions::new()
                                 .create(true)
                                 .append(true)
@@ -163,53 +199,87 @@ pub fn run() {
                                 "file:{}",
                                 db_path.to_string_lossy().replace('\\', "/")
                             );
-                            let child = Command::new(&node)
-                                .arg(&server)
+                            let mut cmd = Command::new(node);
+                            cmd.arg(server)
                                 .arg(format!("--data-dir={}", app_data_dir.to_string_lossy()))
                                 .env("DATABASE_URL", db_url)
                                 .env("BACKUP_DIR", backups_dir.to_string_lossy().to_string())
                                 .env("REPORT_DIR", reports_dir.to_string_lossy().to_string())
                                 .current_dir(&backend_dir)
                                 .stdout(out)
-                                .stderr(err)
-                                .spawn();
-                            match child {
+                                .stderr(err);
+                            // Don't flash a console window from the GUI process.
+                            #[cfg(windows)]
+                            {
+                                use std::os::windows::process::CommandExt;
+                                cmd.creation_flags(0x08000000); // CREATE_NO_WINDOW
+                            }
+                            match cmd.spawn() {
                                 Ok(c) => {
-                                    println!("Backend spawned via bundled node");
+                                    append_log(
+                                        &log_path,
+                                        &format!(
+                                            "Backend spawned (pid {}): {} {}",
+                                            c.id(),
+                                            node.display(),
+                                            server.display()
+                                        ),
+                                    );
                                     spawned = Some(c);
                                 }
                                 Err(e) => {
+                                    append_log(&log_path, &format!("ERROR: failed to spawn backend: {e}"));
                                     eprintln!("Failed to spawn backend: {e}");
                                 }
                             }
                         }
                     }
                     _ => {
-                        eprintln!(
-                            "Bundled backend not found under {:?} — cannot start API",
-                            resource_dir
+                        append_log(
+                            &log_path,
+                            &format!(
+                                "ERROR: bundled backend not found under {:?} (node found: {}, server found: {})",
+                                resource_dir,
+                                node_bin.is_some(),
+                                server_js.is_some()
+                            ),
                         );
                     }
                 }
 
                 app.manage(BackendProcess(Mutex::new(spawned)));
 
-                // Probe health off the UI thread; reveal + navigate when ready
+                // Probe health off the UI thread; reveal + navigate when ready.
+                // No attempt cap: slow first runs (e.g. antivirus scanning the
+                // bundled node_modules) can exceed a minute — keep trying so the
+                // app self-recovers the moment the backend is actually up.
                 let probe_app = app_handle.clone();
+                let probe_log = log_path.clone();
                 std::thread::spawn(move || {
-                    let mut attempts = 0;
-                    const MAX_ATTEMPTS: u32 = 60; // 30s
+                    let mut attempts: u32 = 0;
+                    let mut exit_reported = false;
                     loop {
                         attempts += 1;
                         if backend_healthy() {
+                            append_log(
+                                &probe_log,
+                                &format!("Backend healthy after {attempts} probe(s) — navigating"),
+                            );
                             let a = probe_app.clone();
                             let _ = probe_app.run_on_main_thread(move || show_app(&a));
                             break;
                         }
-                        if attempts >= MAX_ATTEMPTS {
-                            // Splash stays visible and shows its own
-                            // "Backend failed to start" error state
-                            break;
+                        if !exit_reported {
+                            if let Some(msg) = backend_exit_status(&probe_app) {
+                                exit_reported = true;
+                                append_log(&probe_log, &format!("ERROR: {msg}"));
+                            }
+                        }
+                        if attempts % 120 == 0 {
+                            append_log(
+                                &probe_log,
+                                &format!("still waiting for backend ({}s)...", attempts / 2),
+                            );
                         }
                         std::thread::sleep(Duration::from_millis(500));
                     }
