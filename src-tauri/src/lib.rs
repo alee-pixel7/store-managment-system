@@ -21,7 +21,7 @@ fn get_app_data_dir(app: tauri::AppHandle) -> String {
         .app_data_dir()
         .expect("Failed to get app data dir");
     std::fs::create_dir_all(&dir).ok();
-    dir.to_string_lossy().to_string()
+    strip_extended_prefix(dir).to_string_lossy().to_string()
 }
 
 #[tauri::command]
@@ -84,6 +84,21 @@ fn backend_healthy() -> bool {
     buf.contains("\"ok\"")
 }
 
+/// Windows: Tauri's `resource_dir()` / `app_data_dir()` can return
+/// extended-length paths (`\\?\C:\...`). Node.js crashes on those at module
+/// load (`EISDIR: lstat 'C:'`), so normalize them to plain Win32 paths.
+fn strip_extended_prefix(p: PathBuf) -> PathBuf {
+    let stripped = {
+        let s = p.to_string_lossy();
+        s.strip_prefix(r"\\?\").map(|r| r.to_string())
+    };
+    match stripped {
+        Some(r) if r.starts_with(r"UNC\") => PathBuf::from(format!(r"\\{}", &r[4..])),
+        Some(r) => PathBuf::from(r),
+        None => p,
+    }
+}
+
 /// Append a timestamped diagnostic line to `backend.log`.
 /// Windows release builds are `windows_subsystem = "windows"` (no console),
 /// so this file is the only place diagnostics are visible.
@@ -136,10 +151,11 @@ pub fn run() {
             let app_handle = app.handle().clone();
 
             // App data directory (SQLite + backups + reports live here)
-            let app_data_dir = app
-                .path()
-                .app_data_dir()
-                .expect("Failed to get app data dir");
+            let app_data_dir = strip_extended_prefix(
+                app.path()
+                    .app_data_dir()
+                    .expect("Failed to get app data dir"),
+            );
             std::fs::create_dir_all(&app_data_dir).ok();
             let backups_dir = app_data_dir.join("backups");
             let reports_dir = app_data_dir.join("reports");
@@ -148,7 +164,8 @@ pub fn run() {
 
             #[cfg(not(debug_assertions))]
             {
-                let resource_dir = app.path().resource_dir().expect("resource dir");
+                let resource_dir =
+                    strip_extended_prefix(app.path().resource_dir().expect("resource dir"));
 
                 // First run: seed a fresh database from the bundled template
                 let db_path = app_data_dir.join("store.db");
