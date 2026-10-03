@@ -453,6 +453,34 @@ npx tauri build                   # Rust + NSIS/deb toolchain chahiye
 
 ---
 
+## Troubleshooting — Windows
+
+### Upgrade ke baad app purana lag raha hai (purane exports/design)
+
+**Wajah:** Agar app install karte waqt purana backend (`node.exe`, port 5000) abhi
+bhi chal raha hai toh naya app use reuse kar leta tha — purana code hi serve hota
+rahta hai. **Ab fix hai** — app startup pe:
+
+1. `backend.pid` file se orphaned node process kill karta hai
+2. `/api/health` ka **version** check karta hai — same version pe hi reuse,
+   warna stale backend **kill + replace** karta hai
+3. Har decision `backend.log` me likhta hai
+
+**Manual fix (kisi bhi version pe):** PC reboot — ya Task Manager me saare
+`node.exe` end task → app dobara kholo.
+
+**Diagnostics:** `%APPDATA%\com.storemanagement.app\backend.log`
+
+| Log line | Matlab |
+|----------|--------|
+| `Existing backend on :5000 detected — reusing it (v1.0.0)` | Sahi — same version reuse |
+| `Stale backend on :5000 (...) — replacing it` | Purana backend mila, kill ho gaya ✓ |
+| `Killing orphaned backend from previous run (pid N)` | Force-kill ka orphan saaf hua ✓ |
+| `Backend spawned (pid N)` | Naya backend chal raha hai ✓ |
+| `WARNING: :5000 still busy after stale kill` | Koi non-node process port pakde hai — wo process band karein |
+
+---
+
 ## Project Structure
 
 ```

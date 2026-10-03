@@ -65,8 +65,14 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 
 // Health check endpoint (public)
+// `version` is injected by the Tauri sidecar (APP_VERSION) so the desktop app
+// can detect a stale backend left over from a previous install and replace it.
 app.get('/api/health', (_req, res) => {
-  res.json({ status: 'ok', message: 'Store Management System API is running' });
+  res.json({
+    status: 'ok',
+    message: 'Store Management System API is running',
+    version: process.env.APP_VERSION || null,
+  });
 });
 
 // Auth routes (login is public, me is protected)

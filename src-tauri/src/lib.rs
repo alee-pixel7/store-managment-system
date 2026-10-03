@@ -51,37 +51,184 @@ fn find_marker(root: &Path, relative: &str, max_depth: u8) -> Option<PathBuf> {
     None
 }
 
-/// Non-blocking health check against the local backend on port 5000.
-fn backend_healthy() -> bool {
+/// Fetch `/api/health` from whatever listens on 127.0.0.1:5000 and return
+/// the body when it answers like our backend (`"ok"` present).
+fn fetch_health_body() -> Option<String> {
     let addrs = match "127.0.0.1:5000".to_socket_addrs() {
         Ok(a) => a.collect::<Vec<_>>(),
-        Err(_) => return false,
+        Err(_) => return None,
     };
-    let addr = match addrs.first() {
-        Some(a) => *a,
-        None => return false,
-    };
-    let mut stream = match TcpStream::connect_timeout(&addr, Duration::from_millis(600)) {
-        Ok(s) => s,
-        Err(_) => return false,
-    };
+    let addr = *addrs.first()?;
+    let mut stream = TcpStream::connect_timeout(&addr, Duration::from_millis(600)).ok()?;
     stream
         .set_read_timeout(Some(Duration::from_millis(1200)))
         .ok();
     stream
         .set_write_timeout(Some(Duration::from_millis(600)))
         .ok();
-    if stream
+    stream
         .write_all(b"GET /api/health HTTP/1.1\r\nHost: 127.0.0.1:5000\r\nConnection: close\r\n\r\n")
-        .is_err()
-    {
-        return false;
-    }
+        .ok()?;
     let mut buf = String::new();
-    if stream.read_to_string(&mut buf).is_err() {
-        return false;
+    stream.read_to_string(&mut buf).ok()?;
+    if buf.contains("\"ok\"") {
+        Some(buf)
+    } else {
+        None
     }
-    buf.contains("\"ok\"")
+}
+
+fn backend_healthy() -> bool {
+    fetch_health_body().is_some()
+}
+
+/// Best-effort extraction of a JSON string field (avoids serde for two fields).
+fn json_str_field(body: &str, key: &str) -> Option<String> {
+    let pat = format!("\"{key}\":\"");
+    let start = body.find(&pat)? + pat.len();
+    let rest = &body[start..];
+    let end = rest.find('"')?;
+    Some(rest[..end].to_string())
+}
+
+/// What is already answering on :5000 when the app starts.
+enum ExistingBackend {
+    /// Nothing healthy is listening.
+    None,
+    /// A backend of OUR version — safe to reuse.
+    Current,
+    /// A backend answers, but from an older install (or reports no version).
+    Stale(String),
+}
+
+/// Probe `/api/health` of the process on :5000 and classify it against the
+/// version this app ships. Older installs don't report a version at all, so
+/// any pre-upgrade sidecar is treated as stale and replaced below.
+fn probe_existing(app_version: &str) -> ExistingBackend {
+    let Some(body) = fetch_health_body() else {
+        return ExistingBackend::None;
+    };
+    match json_str_field(&body, "version") {
+        Some(v) if v == app_version => ExistingBackend::Current,
+        Some(v) => ExistingBackend::Stale(format!("version {v} != app {app_version}")),
+        None => ExistingBackend::Stale("no version reported (old install)".to_string()),
+    }
+}
+
+/// Is this pid a node/node.exe process? Guards against pid recycling so we
+/// never kill an unrelated process recorded in the pid file.
+fn process_is_node(pid: u32) -> bool {
+    if cfg!(windows) {
+        let filter = format!("PID eq {pid}");
+        let out = Command::new("tasklist")
+            .args(["/FI", filter.as_str(), "/FO", "CSV", "/NH"])
+            .output();
+        match out {
+            Ok(o) => String::from_utf8_lossy(&o.stdout).to_lowercase().contains("node"),
+            Err(_) => false,
+        }
+    } else {
+        std::fs::read_to_string(format!("/proc/{pid}/comm"))
+            .map(|c| c.starts_with("node"))
+            .unwrap_or(false)
+    }
+}
+
+/// Best-effort kill of a (caller-validated node) process.
+fn kill_pid(pid: u32) -> bool {
+    let pid_s = pid.to_string();
+    let mut cmd = if cfg!(windows) {
+        let mut c = Command::new("taskkill");
+        c.args(["/PID", pid_s.as_str(), "/T", "/F"]);
+        c
+    } else {
+        let mut c = Command::new("kill");
+        c.args(["-9", pid_s.as_str()]);
+        c
+    };
+    // Don't flash a console window from the GUI process.
+    #[cfg(windows)]
+    {
+        use std::os::windows::process::CommandExt;
+        cmd.creation_flags(0x08000000); // CREATE_NO_WINDOW
+    }
+    cmd.status().map(|s| s.success()).unwrap_or(false)
+}
+
+/// Clean up an orphaned sidecar recorded in `backend.pid` (previous run was
+/// force-killed and its exit handler never fired).
+fn kill_recorded_pid(pid_path: &Path, log_path: &Path) {
+    let Ok(raw) = std::fs::read_to_string(pid_path) else {
+        return;
+    };
+    std::fs::remove_file(pid_path).ok();
+    let Ok(pid) = raw.trim().parse::<u32>() else {
+        return;
+    };
+    if pid == std::process::id() || !process_is_node(pid) {
+        return;
+    }
+    append_log(
+        log_path,
+        &format!("Killing orphaned backend from previous run (pid {pid})"),
+    );
+    if kill_pid(pid) {
+        append_log(log_path, &format!("Orphaned backend (pid {pid}) killed"));
+    }
+}
+
+/// Free :5000 by killing whatever **node** process is listening there (stale
+/// sidecar from a previous install whose pid file we no longer have).
+/// Never touches non-node processes — if the listener isn't ours we log and
+/// let the spawn below surface the EADDRINUSE error instead.
+fn kill_stale_listener(log_path: &Path) {
+    let (program, args): (&str, Vec<String>) = if cfg!(windows) {
+        let script = concat!(
+            "$c = Get-NetTCPConnection -LocalPort 5000 -State Listen -ErrorAction SilentlyContinue; ",
+            "foreach ($x in $c) { $p = Get-Process -Id $x.OwningProcess -ErrorAction SilentlyContinue; ",
+            "if ($p -and $p.ProcessName -like 'node*') { Stop-Process -Id $p.Id -Force } }"
+        );
+        (
+            "powershell",
+            ["-NoProfile", "-NonInteractive", "-Command", script]
+                .iter()
+                .map(|s| s.to_string())
+                .collect(),
+        )
+    } else {
+        let script = concat!(
+            "for pid in $(lsof -t -iTCP:5000 -sTCP:LISTEN 2>/dev/null); do ",
+            "c=$(cat /proc/$pid/comm 2>/dev/null); ",
+            "case \"$c\" in node*) kill -9 \"$pid\" 2>/dev/null;; esac; done"
+        );
+        ("sh", vec!["-c".to_string(), script.to_string()])
+    };
+    let mut cmd = Command::new(program);
+    cmd.args(&args);
+    #[cfg(windows)]
+    {
+        use std::os::windows::process::CommandExt;
+        cmd.creation_flags(0x08000000); // CREATE_NO_WINDOW
+    }
+    match cmd.output() {
+        Ok(o) => {
+            let so = String::from_utf8_lossy(&o.stdout).trim().to_string();
+            let se = String::from_utf8_lossy(&o.stderr).trim().to_string();
+            append_log(
+                log_path,
+                &format!(
+                    "stale-listener kill: exit={:?}{}{}",
+                    o.status.code(),
+                    if so.is_empty() { String::new() } else { format!(" out={so}") },
+                    if se.is_empty() { String::new() } else { format!(" err={se}") },
+                ),
+            );
+        }
+        Err(e) => append_log(
+            log_path,
+            &format!("ERROR: could not run {program} to free :5000: {e}"),
+        ),
+    }
 }
 
 /// Windows: Tauri's `resource_dir()` / `app_data_dir()` can return
@@ -190,12 +337,56 @@ pub fn run() {
                 let node_bin = find_marker(&resource_dir, node_name, 3);
                 let server_js = find_marker(&resource_dir, "backend/dist/index.js", 3);
 
+                let app_version = env!("CARGO_PKG_VERSION");
+                let pid_path = app_data_dir.join("backend.pid");
+
                 let mut spawned: Option<Child> = None;
                 match (&node_bin, &server_js) {
                     (Some(node), Some(server)) => {
-                        if backend_healthy() {
-                            append_log(&log_path, "Existing backend on :5000 detected — reusing it");
-                        } else {
+                        // Decide what to do with whatever is already on :5000.
+                        // Only a same-version backend is reused; anything else
+                        // (old install, no version, hung) is killed + replaced
+                        // so an upgrade can never keep serving stale code.
+                        let mut reuse = false;
+                        match probe_existing(app_version) {
+                            ExistingBackend::Current => {
+                                reuse = true;
+                                append_log(
+                                    &log_path,
+                                    &format!(
+                                        "Existing backend on :5000 detected — reusing it (v{app_version})"
+                                    ),
+                                );
+                            }
+                            ExistingBackend::Stale(detail) => {
+                                append_log(
+                                    &log_path,
+                                    &format!("Stale backend on :5000 ({detail}) — replacing it"),
+                                );
+                                kill_recorded_pid(&pid_path, &log_path);
+                                kill_stale_listener(&log_path);
+                                let mut waited_ms = 0u32;
+                                while backend_healthy() && waited_ms < 4000 {
+                                    std::thread::sleep(Duration::from_millis(200));
+                                    waited_ms += 200;
+                                }
+                                if backend_healthy() {
+                                    append_log(
+                                        &log_path,
+                                        "WARNING: :5000 still busy after stale kill — will try to spawn anyway",
+                                    );
+                                } else {
+                                    append_log(
+                                        &log_path,
+                                        &format!("Port 5000 free after {waited_ms}ms"),
+                                    );
+                                }
+                            }
+                            ExistingBackend::None => {
+                                kill_recorded_pid(&pid_path, &log_path);
+                            }
+                        }
+                        if !reuse {
                             let backend_dir = server.parent().unwrap().parent().unwrap().to_path_buf();
                             let out = OpenOptions::new()
                                 .create(true)
@@ -222,6 +413,7 @@ pub fn run() {
                                 .env("DATABASE_URL", db_url)
                                 .env("BACKUP_DIR", backups_dir.to_string_lossy().to_string())
                                 .env("REPORT_DIR", reports_dir.to_string_lossy().to_string())
+                                .env("APP_VERSION", app_version)
                                 .current_dir(&backend_dir)
                                 .stdout(out)
                                 .stderr(err);
@@ -242,6 +434,9 @@ pub fn run() {
                                             server.display()
                                         ),
                                     );
+                                    // Record the pid so a force-killed app can
+                                    // clean up its orphaned sidecar next run.
+                                    std::fs::write(&pid_path, c.id().to_string()).ok();
                                     spawned = Some(c);
                                 }
                                 Err(e) => {
@@ -323,8 +518,21 @@ pub fn run() {
                 if let Some(state) = app_handle.try_state::<BackendProcess>() {
                     if let Ok(mut guard) = state.0.lock() {
                         if let Some(mut child) = guard.take() {
+                            let pid = child.id();
                             let _ = child.kill();
                             let _ = child.wait();
+                            // Drop OUR pid file (a reused backend belongs to
+                            // another instance — leave its record alone).
+                            if let Ok(dir) = app_handle.path().app_data_dir() {
+                                let pid_path = strip_extended_prefix(dir).join("backend.pid");
+                                if let Ok(raw) = std::fs::read_to_string(&pid_path) {
+                                    if let Ok(recorded) = raw.trim().parse::<u32>() {
+                                        if recorded == pid {
+                                            std::fs::remove_file(&pid_path).ok();
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
