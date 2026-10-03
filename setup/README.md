@@ -41,3 +41,5 @@ Download karke yahan ke relevant folder me rakh dein — USB ke liye ready.
 - App data (DB, backups): Windows `%APPDATA%\Store Management System\`, Linux `~/.local/share/com.storemanagement.app/`
 - **Fresh install = fresh DB** — login `STORE ADMIN` / `S123T`, 34 machines seeded, 0 items
 - Purana data chahiye toh Settings → Backup se restore karein
+- Sab kuch **offline** — reports ke PDF/Excel exports bhi premium Noir + Amethyst theme me
+- Data zero karna ho toh Settings → **Danger Zone → Factory Reset** (`RESET` type karke confirm)

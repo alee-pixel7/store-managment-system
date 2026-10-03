@@ -10,8 +10,8 @@ Complete inventory management system for machine-parts stores. Replaces Excel-ba
 | Backend | Node.js, Express, Prisma ORM |
 | Database | SQLite |
 | Auth | JWT (12hr expiry, persisted secret), bcryptjs |
-| PDF | PDFKit (premium gold-themed exports) |
-| Excel | ExcelJS |
+| PDF | PDFKit (premium Noir + Amethyst theme) |
+| Excel | ExcelJS (styled workbooks — banners, borders, frozen panes) |
 | Desktop | Tauri 2 (offline — double-click .exe/.deb, auto-start backend) |
 
 ## Login
@@ -118,15 +118,24 @@ absent), keep using Vite on 3000 as before.
 - Summary cards with icons
 - Export: Excel / PDF / Print
 
-### 8. Export (Premium PDFs)
+### 8. Export (Premium PDFs + Excel)
 
-**Gold-themed PDF design:**
-- Gold gradient header bar with store name + subtitle
-- Colored section headers (green for receipts, red for issues, amber for alerts)
-- Per-section table header colors
-- Warm gold-tinted alternating rows
-- 2x2 summary cards with big numbers
-- Gold accent lines + premium footer with page numbers
+**Unified "Noir + Amethyst" design (PDF & Excel match the app theme):**
+
+PDF design:
+- Noir (`#141026`) title bar + violet accent strip + rounded "S" logo tile
+- Short violet underline under the report title
+- 2x2 KPI summary cards with colored accent bars
+- Violet section markers + violet table headers (`#8B5CF6`)
+- Soft amethyst zebra rows, hairline borders, colored section accents (green/red/amber)
+- Compact footer — accent line + store name + `Page X of Y` + date (**no blank pages**)
+
+Excel design:
+- Noir title banner row + lavender subtitle (merged cells)
+- Violet header row with wrapped text, thin borders, zebra data rows
+- Currency / integer number formats (`#,##0.00`, `#,##0`), right-aligned numbers
+- Frozen panes (header stays visible), autoFilter, violet sheet tabs
+- Summary sheet with label/value metrics
 
 | Export | Format | Access |
 |--------|--------|--------|
@@ -176,7 +185,7 @@ absent), keep using Vite on 3000 as before.
 
 | Role | Permissions |
 |------|-------------|
-| ADMIN | Everything + Settings + Delete items |
+| ADMIN | Everything + Settings + Delete master data + Factory Reset |
 | STORE_INCHARGE | Stock ops + Reversals + Items CRUD + Reorder accept |
 | ASSISTANT | Stock IN/OUT + View reports |
 | VIEWER | Read only |
@@ -226,6 +235,33 @@ absent), keep using Vite on 3000 as before.
 - Mobile responsive with bottom navigation + animated indicator
 - Print stylesheet (clean A4, no UI elements)
 - Service worker disabled in dev mode (prevents stale CSS)
+
+### 15. Safe Delete & Factory Reset (ADMIN only)
+
+**Delete options for master data** — 🗑 Manage modal next to every `+` quick-add:
+
+| Where | Manage button | Delete targets |
+|-------|---------------|----------------|
+| Items page → "Categories" | Manage Categories | Categories |
+| Stock In → Supplier field | 🗑 | Suppliers |
+| Stock In/Out → Person field | 🗑 | Persons |
+| Stock Out → Department field | 🗑 | Departments |
+| Stock Out → Machine field | 🗑 | Machines |
+
+- Hover row → **Edit / Delete**, `window.confirm` before delete
+- **Block-if-in-use:** Suppliers / Persons / Departments / Machines delete karne par API
+  **409** return karta hai agar record kisi transaction se linked ho — history kabhi
+  orphan nahi hoti
+- **Categories:** delete par items uncategorized ho jaate hain (`reassigned` count
+  return hota hai) — items delete nahi hote
+- Transaction history is **never hard-deleted** (only reversals, by design)
+
+**Factory Reset** (Settings → Danger Zone):
+- Wipes **everything**: items, categories, aliases, transactions, audits, suppliers,
+  departments, machines, persons, **users**, plus backup + report files on disk
+- Re-creates only `STORE ADMIN` / `S123T` (fresh-DB state)
+- Type **`RESET`** to enable the button (double confirmation)
+- API: `POST /api/admin/factory-reset` (ADMIN)
 
 ---
 
@@ -448,8 +484,9 @@ store management system/
 │   │   │   ├── auditService.ts
 │   │   │   ├── backupService.ts        # Path traversal protected
 │   │   │   ├── importService.ts
-│   │   │   ├── pdfExportService.ts     # Premium gold-themed PDFs (day-first dates, Spec/Unit col)
-│   │   │   ├── excelExportService.ts   # (day-first dates, Spec/Unit col)
+│   │   │   ├── pdfExportService.ts     # Premium Noir+Amethyst PDFs (day-first dates, Spec/Unit col)
+│   │   │   ├── excelExportService.ts   # Premium Noir+Amethyst workbooks (banners, borders, frozen panes)
+│   │   │   ├── adminService.ts         # Factory reset (wipe all + re-create STORE ADMIN)
 │   │   │   └── authService.ts          # Persisted JWT secret
 │   │   ├── controllers/
 │   │   ├── routes/
@@ -477,10 +514,11 @@ store management system/
 │   │       ├── Auth/LoginPage.tsx       # Premium login (aurora + violet glows)
 │   │       ├── Dashboard/              # Premium dashboard (4+2 layout)
 │   │       ├── Items/                  # Items page + detail + ledger + Value/Unit col
-│   │       ├── Transactions/           # Stock In/Out/Return (premium forms, DateField)
+│   │       ├── Transactions/           # Stock In/Out/Return (premium forms, DateField, 🗑 manage modals)
 │   │       ├── Reports/                # Daily + Monthly (with reverse)
 │   │       ├── Import/ImportWizard.tsx
 │   │       ├── Settings/BackupSettings.tsx
+│   │       ├── Settings/DangerZone.tsx # Factory Reset (type RESET to confirm)
 │   │       ├── Audit/                  # Physical audit
 │   │       ├── Analytics/AnalyticsPage.tsx
 │   │       ├── Reorder/ReorderPointsPage.tsx
@@ -494,7 +532,7 @@ store management system/
 │   ├── src/lib.rs                      # Sidecar backend spawn + health polling
 │   ├── tauri.conf.json                 # Window config + NSIS installer
 │   ├── Cargo.toml                      # Rust dependencies
-│   └── icons/                          # App icons (gold gear theme)
+│   └── icons/                          # App icons (noir + amethyst "S" theme)
 └── exel file/                          # User's Excel files (all stock new.xlsx = master)
 ```
 
@@ -518,6 +556,7 @@ store management system/
 | DELETE | `/api/items/:id` | Soft delete |
 | GET | `/api/items/search?q=` | Smart fuzzy search |
 | GET | `/api/items/categories` | Categories with counts |
+| DELETE | `/api/items/categories/:id` | Delete category (ADMIN — items get uncategorized) |
 | GET | `/api/items/:id/ledger` | Ledger with running balance |
 
 ### Transactions
@@ -533,6 +572,15 @@ store management system/
 | GET/POST | `/api/transactions/persons` | List/Create persons |
 | GET/POST | `/api/transactions/departments` | List/Create departments |
 | GET/POST | `/api/transactions/machines` | List/Create machines |
+| DELETE | `/api/transactions/suppliers/:id` | Delete supplier (ADMIN, 409 if in use) |
+| DELETE | `/api/transactions/persons/:id` | Delete person (ADMIN, 409 if in use) |
+| DELETE | `/api/transactions/departments/:id` | Delete department (ADMIN, 409 if in use) |
+| DELETE | `/api/transactions/machines/:id` | Delete machine (ADMIN, 409 if in use) |
+
+### Admin
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/admin/factory-reset` | Wipe all data + files, re-create STORE ADMIN (ADMIN, type `RESET` to confirm) |
 
 ### Reports
 | Method | Endpoint | Description |

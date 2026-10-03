@@ -81,6 +81,15 @@ export function SupplierSelect({ value, onChange, disabled = false }: SupplierSe
         >
           + New
         </button>
+        <button
+          type="button"
+          onClick={() => setShowManageModal(true)}
+          disabled={disabled}
+          title="Delete suppliers"
+          className="btn btn-outline btn-sm"
+        >
+          🗑
+        </button>
       </div>
 
       {/* Add Supplier Modal */}

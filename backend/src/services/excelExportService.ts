@@ -1,5 +1,5 @@
 // Excel Export Service
-// Generates Excel files with proper formatting using ExcelJS
+// Premium "Noir + Amethyst" workbooks using ExcelJS — matches the app identity
 
 import ExcelJS from 'exceljs';
 import { formatDate } from '../utils/dates';
@@ -8,40 +8,154 @@ import type { MonthlyReport } from './monthlyReportService';
 
 const STORE_NAME = 'Store Management System';
 
-// ============================================================
-// STYLE HELPERS
-// ============================================================
-function addHeaderRow(sheet: ExcelJS.Worksheet, headers: string[]) {
-  const row = sheet.addRow(headers);
-  row.eachCell((cell) => {
-    cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-    cell.fill = {
-      type: 'pattern',
-      pattern: 'solid',
-      fgColor: { argb: 'FF2563EB' },
-    };
-    cell.alignment = { vertical: 'middle', horizontal: 'center' };
-    cell.border = {
-      top: { style: 'thin' },
-      bottom: { style: 'thin' },
-      left: { style: 'thin' },
-      right: { style: 'thin' },
-    };
-  });
-  return row;
+// Noir + Amethyst palette (ARGB)
+const BRAND = {
+  accent: 'FF8B5CF6',
+  accentDark: 'FF6D28D9',
+  noir: 'FF141026',
+  light: 'FFF5F3FF',
+  tint: 'FFFAF7FF',
+  border: 'FFE9E5F5',
+  text: 'FF111827',
+  white: 'FFFFFFFF',
+};
+
+function solid(argb: string): ExcelJS.FillPattern {
+  return { type: 'pattern', pattern: 'solid', fgColor: { argb } };
 }
 
-function autoFitColumns(sheet: ExcelJS.Worksheet) {
-  sheet.columns.forEach((column) => {
-    let maxLength = 10;
-    if (column.eachCell) {
-      column.eachCell({ includeEmpty: false }, (cell) => {
-        const length = cell.value ? cell.value.toString().length : 0;
-        if (length > maxLength) maxLength = length;
-      });
-    }
-    column.width = Math.min(maxLength + 2, 40);
+function cellBorder(): Partial<ExcelJS.Borders> {
+  const t = { style: 'thin' as const, color: { argb: BRAND.border } };
+  return { top: t, bottom: t, left: t, right: t };
+}
+
+// TITLE BANNER — Noir row + lavender subtitle (merged)
+function addTitleBanner(sheet: ExcelJS.Worksheet, title: string, subtitle: string, colCount: number) {
+  sheet.mergeCells(1, 1, 1, colCount);
+  const titleCell = sheet.getCell(1, 1);
+  titleCell.value = title.toUpperCase();
+  titleCell.font = { bold: true, size: 15, color: { argb: BRAND.white } };
+  titleCell.fill = solid(BRAND.noir);
+  titleCell.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
+  sheet.getRow(1).height = 30;
+
+  sheet.mergeCells(2, 1, 2, colCount);
+  const subCell = sheet.getCell(2, 1);
+  subCell.value = subtitle;
+  subCell.font = { bold: true, size: 10, color: { argb: BRAND.accentDark } };
+  subCell.fill = solid(BRAND.light);
+  subCell.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
+  sheet.getRow(2).height = 20;
+
+  sheet.getRow(3).height = 6;
+}
+
+// STYLE TABLE — banner + purple header + zebra + borders + freeze + filter
+interface TableOptions {
+  currencyCols?: number[];
+  intCols?: number[];
+}
+
+function styleTable(
+  sheet: ExcelJS.Worksheet,
+  headers: string[],
+  rows: (string | number | null | undefined)[][],
+  title: string,
+  subtitle: string,
+  opts: TableOptions = {}
+) {
+  const colCount = headers.length;
+  addTitleBanner(sheet, title, subtitle, colCount);
+
+  // Header row (row 4)
+  const headerRow = sheet.getRow(4);
+  headers.forEach((h, i) => {
+    const cell = headerRow.getCell(i + 1);
+    cell.value = h;
+    cell.font = { bold: true, size: 10, color: { argb: BRAND.white } };
+    cell.fill = solid(BRAND.accent);
+    cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+    cell.border = cellBorder();
   });
+  headerRow.height = 22;
+
+  // Data rows (row 5+) with zebra + borders
+  rows.forEach((rowData, r) => {
+    const row = sheet.getRow(5 + r);
+    rowData.forEach((value, c) => {
+      const cell = row.getCell(c + 1);
+      cell.value = value as ExcelJS.CellValue;
+      cell.font = { size: 10, color: { argb: BRAND.text } };
+      cell.alignment = { vertical: 'middle' };
+      cell.border = cellBorder();
+      if (r % 2 === 0) cell.fill = solid(BRAND.tint);
+
+      if (opts.currencyCols?.includes(c)) {
+        cell.numFmt = '#,##0.00';
+        cell.alignment = { vertical: 'middle', horizontal: 'right' };
+      } else if (opts.intCols?.includes(c)) {
+        cell.numFmt = '#,##0';
+        cell.alignment = { vertical: 'middle', horizontal: 'right' };
+      }
+    });
+  });
+
+  // Column widths (header + data, capped)
+  headers.forEach((h, i) => {
+    let maxLength = h.length + 4;
+    for (const rowData of rows) {
+      const len = rowData[i] != null ? String(rowData[i]).length : 0;
+      if (len > maxLength) maxLength = len;
+    }
+    sheet.getColumn(i + 1).width = Math.min(maxLength + 2, 38);
+  });
+
+  // Frozen panes + filter + purple tab
+  sheet.views = [{ state: 'frozen', ySplit: 4 }];
+  sheet.autoFilter = { from: { row: 4, column: 1 }, to: { row: 4, column: colCount } };
+  sheet.properties.tabColor = { argb: BRAND.accent };
+}
+
+// STYLED SUMMARY SHEET — chip heading + label/value metrics
+function addSummarySection(sheet: ExcelJS.Worksheet, heading: string, metrics: [string, string | number][]) {
+  addTitleBanner(sheet, STORE_NAME, heading, 2);
+
+  sheet.mergeCells(4, 1, 4, 2);
+  const chip = sheet.getCell(4, 1);
+  chip.value = heading.toUpperCase();
+  chip.font = { bold: true, size: 10, color: { argb: BRAND.white } };
+  chip.fill = solid(BRAND.accent);
+  chip.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
+  sheet.getRow(4).height = 22;
+
+  metrics.forEach(([label, value], i) => {
+    const row = sheet.getRow(5 + i);
+    const labelCell = row.getCell(1);
+    const valueCell = row.getCell(2);
+
+    labelCell.value = label;
+    labelCell.font = { bold: true, size: 10, color: { argb: BRAND.text } };
+    labelCell.alignment = { vertical: 'middle' };
+    labelCell.border = cellBorder();
+
+    valueCell.value = value;
+    valueCell.font = { size: 10, color: { argb: BRAND.accentDark } };
+    valueCell.alignment = { vertical: 'middle', horizontal: 'right' };
+    valueCell.border = cellBorder();
+    if (typeof value === 'number') {
+      valueCell.numFmt = value % 1 === 0 ? '#,##0' : '#,##0.00';
+    }
+
+    if (i % 2 === 0) {
+      labelCell.fill = solid(BRAND.tint);
+      valueCell.fill = solid(BRAND.tint);
+    }
+  });
+
+  sheet.getColumn(1).width = 30;
+  sheet.getColumn(2).width = 24;
+  sheet.views = [{ state: 'frozen', ySplit: 4 }];
+  sheet.properties.tabColor = { argb: BRAND.accent };
 }
 
 function formatCurrency(value: number): string {
@@ -52,166 +166,147 @@ function formatCurrency(value: number): string {
   }).format(value);
 }
 
-// ============================================================
 // DAILY REPORT EXPORT
-// ============================================================
 export async function exportDailyReportExcel(report: DailyReport): Promise<Buffer> {
   const workbook = new ExcelJS.Workbook();
   workbook.creator = STORE_NAME;
   workbook.created = new Date();
 
-  // Summary Sheet
   const summarySheet = workbook.addWorksheet('Summary');
-  summarySheet.addRow([STORE_NAME]);
-  summarySheet.getRow(1).font = { bold: true, size: 14 };
-  summarySheet.addRow([`Daily Report - ${formatDate(report.date)}`]);
-  summarySheet.getRow(2).font = { size: 12 };
-  summarySheet.addRow([]);
+  addSummarySection(summarySheet, `Daily Report — ${formatDate(report.date)}`, [
+    ['Total Receipts', report.summary.totalReceipts],
+    ['Total Issues', report.summary.totalIssues],
+    ['Total Returns', report.summary.totalReturns],
+    ['Total Transactions', report.summary.totalTransactions],
+    ['Receipt Qty', report.summary.totalReceiptQty],
+    ['Issue Qty', report.summary.totalIssueQty],
+    ['Return Qty', report.summary.totalReturnQty],
+  ]);
 
-  summarySheet.addRow(['Summary']);
-  summarySheet.getRow(4).font = { bold: true, size: 12 };
-  summarySheet.addRow(['Total Receipts', report.summary.totalReceipts]);
-  summarySheet.addRow(['Total Issues', report.summary.totalIssues]);
-  summarySheet.addRow(['Total Returns', report.summary.totalReturns]);
-  summarySheet.addRow(['Total Transactions', report.summary.totalTransactions]);
-  summarySheet.addRow(['Receipt Qty', report.summary.totalReceiptQty]);
-  summarySheet.addRow(['Issue Qty', report.summary.totalIssueQty]);
-  summarySheet.addRow(['Return Qty', report.summary.totalReturnQty]);
-  summarySheet.addRow([]);
-
-  // Receipts Sheet
   if (report.receipts.length > 0) {
     const receiptsSheet = workbook.addWorksheet('Receipts');
-    addHeaderRow(receiptsSheet, ['Item Code', 'Item Name', 'Brand', 'Qty', 'Rate', 'Total', 'Supplier', 'Invoice No', 'Txn No']);
-    
-    for (const r of report.receipts) {
-      receiptsSheet.addRow([r.itemCode, r.itemName, r.brand || '', r.qty, r.rate, r.total, r.supplier, r.invoiceNo, r.txnNo]);
-    }
-    autoFitColumns(receiptsSheet);
+    styleTable(
+      receiptsSheet,
+      ['Item Code', 'Item Name', 'Brand', 'Qty', 'Rate', 'Total', 'Supplier', 'Invoice No', 'Txn No'],
+      report.receipts.map((r) => [r.itemCode, r.itemName, r.brand || '', r.qty, r.rate, r.total, r.supplier, r.invoiceNo, r.txnNo]),
+      'Receipts (Stock IN)',
+      `Daily Report — ${formatDate(report.date)}`,
+      { currencyCols: [4, 5], intCols: [3] }
+    );
   }
 
-  // Issues Sheet
   if (report.issues.length > 0) {
     const issuesSheet = workbook.addWorksheet('Issues');
-    addHeaderRow(issuesSheet, ['Item Code', 'Item Name', 'Brand', 'Qty', 'Issued To', 'Department', 'Machine', 'Purpose', 'Txn No']);
-    
-    for (const i of report.issues) {
-      issuesSheet.addRow([i.itemCode, i.itemName, i.brand || '', i.qty, i.issuedTo, i.department || '', i.machine || '', i.purpose, i.txnNo]);
-    }
-    autoFitColumns(issuesSheet);
+    styleTable(
+      issuesSheet,
+      ['Item Code', 'Item Name', 'Brand', 'Qty', 'Issued To', 'Department', 'Machine', 'Purpose', 'Txn No'],
+      report.issues.map((i) => [i.itemCode, i.itemName, i.brand || '', i.qty, i.issuedTo, i.department || '', i.machine || '', i.purpose, i.txnNo]),
+      'Issues (Stock OUT)',
+      `Daily Report — ${formatDate(report.date)}`,
+      { intCols: [3] }
+    );
   }
 
-  // Items Below Minimum Sheet
   if (report.itemsBelowMinimum.length > 0) {
     const belowMinSheet = workbook.addWorksheet('Below Minimum');
-    addHeaderRow(belowMinSheet, ['Item Code', 'Item Name', 'Brand', 'Current Stock', 'Min Stock', 'Unit']);
-    
-    for (const item of report.itemsBelowMinimum) {
-      belowMinSheet.addRow([item.itemCode, item.itemName, item.brand || '', item.currentStock, item.minStock, item.unit]);
-    }
-    autoFitColumns(belowMinSheet);
+    styleTable(
+      belowMinSheet,
+      ['Item Code', 'Item Name', 'Brand', 'Current Stock', 'Min Stock', 'Unit'],
+      report.itemsBelowMinimum.map((item) => [item.itemCode, item.itemName, item.brand || '', item.currentStock, item.minStock, item.unit]),
+      'Items Below Minimum Stock',
+      `Daily Report — ${formatDate(report.date)}`,
+      { intCols: [3, 4] }
+    );
   }
 
   const buffer = await workbook.xlsx.writeBuffer();
   return Buffer.from(buffer);
 }
 
-// ============================================================
 // MONTHLY REPORT EXPORT
-// ============================================================
 export async function exportMonthlyReportExcel(report: MonthlyReport): Promise<Buffer> {
   const workbook = new ExcelJS.Workbook();
   workbook.creator = STORE_NAME;
   workbook.created = new Date();
 
-  // Summary Sheet
+  const period = `${report.monthName} ${report.year}`;
+
   const summarySheet = workbook.addWorksheet('Summary');
-  summarySheet.addRow([STORE_NAME]);
-  summarySheet.getRow(1).font = { bold: true, size: 14 };
-  summarySheet.addRow([`Monthly Report - ${report.monthName} ${report.year}`]);
-  summarySheet.getRow(2).font = { size: 12 };
-  summarySheet.addRow([]);
+  addSummarySection(summarySheet, `Monthly Report — ${period}`, [
+    ['Total Received', report.summary.totalReceived],
+    ['Total Issued', report.summary.totalIssued],
+    ['Total Returned', report.summary.totalReturned],
+    ['Total Transactions', report.summary.totalTransactions],
+    ['Received Value', report.summary.totalReceivedValue],
+    ['Issued Value', report.summary.totalIssuedValue],
+    ['Returned Value', report.summary.totalReturnedValue],
+    ['Opening Stock Value', report.stockValue.opening],
+    ['Closing Stock Value', report.stockValue.closing],
+  ]);
 
-  summarySheet.addRow(['Summary']);
-  summarySheet.getRow(4).font = { bold: true, size: 12 };
-  summarySheet.addRow(['Total Received', report.summary.totalReceived]);
-  summarySheet.addRow(['Total Issued', report.summary.totalIssued]);
-  summarySheet.addRow(['Total Returned', report.summary.totalReturned]);
-  summarySheet.addRow(['Total Transactions', report.summary.totalTransactions]);
-  summarySheet.addRow(['Received Value', report.summary.totalReceivedValue]);
-  summarySheet.addRow(['Issued Value', report.summary.totalIssuedValue]);
-  summarySheet.addRow(['Returned Value', report.summary.totalReturnedValue]);
-  summarySheet.addRow(['Opening Stock Value', report.stockValue.opening]);
-  summarySheet.addRow(['Closing Stock Value', report.stockValue.closing]);
-  summarySheet.addRow([]);
-
-  // Department Consumption Sheet
   if (report.departmentConsumption.length > 0) {
     const deptSheet = workbook.addWorksheet('Department Consumption');
-    addHeaderRow(deptSheet, ['Department', 'Quantity', 'Value', 'Items']);
-    
-    for (const d of report.departmentConsumption) {
-      deptSheet.addRow([d.department, d.totalQty, d.totalValue, d.items]);
-    }
-    autoFitColumns(deptSheet);
+    styleTable(
+      deptSheet,
+      ['Department', 'Quantity', 'Value', 'Items'],
+      report.departmentConsumption.map((d) => [d.department, d.totalQty, d.totalValue, d.items]),
+      'Department-wise Consumption',
+      `Monthly Report — ${period}`,
+      { currencyCols: [2], intCols: [1, 3] }
+    );
   }
 
-  // Machine Consumption Sheet
   if (report.machineConsumption.length > 0) {
     const machSheet = workbook.addWorksheet('Machine Consumption');
-    addHeaderRow(machSheet, ['Machine', 'Department', 'Quantity', 'Value', 'Items']);
-    
-    for (const m of report.machineConsumption) {
-      machSheet.addRow([m.machine, m.department || '', m.totalQty, m.totalValue, m.items]);
-    }
-    autoFitColumns(machSheet);
+    styleTable(
+      machSheet,
+      ['Machine', 'Department', 'Quantity', 'Value', 'Items'],
+      report.machineConsumption.map((m) => [m.machine, m.department || '', m.totalQty, m.totalValue, m.items]),
+      'Machine-wise Consumption',
+      `Monthly Report — ${period}`,
+      { currencyCols: [3], intCols: [2, 4] }
+    );
   }
 
-  // Top Consumed Items Sheet
   if (report.topConsumedItems.length > 0) {
     const topSheet = workbook.addWorksheet('Top Consumed Items');
-    addHeaderRow(topSheet, ['#', 'Item Code', 'Item Name', 'Brand', 'Unit', 'Received', 'Issued', 'Net', 'Value']);
-    
-    report.topConsumedItems.forEach((item, index) => {
-      topSheet.addRow([index + 1, item.itemCode, item.itemName, item.brand || '', item.unit, item.totalReceived, item.totalIssued, item.netConsumption, item.estimatedValue]);
-    });
-    autoFitColumns(topSheet);
+    styleTable(
+      topSheet,
+      ['#', 'Item Code', 'Item Name', 'Brand', 'Unit', 'Received', 'Issued', 'Net', 'Value'],
+      report.topConsumedItems.map((item, index) => [index + 1, item.itemCode, item.itemName, item.brand || '', item.unit, item.totalReceived, item.totalIssued, item.netConsumption, item.estimatedValue]),
+      'Top Consumed Items',
+      `Monthly Report — ${period}`,
+      { currencyCols: [8], intCols: [0, 5, 6, 7] }
+    );
   }
 
-  // Out of Stock Items Sheet
   if (report.outOfStockItems.length > 0) {
     const oosSheet = workbook.addWorksheet('Out of Stock');
-    addHeaderRow(oosSheet, ['Item Code', 'Item Name', 'Brand', 'Unit', 'Min Stock', 'Days Out of Stock']);
-    
-    for (const item of report.outOfStockItems) {
-      oosSheet.addRow([item.itemCode, item.itemName, item.brand || '', item.unit, item.minStock, item.daysOutOfStock]);
-    }
-    autoFitColumns(oosSheet);
+    styleTable(
+      oosSheet,
+      ['Item Code', 'Item Name', 'Brand', 'Unit', 'Min Stock', 'Days Out of Stock'],
+      report.outOfStockItems.map((item) => [item.itemCode, item.itemName, item.brand || '', item.unit, item.minStock, item.daysOutOfStock]),
+      'Items Out of Stock',
+      `Monthly Report — ${period}`,
+      { intCols: [4, 5] }
+    );
   }
 
   const buffer = await workbook.xlsx.writeBuffer();
   return Buffer.from(buffer);
 }
 
-// ============================================================
 // ITEMS LIST EXPORT
-// ============================================================
 export async function exportItemsListExcel(items: any[]): Promise<Buffer> {
   const workbook = new ExcelJS.Workbook();
   workbook.creator = STORE_NAME;
   workbook.created = new Date();
 
   const sheet = workbook.addWorksheet('Items');
-  sheet.addRow([STORE_NAME]);
-  sheet.getRow(1).font = { bold: true, size: 14 };
-  sheet.addRow(['Items List']);
-  sheet.getRow(2).font = { size: 12 };
-  sheet.addRow([]);
-
-  addHeaderRow(sheet, ['Item Code', 'Item Name', 'Category', 'Brand', 'Spec / Unit', 'Unit', 'Min Stock', 'Current Stock', 'Last Rate', 'Rack Location', 'Status']);
-
-  for (const item of items) {
-    sheet.addRow([
+  styleTable(
+    sheet,
+    ['Item Code', 'Item Name', 'Category', 'Brand', 'Spec / Unit', 'Unit', 'Min Stock', 'Current Stock', 'Last Rate', 'Rack Location', 'Status'],
+    items.map((item) => [
       item.item_code,
       item.item_name,
       item.category?.name || '',
@@ -223,33 +318,27 @@ export async function exportItemsListExcel(items: any[]): Promise<Buffer> {
       item.last_rate || 0,
       item.rack_location || '',
       item.is_active ? 'Active' : 'Inactive',
-    ]);
-  }
+    ]),
+    'Items List',
+    `${items.length} items in inventory`,
+    { currencyCols: [8], intCols: [6, 7] }
+  );
 
-  autoFitColumns(sheet);
   const buffer = await workbook.xlsx.writeBuffer();
   return Buffer.from(buffer);
 }
 
-// ============================================================
 // ITEM LEDGER EXPORT
-// ============================================================
 export async function exportItemLedgerExcel(itemData: any, ledger: any[]): Promise<Buffer> {
   const workbook = new ExcelJS.Workbook();
   workbook.creator = STORE_NAME;
   workbook.created = new Date();
 
   const sheet = workbook.addWorksheet('Ledger');
-  sheet.addRow([STORE_NAME]);
-  sheet.getRow(1).font = { bold: true, size: 14 };
-  sheet.addRow([`Item Ledger - ${itemData.item_code} - ${itemData.item_name}`]);
-  sheet.getRow(2).font = { size: 12 };
-  sheet.addRow([]);
-
-  addHeaderRow(sheet, ['Date', 'Txn No', 'Type', 'In Qty', 'Out Qty', 'Balance', 'Rate', 'Party', 'Purpose', 'Remarks']);
-
-  for (const entry of ledger) {
-    sheet.addRow([
+  styleTable(
+    sheet,
+    ['Date', 'Txn No', 'Type', 'In Qty', 'Out Qty', 'Balance', 'Rate', 'Party', 'Purpose', 'Remarks'],
+    ledger.map((entry) => [
       formatDate(entry.date),
       entry.txn_no,
       entry.txn_type,
@@ -260,10 +349,12 @@ export async function exportItemLedgerExcel(itemData: any, ledger: any[]): Promi
       entry.party || '',
       entry.purpose || '',
       entry.remarks || '',
-    ]);
-  }
+    ]),
+    'Item Ledger',
+    `${itemData.item_code} — ${itemData.item_name}`,
+    { currencyCols: [6], intCols: [3, 4, 5] }
+  );
 
-  autoFitColumns(sheet);
   const buffer = await workbook.xlsx.writeBuffer();
   return Buffer.from(buffer);
 }
