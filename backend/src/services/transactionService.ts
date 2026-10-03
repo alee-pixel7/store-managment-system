@@ -637,3 +637,68 @@ export async function reverseByTxnNo(
     return reversalTxn;
   });
 }
+
+// ============================================================
+// DELETE MASTER ENTRIES (departments / machines / persons / suppliers)
+// Blocked while the entry is still referenced by history — keeps
+// old transaction slips readable (audit trail never breaks).
+// ============================================================
+function ensureUnused(name: string, checks: Array<{ count: number; label: string }>): void {
+  const used = checks.filter((c) => c.count > 0);
+  if (used.length > 0) {
+    const parts = used.map((c) => `${c.count} ${c.count === 1 ? c.label : c.label + 's'}`).join(', ');
+    throw new Error(`"${name}" is in use by ${parts} — delete those first`);
+  }
+}
+
+export async function deleteDepartment(id: number) {
+  const department = await prisma.departments.findUnique({ where: { id } });
+  if (!department) throw new Error('Department not found');
+
+  const [txns, machines, persons] = await Promise.all([
+    prisma.transactions.count({ where: { department_id: id } }),
+    prisma.machines.count({ where: { department_id: id } }),
+    prisma.persons.count({ where: { department_id: id } }),
+  ]);
+  ensureUnused(department.name, [
+    { count: txns, label: 'transaction' },
+    { count: machines, label: 'machine' },
+    { count: persons, label: 'person' },
+  ]);
+
+  await prisma.departments.delete({ where: { id } });
+  return { deleted: true, name: department.name };
+}
+
+export async function deleteMachine(id: number) {
+  const machine = await prisma.machines.findUnique({ where: { id } });
+  if (!machine) throw new Error('Machine not found');
+
+  const txns = await prisma.transactions.count({ where: { machine_id: id } });
+  ensureUnused(machine.name, [{ count: txns, label: 'transaction' }]);
+
+  await prisma.machines.delete({ where: { id } });
+  return { deleted: true, name: machine.name };
+}
+
+export async function deletePerson(id: number) {
+  const person = await prisma.persons.findUnique({ where: { id } });
+  if (!person) throw new Error('Person not found');
+
+  const txns = await prisma.transactions.count({ where: { person_id: id } });
+  ensureUnused(person.name, [{ count: txns, label: 'transaction' }]);
+
+  await prisma.persons.delete({ where: { id } });
+  return { deleted: true, name: person.name };
+}
+
+export async function deleteSupplier(id: number) {
+  const supplier = await prisma.suppliers.findUnique({ where: { id } });
+  if (!supplier) throw new Error('Supplier not found');
+
+  const txns = await prisma.transactions.count({ where: { supplier_id: id } });
+  ensureUnused(supplier.name, [{ count: txns, label: 'transaction' }]);
+
+  await prisma.suppliers.delete({ where: { id } });
+  return { deleted: true, name: supplier.name };
+}

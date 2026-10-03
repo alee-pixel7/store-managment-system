@@ -3,8 +3,9 @@
 
 import { useState, useEffect } from 'react';
 import type { Supplier } from '../../types';
-import { listSuppliers, createSupplier } from '../../api/transactions';
+import { listSuppliers, createSupplier, deleteSupplier } from '../../api/transactions';
 import { Dropdown } from '../ui/Dropdown';
+import { ManageListModal } from './ManageListModal';
 
 interface SupplierSelectProps {
   value: number | null;
@@ -18,6 +19,7 @@ export function SupplierSelect({ value, onChange, disabled = false }: SupplierSe
   const [showAddModal, setShowAddModal] = useState(false);
   const [newSupplier, setNewSupplier] = useState({ name: '', phone: '', address: '' });
   const [saving, setSaving] = useState(false);
+  const [showManageModal, setShowManageModal] = useState(false);
 
   const fetchSuppliers = async () => {
     try {
@@ -50,6 +52,12 @@ export function SupplierSelect({ value, onChange, disabled = false }: SupplierSe
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleDeleteEntry = async (id: number) => {
+    await deleteSupplier(id);
+    setSuppliers((prev) => prev.filter((s) => s.id !== id));
+    if (value === id) onChange(null);
   };
 
   return (
@@ -139,6 +147,16 @@ export function SupplierSelect({ value, onChange, disabled = false }: SupplierSe
             </div>
           </div>
         </div>
+      )}
+
+      {showManageModal && (
+        <ManageListModal
+          title="Manage Suppliers"
+          items={suppliers.map((s) => ({ id: s.id, label: s.name }))}
+          onDelete={(item) => handleDeleteEntry(item.id)}
+          onClose={() => setShowManageModal(false)}
+          emptyText="No suppliers yet"
+        />
       )}
     </>
   );

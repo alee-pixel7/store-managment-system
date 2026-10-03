@@ -3,8 +3,9 @@
 
 import { useState, useEffect } from 'react';
 import type { Machine } from '../../types';
-import { listMachines, createMachine } from '../../api/transactions';
+import { listMachines, createMachine, deleteMachine } from '../../api/transactions';
 import { Dropdown } from '../ui/Dropdown';
+import { ManageListModal } from './ManageListModal';
 
 interface MachineSelectProps {
   departmentId: number | null;
@@ -19,6 +20,8 @@ export function MachineSelect({ departmentId, value, onChange, disabled = false 
   const [showAddModal, setShowAddModal] = useState(false);
   const [newMachine, setNewMachine] = useState({ name: '', code: '' });
   const [saving, setSaving] = useState(false);
+  const [showManageModal, setShowManageModal] = useState(false);
+  const [manageMachines, setManageMachines] = useState<Machine[]>([]);
 
   const fetchMachines = async () => {
     setLoading(true);
@@ -58,6 +61,23 @@ export function MachineSelect({ departmentId, value, onChange, disabled = false 
     }
   };
 
+  // Open the manage modal with ALL machines (not just the active department filter)
+  const openManage = async () => {
+    setShowManageModal(true);
+    try {
+      setManageMachines(await listMachines());
+    } catch {
+      setManageMachines(machines);
+    }
+  };
+
+  const handleDeleteEntry = async (id: number) => {
+    await deleteMachine(id);
+    if (value === id) onChange(null);
+    await fetchMachines();
+    setManageMachines((prev) => prev.filter((m) => m.id !== id));
+  };
+
   return (
     <>
       <div className="flex gap-2 items-stretch">
@@ -81,6 +101,15 @@ export function MachineSelect({ departmentId, value, onChange, disabled = false 
           className="btn btn-outline btn-sm"
         >
           +
+        </button>
+        <button
+          type="button"
+          onClick={openManage}
+          disabled={disabled}
+          title="Delete machines"
+          className="btn btn-outline btn-sm"
+        >
+          🗑
         </button>
       </div>
 
@@ -124,6 +153,16 @@ export function MachineSelect({ departmentId, value, onChange, disabled = false 
             </div>
           </div>
         </div>
+      )}
+
+      {showManageModal && (
+        <ManageListModal
+          title="Manage Machines"
+          items={manageMachines.map((m) => ({ id: m.id, label: m.code ? `${m.code} - ${m.name}` : m.name }))}
+          onDelete={(item) => handleDeleteEntry(item.id)}
+          onClose={() => setShowManageModal(false)}
+          emptyText="No machines yet"
+        />
       )}
     </>
   );

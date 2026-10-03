@@ -3,8 +3,9 @@
 
 import { useState, useEffect } from 'react';
 import type { Person } from '../../types';
-import { listPersons, createPerson } from '../../api/transactions';
+import { listPersons, createPerson, deletePerson } from '../../api/transactions';
 import { Dropdown } from '../ui/Dropdown';
+import { ManageListModal } from './ManageListModal';
 
 interface PersonSelectProps {
   value: number | null;
@@ -18,6 +19,7 @@ export function PersonSelect({ value, onChange, disabled = false }: PersonSelect
   const [showAddModal, setShowAddModal] = useState(false);
   const [newPerson, setNewPerson] = useState({ name: '', phone: '' });
   const [saving, setSaving] = useState(false);
+  const [showManageModal, setShowManageModal] = useState(false);
 
   const fetchPersons = async () => {
     try {
@@ -55,6 +57,12 @@ export function PersonSelect({ value, onChange, disabled = false }: PersonSelect
     }
   };
 
+  const handleDeleteEntry = async (id: number) => {
+    await deletePerson(id);
+    setPersons((prev) => prev.filter((p) => p.id !== id));
+    if (value === id) onChange(null);
+  };
+
   return (
     <>
       <div className="flex gap-2 items-stretch">
@@ -78,6 +86,15 @@ export function PersonSelect({ value, onChange, disabled = false }: PersonSelect
           className="btn btn-outline btn-sm"
         >
           +
+        </button>
+        <button
+          type="button"
+          onClick={() => setShowManageModal(true)}
+          disabled={disabled}
+          title="Delete persons"
+          className="btn btn-outline btn-sm"
+        >
+          🗑
         </button>
       </div>
 
@@ -121,6 +138,16 @@ export function PersonSelect({ value, onChange, disabled = false }: PersonSelect
             </div>
           </div>
         </div>
+      )}
+
+      {showManageModal && (
+        <ManageListModal
+          title="Manage Persons"
+          items={persons.map((p) => ({ id: p.id, label: p.department ? `${p.name} (${p.department.name})` : p.name }))}
+          onDelete={(item) => handleDeleteEntry(item.id)}
+          onClose={() => setShowManageModal(false)}
+          emptyText="No persons yet"
+        />
       )}
     </>
   );

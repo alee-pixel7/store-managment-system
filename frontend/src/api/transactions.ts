@@ -70,6 +70,12 @@ export async function createSupplier(data: CreateSupplierInput): Promise<Supplie
   });
 }
 
+export async function deleteSupplier(id: number): Promise<{ deleted: boolean }> {
+  return authFetch<{ deleted: boolean }>(`/transactions/suppliers/${id}`, {
+    method: 'DELETE',
+  });
+}
+
 // ============================================================
 // STOCK OUT API
 // ============================================================
@@ -104,6 +110,12 @@ export async function createPerson(data: { name: string; department_id?: number;
   });
 }
 
+export async function deletePerson(id: number): Promise<{ deleted: boolean }> {
+  return authFetch<{ deleted: boolean }>(`/transactions/persons/${id}`, {
+    method: 'DELETE',
+  });
+}
+
 // ============================================================
 // DEPARTMENTS API
 // ============================================================
@@ -116,6 +128,12 @@ export async function createDepartment(data: { name: string }): Promise<Departme
   return authFetch<Department>('/transactions/departments', {
     method: 'POST',
     body: JSON.stringify(data),
+  });
+}
+
+export async function deleteDepartment(id: number): Promise<{ deleted: boolean }> {
+  return authFetch<{ deleted: boolean }>(`/transactions/departments/${id}`, {
+    method: 'DELETE',
   });
 }
 
@@ -132,6 +150,12 @@ export async function createMachine(data: { name: string; code?: string; departm
   return authFetch<Machine>('/transactions/machines', {
     method: 'POST',
     body: JSON.stringify(data),
+  });
+}
+
+export async function deleteMachine(id: number): Promise<{ deleted: boolean }> {
+  return authFetch<{ deleted: boolean }>(`/transactions/machines/${id}`, {
+    method: 'DELETE',
   });
 }
 

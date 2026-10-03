@@ -322,3 +322,78 @@ export async function reverseByTxnNo(req: Request, res: Response) {
     res.status(500).json({ error: message });
   }
 }
+
+// ============================================================
+// DELETE MASTER ENTRIES - shared helpers
+// ============================================================
+function sendDeleteError(res: Response, error: unknown): void {
+  const message = error instanceof Error ? error.message : 'Internal server error';
+  if (message.includes('not found')) {
+    res.status(404).json({ error: message });
+  } else if (message.includes('in use')) {
+    res.status(409).json({ error: message });
+  } else {
+    res.status(500).json({ error: message });
+  }
+}
+
+function parseDeleteId(req: Request, res: Response): number | null {
+  const id = parseInt(req.params.id, 10);
+  if (isNaN(id) || id < 1) {
+    res.status(400).json({ error: 'Invalid ID' });
+    return null;
+  }
+  return id;
+}
+
+// ============================================================
+// DELETE /api/transactions/departments/:id
+// ============================================================
+export async function deleteDepartment(req: Request, res: Response) {
+  try {
+    const id = parseDeleteId(req, res);
+    if (id === null) return;
+    res.json(await transactionService.deleteDepartment(id));
+  } catch (error) {
+    sendDeleteError(res, error);
+  }
+}
+
+// ============================================================
+// DELETE /api/transactions/machines/:id
+// ============================================================
+export async function deleteMachine(req: Request, res: Response) {
+  try {
+    const id = parseDeleteId(req, res);
+    if (id === null) return;
+    res.json(await transactionService.deleteMachine(id));
+  } catch (error) {
+    sendDeleteError(res, error);
+  }
+}
+
+// ============================================================
+// DELETE /api/transactions/persons/:id
+// ============================================================
+export async function deletePerson(req: Request, res: Response) {
+  try {
+    const id = parseDeleteId(req, res);
+    if (id === null) return;
+    res.json(await transactionService.deletePerson(id));
+  } catch (error) {
+    sendDeleteError(res, error);
+  }
+}
+
+// ============================================================
+// DELETE /api/transactions/suppliers/:id
+// ============================================================
+export async function deleteSupplier(req: Request, res: Response) {
+  try {
+    const id = parseDeleteId(req, res);
+    if (id === null) return;
+    res.json(await transactionService.deleteSupplier(id));
+  } catch (error) {
+    sendDeleteError(res, error);
+  }
+}

@@ -3,8 +3,9 @@
 
 import { useState, useEffect } from 'react';
 import type { Department } from '../../types';
-import { listDepartments, createDepartment } from '../../api/transactions';
+import { listDepartments, createDepartment, deleteDepartment } from '../../api/transactions';
 import { Dropdown } from '../ui/Dropdown';
+import { ManageListModal } from './ManageListModal';
 
 interface DepartmentSelectProps {
   value: number | null;
@@ -18,6 +19,7 @@ export function DepartmentSelect({ value, onChange, disabled = false }: Departme
   const [showAddModal, setShowAddModal] = useState(false);
   const [newDepartment, setNewDepartment] = useState('');
   const [saving, setSaving] = useState(false);
+  const [showManageModal, setShowManageModal] = useState(false);
 
   const fetchDepartments = async () => {
     try {
@@ -52,6 +54,12 @@ export function DepartmentSelect({ value, onChange, disabled = false }: Departme
     }
   };
 
+  const handleDeleteEntry = async (id: number) => {
+    await deleteDepartment(id);
+    setDepartments((prev) => prev.filter((d) => d.id !== id));
+    if (value === id) onChange(null);
+  };
+
   return (
     <>
       <div className="flex gap-2 items-stretch">
@@ -72,6 +80,15 @@ export function DepartmentSelect({ value, onChange, disabled = false }: Departme
           className="btn btn-outline btn-sm"
         >
           +
+        </button>
+        <button
+          type="button"
+          onClick={() => setShowManageModal(true)}
+          disabled={disabled}
+          title="Delete departments"
+          className="btn btn-outline btn-sm"
+        >
+          🗑
         </button>
       </div>
 
@@ -102,6 +119,16 @@ export function DepartmentSelect({ value, onChange, disabled = false }: Departme
             </div>
           </div>
         </div>
+      )}
+
+      {showManageModal && (
+        <ManageListModal
+          title="Manage Departments"
+          items={departments.map((d) => ({ id: d.id, label: d.name }))}
+          onDelete={(item) => handleDeleteEntry(item.id)}
+          onClose={() => setShowManageModal(false)}
+          emptyText="No departments yet"
+        />
       )}
     </>
   );

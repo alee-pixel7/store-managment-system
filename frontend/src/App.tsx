@@ -11,6 +11,7 @@ import { StockOutPage } from './components/Transactions/StockOutPage'
 import { StockReturnPage } from './components/Transactions/StockReturnPage'
 import { ImportWizard } from './components/Import/ImportWizard'
 import { BackupSettings } from './components/Settings/BackupSettings'
+import { DangerZone } from './components/Settings/DangerZone'
 import { DailyReportPage } from './components/Reports/DailyReportPage'
 import { MonthlyReportPage } from './components/Reports/MonthlyReportPage'
 import { AuditListPage } from './components/Audit/AuditListPage'
@@ -383,6 +384,7 @@ function AppContent() {
                     </div>
                   </motion.div>
                   <BackupSettings />
+                  <DangerZone />
                 </div>
               </div>
             )}
